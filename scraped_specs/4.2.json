@@ -1,0 +1,47 @@
+{
+  "item_id": "4.2",
+  "phase": "PHASE 4: PAUSE, AUTO-SUBMIT & MANUAL SUBMIT FLOW",
+  "title": "Submit Test Modal",
+  "captured_at": "2026-10-21T22:01:45+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html finalSubmit(), sBack(), sendData() lines 958-1097",
+  "dom_structure": {
+    "submit_trigger_button": "<div id=\"b4\"><a href=\"#\" onclick=\"javascript:finalSubmit()\">Submit Test</a></div>",
+    "summary_table_modal": "<div id=\"submit-pane\" style=\"display:none;\"><span id=\"summary\"><center><b>Exam Summary</b></center></span><table cellpadding=\"10\" cellspacing=\"0\"><thead><tr><th>Section Name</th><th>No of Questions</th><th>Answered</th><th>Not Answered</th><th>Marked for Review</th><th>Not Visited</th></tr></thead><tbody id=\"f-tbody\"></tbody></table></div>",
+    "warning_prompt": "<div id=\"sure\" style=\"display:none;\"><p>Are you sure you want to submit?</p><a href=\"#\" onclick=\"javascript:sBack()\"><span id=\"s-back\">Back</span></a> <a href=\"#\" onclick=\"javascript:sendData()\"><span id=\"s-submit\">Submit Test / Next Section</span></a></div>",
+    "loader": "<div id=\"plswait\" style=\"display:none;\"><p align=\"center\">Please Wait ...</p></div>"
+  },
+  "css_rules": {
+    "#submit-pane": "padding: 20px; font-family: verdana; font-size: 13px;",
+    "#submit-pane table": "width: 90%; margin: 20px auto; border-collapse: collapse; border: 1px solid #ddd;",
+    "#submit-pane table th": "background-color: #3476BB; color: #fff; padding: 10px; border: 1px solid #2B629B;",
+    "#submit-pane table td": "padding: 8px 12px; border: 1px solid #ddd; text-align: center;",
+    "#sure": "text-align: center; margin-top: 30px; font-family: verdana;",
+    "#s-back": "background-color: #C7DCF0; color: #000; padding: 8px 24px; border: 2px solid #A9D0F5; margin-right: 15px; cursor: pointer; display: inline-block;",
+    "#s-submit": "background-color: #3778BD; color: #fff; padding: 8px 24px; border: 2px solid #2B629B; cursor: pointer; display: inline-block; font-weight: bold;"
+  },
+  "summary_aggregation_algorithm": {
+    "loop": "Iterates each distinct section name in secList;",
+    "metrics_calculated": {
+      "countSec": "Total questions belonging to this section",
+      "dot (Answered)": "getCountStatus(2, secName)",
+      "dot1 (Not Answered)": "getCountStatus(1, secName)",
+      "dot2 (Marked)": "getCountStatus(3, secName) + getCountStatus(4, secName)",
+      "dot3 (Not Visited)": "getCountStatus(0, secName)"
+    }
+  },
+  "submission_api_payload": {
+    "endpoint": "/exams/tests/p/submittestpart.cgi",
+    "method": "POST",
+    "headers": { "Content-Type": "application/x-www-form-urlencoded" },
+    "body_parameters": {
+      "data": "JSON string: { \"<qid>\": { \"o\": \"<chosen_opt_index_or_empty>\", \"t\": [ { \"st\": \"HH:MM:SS\", \"end\": \"HH:MM:SS\" } ] } }",
+      "uid": "Session / User ID",
+      "qpi": "Test ID string",
+      "ppi": "Active section identifier",
+      "lang": "'eqt' | 'hqt'",
+      "c": "Course string (e.g. 'sbipopre19')",
+      "source": "web"
+    },
+    "on_success": "Redirects to window.location = 'https://u1.oliveboard.in/exams/solution/index3.php?c=' + c + '&testid=' + qpi + '&from=test'"
+  }
+}

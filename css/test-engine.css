@@ -1,0 +1,2114 @@
+/* ========================================================
+   OLIVEBOARD AUTHENTIC LIVE TEST ENGINE CONSOLE
+   Reverse-Engineered 1:1 from u1.oliveboard.in
+   Includes 2-Sided Test Window, Authentic Palette Sprites,
+   Oliveboard Header, Section Bar, and Action Controls.
+   ======================================================== */
+
+html * {
+  -webkit-user-select: none !important;
+  -moz-user-select: -moz-none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Fullscreen Test Modal Overlay */
+.test-modal-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 2000;
+  display: none;
+  overflow: hidden;
+  font-family: verdana, helvetica, sans-serif;
+  color: #000000;
+}
+
+.test-modal-overlay.active {
+  display: block !important;
+}
+
+/* Top Header Bar (#header-top) */
+#header-top {
+  background-color: #3476BB;
+  height: 52px;
+  width: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  margin: 0px;
+  border-bottom: 1px solid #1c4b79;
+  font-family: verdana, helvetica, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-sizing: border-box;
+  z-index: 100;
+}
+
+#header-top > .main-title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#header-top > .main-title-container > h2 {
+  color: #FFF;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+}
+
+#header-top > .logo-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+#header-top > .logo-container img {
+  height: 28px;
+  display: block;
+}
+
+.header-right-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.screen-toggle {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: verdana, helvetica, sans-serif;
+  transition: all 0.2s ease;
+}
+
+.screen-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.exit-exam-btn {
+  background: #d32f2f;
+  color: #fff;
+  border: 1px solid #b71c1c;
+  padding: 5px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: verdana, helvetica, sans-serif;
+  transition: all 0.2s ease;
+}
+
+.exit-exam-btn:hover {
+  background: #b71c1c;
+}
+
+/* Main Container */
+#main-container {
+  background: #fff;
+  position: absolute;
+  top: 52px;
+  bottom: 0px;
+  width: 100%;
+  left: 0px;
+  right: 0px;
+  overflow: hidden;
+}
+
+/* Left 78% Container - Questions and Sections */
+#left-container-post {
+  position: absolute;
+  height: 100%;
+  width: 78%;
+  left: 0;
+  top: 0;
+  background: #fff;
+}
+
+/* Sections Top Bar */
+#section-name-container {
+  border: 1px solid #999;
+  height: 38px;
+  position: absolute;
+  font-size: 13px;
+  font-family: verdana, helvetica, sans-serif;
+  padding: 2px 8px;
+  margin: 6px 10px 0 10px;
+  width: calc(100% - 20px);
+  box-sizing: border-box;
+  background: #fff;
+  display: flex;
+  align-items: center;
+}
+
+#section-name-container > .title-box {
+  float: left;
+  padding: 0 5px;
+  margin: -24px 0 0 2px;
+  background: #FFF;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.section-wrapper {
+  display: inline-block;
+  white-space: nowrap;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.section-wrapper table {
+  width: auto;
+  border-collapse: collapse;
+}
+
+.section-wrapper table td {
+  padding: 0 4px;
+}
+
+.secgen {
+  background-color: #C7DCF0;
+  display: inline-block;
+  border: 1px solid #A9D0F5;
+  color: #000;
+  font-size: 12px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0 12px;
+  text-align: center;
+  font-family: Arial, helvetica, sans-serif;
+  cursor: pointer;
+  box-sizing: border-box;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.secgen:hover {
+  background-color: #b2d3f3;
+}
+
+.currclass {
+  background-color: #3476BB !important;
+  color: #FFF !important;
+  font-weight: bold;
+}
+
+/* Outer Question Pane */
+#question-outer-pane {
+  position: absolute;
+  height: calc(100% - 54px);
+  width: calc(100% - 20px);
+  font-size: 13px;
+  font-family: verdana, helvetica, sans-serif;
+  margin: 0 10px 8px 10px;
+  top: 48px;
+  border: 1px solid #999;
+  background: #fff;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Question Number & Marks Bar */
+#question-no-bar {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  height: 34px;
+  line-height: 34px;
+  width: 100%;
+  padding: 0 12px;
+  font-family: verdana, helvetica, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  background: #f7f9fb;
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#question-no-bar .marks-strip {
+  font-size: 12px;
+  font-weight: normal;
+  color: #444;
+}
+
+#question-no-bar .marks-strip strong.pos {
+  color: #2b8a3e;
+}
+
+#question-no-bar .marks-strip strong.neg {
+  color: #e03131;
+}
+
+/* Inner Question Scrollable Pane */
+#question-inner-pane {
+  position: absolute;
+  left: 0%;
+  width: 100%;
+  top: 35px;
+  bottom: 46px;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 24px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* ========================================================
+   AUTHENTIC OLIVEBOARD 2-SIDED TEST WINDOW (SPLIT SCREEN)
+   Left Pane: Directions / Reading Passage / Paragraph / Caselet
+   Right Pane: Question Statement + Options Radio Table
+   ======================================================== */
+.two-sided-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.leftpane {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  height: 100%;
+  width: 50%;
+  overflow-y: auto;
+  padding: 14px 18px;
+  display: block;
+  box-sizing: border-box;
+  background: #ffffff;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.leftpane > table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#pane-direction-box {
+  color: #111;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+#pane-direction-box p {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.rightpane {
+  position: absolute;
+  top: 0%;
+  left: 50%;
+  height: 100%;
+  width: 50%;
+  border-left: 1px solid #000000;
+  overflow-y: auto;
+  padding: 14px 18px;
+  display: block;
+  box-sizing: border-box;
+  background: #ffffff;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.rightpane > table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#pane-question-box,
+#exam-question-text-2sided,
+#soln-question-text-2sided {
+  color: #111827;
+  margin-bottom: 14px;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+#pane-question-box p,
+#exam-question-text-2sided p,
+#soln-question-text-2sided p {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+#exam-passage-panel,
+#soln-passage-panel {
+  color: #111827;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+#exam-passage-panel p,
+#soln-passage-panel p {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+/* Duplex options table top spacing */
+.rightpane .opts-table {
+  margin-top: 6px;
+}
+
+/* Single Pane View (For Questions without Passage) */
+.question-outer-div {
+  overflow-y: auto;
+  padding: 14px 20px;
+  height: 100%;
+  box-sizing: border-box;
+  font-size: 15px;
+  line-height: 24px;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+.question-outer-div > table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#exam-question-text {
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 24px;
+  color: #000;
+}
+
+#exam-question-text p {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+/* Content Formatting for Embedded Tables inside Questions/Passages */
+#pane-direction-box table,
+#pane-question-box table,
+#exam-question-text table {
+  width: auto;
+  max-width: 100%;
+  margin: 12px 0;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+#pane-direction-box table td,
+#pane-direction-box table th,
+#pane-question-box table td,
+#pane-question-box table th,
+#exam-question-text table td,
+#exam-question-text table th {
+  padding: 6px 10px;
+  border: 1px solid #444;
+  vertical-align: top;
+}
+
+/* Question & Passage Images */
+#pane-direction-box img,
+#pane-question-box img,
+#exam-question-text img,
+#exam-question-image img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+}
+
+/* Hide Hindi translation span when English mode is active */
+.hqt {
+  display: none !important;
+}
+
+.eqt {
+  display: inline;
+}
+
+/* Options Table (.opts-table) Authentic Oliveboard Arrangement */
+.opts-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+}
+
+.opts-table tr.vtop {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.opts-table tr.vtop:hover {
+  background-color: #f7f9fb;
+}
+
+.opts-table tr.vtop.selected td {
+  background-color: #f0f7ff;
+}
+
+.opts-table td {
+  vertical-align: top;
+  padding: 5px 3px;
+}
+
+.opts-table input[type="radio"] {
+  cursor: pointer;
+  margin: 2px 2px 0 0;
+  width: 16px;
+  height: 16px;
+}
+
+.optcl {
+  cursor: pointer;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 23px;
+  color: #000;
+  font-weight: normal;
+}
+
+.lpad {
+  padding-left: 6px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+/* Bottom Action Bar (#button-holder) */
+#button-holder {
+  position: absolute;
+  bottom: 0%;
+  left: 0%;
+  right: 0%;
+  height: 46px;
+  width: 100%;
+  border-top: 1px solid #999;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  box-sizing: border-box;
+  z-index: 70;
+}
+
+.action-left-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#button-holder a {
+  text-decoration: none;
+}
+
+#mark {
+  height: 28px;
+  line-height: 28px;
+  min-width: 170px;
+  background-color: #C7DCF0;
+  display: inline-block;
+  padding: 0 12px;
+  color: #000;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 13px;
+  border: 2px solid #A9D0F5;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+#mark:hover {
+  background-color: #b3d3f1;
+}
+
+#clear {
+  height: 28px;
+  line-height: 28px;
+  min-width: 130px;
+  background-color: #C7DCF0;
+  display: inline-block;
+  padding: 0 12px;
+  color: #000;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 13px;
+  border: 2px solid #A9D0F5;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+#clear:hover {
+  background-color: #b3d3f1;
+}
+
+#prev-btn {
+  height: 28px;
+  line-height: 28px;
+  min-width: 100px;
+  background-color: #C7DCF0;
+  display: inline-block;
+  padding: 0 12px;
+  color: #000;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 13px;
+  border: 2px solid #A9D0F5;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+#prev-btn:hover {
+  background-color: #b3d3f1;
+}
+
+#next {
+  height: 28px;
+  line-height: 28px;
+  min-width: 140px;
+  text-align: center;
+  background-color: #3778BD;
+  display: inline-block;
+  padding: 0 16px;
+  color: #FFF;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  border: 2px solid #A9D0F5;
+  cursor: pointer;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+#next:hover {
+  background-color: #2d65a1;
+}
+
+/* ========================================================
+   RIGHT CONTAINER (#right-container-post) - 22%
+   Candidate, Timer, Legend, Palette, and Bottom Navigation
+   ======================================================== */
+#right-container-post {
+  position: absolute;
+  height: 100%;
+  width: 22%;
+  left: 78%;
+  top: 0;
+  border-left: 1px solid #999;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+/* Candidate Profile & Countdown Timer (#cand-time-outer) */
+#cand-time-outer {
+  position: absolute;
+  width: 100%;
+  height: 70px;
+  top: 0%;
+  left: 0%;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ccc;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#cand-image img {
+  width: 44px;
+  height: 50px;
+  border: 1px solid #ccc;
+  display: block;
+}
+
+#timer {
+  font-size: 13px;
+  font-family: verdana, helvetica, sans-serif;
+  color: #222;
+  text-align: right;
+  line-height: 1.25;
+}
+
+#timer b {
+  font-size: 14px;
+  font-weight: bold;
+  color: #D9534F;
+}
+
+#timer #exam-timer-display {
+  font-size: 15px;
+  font-weight: bold;
+  color: #D9534F;
+  letter-spacing: 0.5px;
+}
+
+.sectional-timer-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0284c7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.sec-timer-name {
+  font-size: 11px;
+  color: #475569;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.apausebut {
+  color: #474A56;
+  text-decoration: none;
+  font-family: Arial, helvetica, sans-serif;
+  font-weight: bold;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.apausebut img {
+  width: 16px;
+  height: 16px;
+}
+
+.pausebut {
+  display: inline-block;
+}
+
+/* Right Lower Half (#right-low-half-outer) */
+#right-low-half-outer {
+  height: calc(100% - 70px);
+  width: 100%;
+  position: absolute;
+  top: 70px;
+  left: 0;
+  background-color: #E4EDF7;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+/* Status Legend (#legend) */
+#legend {
+  width: 100%;
+  font-size: 11px;
+  font-family: verdana, helvetica, sans-serif;
+  margin-bottom: 6px;
+}
+
+#legend b {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+#legend table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#legend table td {
+  padding: 2px 4px;
+  vertical-align: middle;
+}
+
+/* Status Icons Sprite (.icons-status) */
+.icons-status {
+  display: inline-block;
+  background-image: url('../images/oliveboard/button-sprite.png');
+  text-decoration: none;
+  height: 39px;
+  width: 35px;
+  text-align: center;
+  color: #FFF;
+  font-size: 12px;
+  font-family: verdana, helvetica, sans-serif;
+  font-weight: bold;
+  overflow: visible;
+  line-height: 44px;
+  vertical-align: middle;
+}
+
+.stic-notvisited {
+  background-position: 0 -223px !important;
+  color: #4D4D4D !important;
+}
+
+.stic-answered {
+  background-position: 0 -264px !important;
+  color: #FFF !important;
+}
+
+.stic-notanswered {
+  background-position: 0 -136px !important;
+  color: #FFF !important;
+}
+
+.stic-marked {
+  background-position: 0 -180px !important;
+  color: #FFF !important;
+}
+
+.stic-answered-marked {
+  background-position: 0 -353px !important;
+  color: #FFF !important;
+}
+
+/* Question Palette 4-Column Grid (#question-main-pallette) */
+#question-main-pallette {
+  width: 100%;
+  height: calc(100% - 195px);
+  background-color: #E4EDF7;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px;
+  box-sizing: border-box;
+  border: 1px solid #c0d4e8;
+}
+
+#question-main-pallette table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 4px 6px;
+}
+
+#question-main-pallette table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Palette Sprite Buttons (.sprite-butts) */
+.sprite-butts {
+  display: block;
+  background-image: url('../images/oliveboard/button-sprite.png');
+  background-position: 0px -223px;
+  text-decoration: none;
+  height: 39px;
+  width: 35px;
+  text-align: center;
+  color: #4D4D4D;
+  font-size: 12px;
+  font-family: verdana, helvetica, sans-serif;
+  font-weight: bold;
+  overflow: visible;
+  line-height: 14px;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.sprite-butts:hover {
+  transform: scale(1.08);
+}
+
+.sprite-butts.current {
+  box-shadow: 0 0 0 2px #ff7a00, 0 0 6px rgba(255, 122, 0, 0.6);
+  border-radius: 4px;
+}
+
+/* Bottom Navigation Buttons 2x2 Grid (#button-bottom) */
+#button-bottom {
+  position: absolute;
+  height: 70px;
+  width: calc(100% - 20px);
+  bottom: 8px;
+  left: 10px;
+}
+
+#button-bottom table {
+  width: 100%;
+  height: 100%;
+  border-collapse: separate;
+  border-spacing: 4px;
+}
+
+#button-bottom a {
+  text-decoration: none;
+  color: #000;
+  display: block;
+}
+
+#b1, #b2, #b3, #b4 {
+  background-color: #C7DCF0;
+  height: 28px;
+  line-height: 28px;
+  border: 1px solid #A9D0F5;
+  text-decoration: none;
+  text-align: center;
+  font-size: 13px;
+  font-family: verdana, helvetica, sans-serif;
+  vertical-align: middle;
+  border-radius: 2px;
+  cursor: pointer;
+  color: #000;
+  font-weight: normal;
+  display: block;
+  transition: background-color 0.15s ease;
+}
+
+#b1:hover, #b2:hover, #b3:hover, #b4:hover {
+  background-color: #b2d3f3;
+}
+
+/* ========================================================
+   AUTHENTIC OLIVEBOARD LIVE SOLUTION & REVIEW CONSOLE
+   1:1 Reverse-Engineered from Oliveboard Solution Window
+   ======================================================== */
+.solution-console-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 2200;
+  display: none;
+  overflow: hidden;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+.solution-console-overlay.active {
+  display: block;
+}
+
+/* Solution Question Header & Status Bar */
+.soln-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 10px;
+}
+
+.soln-status-badge.correct {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.soln-status-badge.wrong {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.soln-status-badge.unattempted {
+  background-color: #e2e8f0;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.soln-time-meta {
+  font-size: 12px;
+  font-weight: normal;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Solution Option Rows */
+.soln-opt-row {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.soln-opt-row td {
+  padding: 6px 4px;
+  vertical-align: top;
+}
+
+.soln-opt-row.is-correct-ans td {
+  background-color: #e8f5e9 !important;
+}
+
+.soln-opt-row.is-correct-ans .opt-pill {
+  background: #2e7d32;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 3px;
+  margin-left: 10px;
+  display: inline-block;
+}
+
+.soln-opt-row.is-user-wrong td {
+  background-color: #ffebee !important;
+}
+
+.soln-opt-row.is-user-wrong .opt-pill {
+  background: #c62828;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 3px;
+  margin-left: 10px;
+  display: inline-block;
+}
+
+/* Solution Explanation Box */
+.soln-explanation-box {
+  background-color: #fcfcfc;
+  border-left: 4px solid #3476BB;
+  border-top: 1px solid #e0e7ee;
+  border-right: 1px solid #e0e7ee;
+  border-bottom: 1px solid #e0e7ee;
+  padding: 14px 18px;
+  margin-top: 18px;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.soln-explanation-header {
+  font-weight: bold;
+  font-size: 13px;
+  color: #1c4b79;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.soln-explanation-content {
+  font-size: 14px;
+  line-height: 23px;
+  color: #222;
+}
+
+#soln-passage-panel,
+#soln-question-text-2sided,
+#soln-question-text {
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 24px;
+  color: #000;
+}
+
+#soln-passage-panel table,
+#soln-question-text-2sided table,
+#soln-question-text table,
+.soln-explanation-content table {
+  margin: 10px 0;
+  border-collapse: collapse;
+}
+
+#soln-passage-panel table td,
+#soln-passage-panel table th,
+#soln-question-text-2sided table td,
+#soln-question-text-2sided table th,
+#soln-question-text table td,
+#soln-question-text table th,
+.soln-explanation-content table td,
+.soln-explanation-content table th {
+  padding: 6px 10px;
+  border: 1px solid #555;
+  vertical-align: top;
+}
+
+/* Solution Palette Number Grid */
+.soln-grid-btn {
+  display: block;
+  width: 36px;
+  height: 34px;
+  line-height: 34px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: verdana, helvetica, sans-serif;
+  text-decoration: none;
+  border-radius: 3px;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  box-sizing: border-box;
+}
+
+.soln-grid-btn:hover {
+  transform: scale(1.08);
+}
+
+.soln-grid-btn.correct {
+  background-color: #2e7d32;
+  color: #ffffff;
+  border: 1px solid #1b5e20;
+}
+
+.soln-grid-btn.wrong {
+  background-color: #c62828;
+  color: #ffffff;
+  border: 1px solid #b71c1c;
+}
+
+.soln-grid-btn.unattempted {
+  background-color: #e2e8f0;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.soln-grid-btn.current {
+  box-shadow: 0 0 0 2px #ff7a00, 0 0 6px rgba(255, 122, 0, 0.7);
+  outline: 2px solid #ff7a00;
+}
+
+/* Filter pills in section bar */
+.soln-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding-right: 8px;
+}
+
+.soln-pill {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-weight: bold;
+  transition: all 0.15s ease;
+}
+
+.soln-pill.all {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.soln-pill.all.active {
+  background: #334155;
+  color: #fff;
+}
+
+.soln-pill.correct {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+.soln-pill.correct.active {
+  background: #2e7d32;
+  color: #fff;
+}
+
+.soln-pill.wrong {
+  background: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+.soln-pill.wrong.active {
+  background: #c62828;
+  color: #fff;
+}
+
+.soln-pill.unattempted {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+}
+
+.soln-pill.unattempted.active {
+  background: #64748b;
+  color: #fff;
+}
+
+/* ========================================================
+   MODALS: QUESTION PAPER, INSTRUCTIONS, PROFILE, SUBMIT
+   ======================================================== */
+.ob-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-dialog-overlay.active {
+  display: flex !important;
+}
+
+.ob-dialog-card {
+  background: #ffffff;
+  border: 2px solid #3476BB;
+  border-radius: 6px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.ob-dialog-header {
+  background: #3476BB;
+  color: #FFF;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ob-dialog-header button {
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.ob-dialog-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.ob-dialog-footer {
+  padding: 10px 16px;
+  background: #f1f5f9;
+  border-top: 1px solid #ccc;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Submission Summary Table */
+.submit-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  text-align: center;
+}
+
+.submit-summary-table th {
+  background-color: #E4EDF7;
+  border: 1px solid #000;
+  padding: 8px;
+  font-size: 13px;
+}
+
+.submit-summary-table td {
+  border: 1px solid #000;
+  padding: 8px;
+  font-size: 13px;
+}
+
+/* Pause Alert (#calert) */
+#calert {
+  background-color: #FFFFFF;
+  border: 1px solid #DDDDDD;
+  border-radius: 5px;
+  display: none;
+  height: 180px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
+  width: 320px;
+  z-index: 999;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+#calert .calin {
+  background-color: #E7E7E7;
+  border-top: 1px solid #CCCCCC;
+  bottom: 0;
+  position: absolute;
+  width: 100%;
+  padding: 6px 12px;
+  box-sizing: border-box;
+}
+
+#calert .calin .okbtn {
+  background-color: #3476BB;
+  border: 1px solid rgba(0, 0, 0, 0);
+  border-radius: 4px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  float: right;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 18px;
+  text-align: center;
+  text-decoration: none;
+}
+
+#calert .altext {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 130px;
+  font-size: 14px;
+  padding: 10px;
+  font-weight: 500;
+}
+
+#dummy-black {
+  background-color: #000000;
+  height: 100%;
+  left: 0;
+  opacity: 0.6;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 998;
+  display: none;
+}
+
+/* Post-Test Scorecard Modal Overlay */
+.scorecard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 3000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.scorecard-modal-overlay.active {
+  display: flex !important;
+}
+
+.scorecard-dialog {
+  background: #ffffff;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.scorecard-header {
+  background: #3476BB;
+  color: #ffffff;
+  padding: 16px 24px;
+}
+
+.scorecard-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.scorecard-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.metric-card.highlight {
+  background: #eef6ff;
+  border-color: #3476BB;
+}
+
+.metric-card .label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.metric-card .number {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.metric-card.highlight .number {
+  color: #3476BB;
+}
+
+.solutions-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 18px 0 10px 0;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 6px;
+}
+
+.scorecard-footer {
+  padding: 12px 24px;
+  background: #f1f5f9;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ========================================================
+   AUTHENTIC OLIVEBOARD DRAWER COLLAPSE ARROWS & HOVERBOX
+   ======================================================== */
+.darr-rightslide {
+  position: absolute;
+  left: -14px;
+  top: 48%;
+  z-index: 100;
+  cursor: pointer;
+  background: #3476BB;
+  color: #ffffff;
+  padding: 8px 3px;
+  border-radius: 4px 0 0 4px;
+  box-shadow: -2px 0 6px rgba(0,0,0,0.25);
+  font-size: 11px;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+
+.darr-rightslide:hover {
+  background: #245b95;
+  transform: scale(1.1);
+}
+
+.darr-leftslide {
+  position: fixed;
+  right: 0px;
+  top: 50%;
+  z-index: 2100;
+  cursor: pointer;
+  background: #3476BB;
+  color: #ffffff;
+  padding: 8px 4px;
+  border-radius: 4px 0 0 4px;
+  box-shadow: -2px 0 6px rgba(0,0,0,0.25);
+  font-size: 11px;
+  line-height: 1;
+  display: none;
+  transition: all 0.15s ease;
+}
+
+.darr-leftslide:hover {
+  background: #245b95;
+  transform: scale(1.1);
+}
+
+/* Section Hoverbox Tooltip (#hover-con) */
+#hover-con {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid #777777;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+  font-size: 12px;
+  font-family: verdana, helvetica, sans-serif;
+  padding: 8px 12px;
+  z-index: 2500;
+  display: none;
+  border-radius: 4px;
+  min-width: 170px;
+}
+
+#hover-con-child {
+  font-weight: bold;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+  color: #1c4b79;
+  text-align: center;
+}
+
+#hover-con table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#hover-con table td {
+  padding: 3px 6px;
+  font-size: 11px;
+}
+
+/* Question Header Language Dropdown */
+.lang-dropdown {
+  position: relative;
+  display: inline-block;
+  margin-left: 14px;
+}
+
+.btn-dropdown {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-family: verdana, helvetica, sans-serif;
+  cursor: pointer;
+  border-radius: 3px;
+  color: #1e293b;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-dropdown:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.lang-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  list-style: none;
+  margin: 4px 0 0 0;
+  padding: 4px 0;
+  z-index: 1000;
+  border-radius: 4px;
+  min-width: 90px;
+}
+
+.lang-dropdown-menu li {
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #334155;
+}
+
+.lang-dropdown-menu li:hover {
+  background: #f1f5f9;
+  color: #1c4b79;
+}
+
+/* Re-attempt Mode Controls in Solutions */
+.reattempt-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.btn-check-reattempt-ans {
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 10px;
+  display: inline-block;
+}
+
+.btn-check-reattempt-ans:hover {
+  background: #0369a1;
+}
+
+/* Locked Sections in Strict Sectional Exams */
+.secgen.locked-section {
+  background-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  border-color: #cbd5e1 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
+.secgen.locked-section::after {
+  content: ' 🔒';
+  font-size: 10px;
+}
+
+/* Question Header Bookmark Button */
+.btn-bookmark-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-left: 10px;
+  transition: all 0.15s ease;
+}
+
+.btn-bookmark-toggle:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.btn-bookmark-toggle.bookmarked {
+  background: #fef3c7;
+  color: #d97706;
+  border-color: #f59e0b;
+}
+
+/* Palette button bookmarked badge indicator */
+.sprite-butts {
+  position: relative;
+}
+
+.sprite-butts.bookmarked::after {
+  content: '★';
+  position: absolute;
+  top: -4px;
+  right: -3px;
+  font-size: 11px;
+  color: #f59e0b;
+  text-shadow: 0 0 2px #000;
+}
+
+/* Candidate Profile Modal Card */
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  align-items: center;
+  font-size: 13px;
+  font-family: verdana, sans-serif;
+}
+
+.profile-info-grid img {
+  width: 100px;
+  height: 120px;
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.profile-details-table td {
+  padding: 4px 8px;
+}
+
+/* ========================================================
+   PRE-EXAM INSTRUCTIONS PANE (Spec 2.2 & 2.3)
+   ======================================================== */
+.instruction-pane-1 {
+  position: absolute;
+  top: 52px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+.instruction-content-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 16px 24px;
+  box-sizing: border-box;
+}
+
+.instruction-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #3476BB;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.instruction-main-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1c4b79;
+}
+
+.instr-lang-select-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.instruction-scrollable-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 12px;
+  font-size: 13px;
+  line-height: 22px;
+  color: #222;
+}
+
+.instr-lead-text {
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 14px;
+}
+
+.instr-subheading {
+  margin: 18px 0 8px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1c4b79;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 4px;
+}
+
+.instr-numbered-list {
+  padding-left: 20px;
+  margin: 6px 0 14px 0;
+}
+
+.instr-numbered-list li {
+  margin-bottom: 6px;
+}
+
+/* Section Matrix Table (.tab-in) */
+.tab-in {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 16px 0;
+  font-size: 13px;
+  border: 1px solid #cbd5e1;
+}
+
+.tab-in th {
+  background: #3476BB;
+  color: #ffffff;
+  padding: 8px 10px;
+  border: 1px solid #2B629B;
+  text-align: center;
+  font-weight: 600;
+}
+
+.tab-in td {
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  text-align: center;
+}
+
+.tab-in tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+/* Symbol Explanation Table (.explain-butts) */
+.explain-butts {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 16px 0;
+  font-size: 13px;
+}
+
+.explain-butts td {
+  padding: 8px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.explain-butts .symbol-col {
+  width: 50px;
+  text-align: center;
+}
+
+.explain-butts .desc-col {
+  color: #334155;
+  line-height: 20px;
+}
+
+.explain-butts .highlight-rule {
+  color: #008479;
+  font-weight: 700;
+}
+
+/* Instruction Footer Declaration & Ready Button */
+.instruction-footer-action-panel {
+  border-top: 2px solid #e2e8f0;
+  padding-top: 14px;
+  margin-top: 10px;
+  background: #ffffff;
+}
+
+.disclaimer-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 18px;
+  color: #1e293b;
+  user-select: none;
+}
+
+.disclaimer-box input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: #3476BB;
+}
+
+.disclaimer-warning {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #f87171;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.start-btn-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.btn-start-test {
+  background: #3476BB;
+  color: #ffffff;
+  border: 1px solid #23588f;
+  padding: 10px 32px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(52, 118, 187, 0.3);
+}
+
+.btn-start-test:hover {
+  background: #285f99;
+  box-shadow: 0 4px 10px rgba(52, 118, 187, 0.4);
+}
+
+.btn-start-test:active {
+  transform: translateY(1px);
+}
+
+/* ========================================================
+   SECTIONAL ANALYSIS TABLE & TOPICS (Spec 5.2)
+   ======================================================== */
+.sectional-analysis-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-family: verdana, sans-serif;
+  font-size: 13px;
+}
+
+.sectional-analysis-table th {
+  background: #f1f5f9;
+  color: #1e293b;
+  padding: 10px 8px;
+  border-bottom: 2px solid #cbd5e1;
+  text-align: center;
+  font-weight: 600;
+}
+
+.sectional-analysis-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.sectional-analysis-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.pill-cleared {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 11px;
+  display: inline-block;
+}
+
+.pill-missed {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 11px;
+  display: inline-block;
+}
+
+.badge-score {
+  font-weight: 700;
+  color: #1c4b79;
+}
+
+/* Topic Breakdown Grid */
+.topic-analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.topic-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  font-family: verdana, sans-serif;
+}
+
+.topic-name {
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.topic-stats {
+  display: flex;
+  justify-content: space-between;
+  color: #64748b;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fill-correct {
+  height: 100%;
+  background: #2e7d32;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ========================================================
+   TOPPER VS YOU COMPARATIVE MODULE (Spec 5.3)
+   ======================================================== */
+.topper-comparison-module {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  margin-top: 8px;
+  font-family: verdana, sans-serif;
+}
+
+.comparison-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.comp-tab {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 13px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.comp-tab:hover {
+  color: #3476BB;
+  background: #f1f5f9;
+}
+
+.comp-tab.active {
+  color: #3476BB;
+  border-bottom: 2px solid #3476BB;
+  font-weight: 700;
+  background: #eff6ff;
+}
+
+.comparison-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.comp-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.comp-title {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.bar-row .lbl {
+  width: 55px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.bar-bg {
+  flex: 1;
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.bar-fill.you {
+  height: 100%;
+  background: #3476BB;
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.bar-fill.avg {
+  height: 100%;
+  background: #94a3b8;
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.bar-fill.topper {
+  height: 100%;
+  background: #16a34a;
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.bar-row .val {
+  width: 50px;
+  text-align: right;
+  font-weight: 700;
+  font-size: 12px;
+  color: #1e293b;
+}
+
+/* ========================================================
+   SUBMIT SUMMARY TABLE & MODAL (Spec 4.2)
+   ======================================================== */
+.submit-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-family: verdana, sans-serif;
+  font-size: 13px;
+  border: 1px solid #cbd5e1;
+}
+
+.submit-summary-table th {
+  background-color: #3476BB !important;
+  color: #ffffff !important;
+  padding: 10px 8px !important;
+  border: 1px solid #2B629B !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+}
+
+.submit-summary-table td {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+/* Sidebar Collapse Transition (Spec 3.6) */
+#left-container-post {
+  transition: width 0.1s linear;
+}
+
+
+

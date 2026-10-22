@@ -1,0 +1,46 @@
+{
+  "item_id": "2.1",
+  "phase": "PHASE 2: PRE-EXAM INSTRUCTIONS & INITIALIZATION",
+  "title": "Test Launch Handler",
+  "captured_at": "2026-10-21T21:53:35+05:30",
+  "source": "https://www.oliveboard.in / course.js openwin() & u1.oliveboard.in/exams/tests/part.php",
+  "popup_window_specifications": {
+    "dimensions": {
+      "width": "screen.width",
+      "height": "screen.height * 0.85"
+    },
+    "window_features": "width={w},height={h},scrollbars=yes,resizable=1,location=no,menubar=no,titlebar=no,toolbar=no",
+    "target_window_name": "OliveboardTestPlayer",
+    "focus_call": "if (window.focus) { nwin.focus(); }"
+  },
+  "url_schema": {
+    "base_url": "https://u1.oliveboard.in/exams/tests/part.php",
+    "query_parameters": {
+      "c": "Exam/Course slug (e.g. 'sbipopre19', 'ibpssoit1')",
+      "testid": "Numeric test index (e.g. '1', '2')",
+      "ppi": "Optional section code for sectional speed drills (e.g. 'EL', 'QA', 'LR')",
+      "lang": "Default interface language ('eqt' for English, 'hqt' for Hindi)",
+      "resume": "Boolean '1' if resuming a previously paused test"
+    }
+  },
+  "auth_and_session_handoff": {
+    "cookie_auth": "Session cookie PHPSESSID and ob_user_jwt passed automatically across domain/subdomains",
+    "session_identifier": "susmid encoded token (e.g. '7f10292fMTI2MDYyOTJeXlBpeXVzaCBTaW5naA==d9607c7b')",
+    "pause_endpoint": "/exams/tests/p/pause.cgi",
+    "save_endpoint": "/exams/tests/p/save.cgi",
+    "submit_endpoint": "/exams/tests/p/submit.cgi"
+  },
+  "initial_window_globals": {
+    "lang": "'eqt'",
+    "submitInterval": "Auto-save heartbeat in ms (e.g. '1200000')",
+    "totalTime": "Total exam duration in seconds (e.g. '1200' for 20m, '3600' for 60m)",
+    "testQpid": "Full test title string (e.g. 'SBI PO 2026 Prelims - 1')",
+    "noOption": "5 options per question (MCQ)",
+    "secList": "Array of section names ['English Language', 'Quantitative Aptitude', 'Reasoning Ability']",
+    "secTracker": "Array of question count per section ['40', '30', '30']",
+    "secShortList": "Array of section short codes ['EL', 'QA', 'LR']",
+    "firstQid": "1001",
+    "nq": "Total questions count (e.g. 40 or 150)",
+    "lastQid": "nq + firstQid - 1"
+  }
+}

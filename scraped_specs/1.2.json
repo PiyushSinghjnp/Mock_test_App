@@ -1,0 +1,80 @@
+{
+  "item_id": "1.2",
+  "phase": "PHASE 1: MOCK TEST DASHBOARD & CATALOG LOGIC",
+  "title": "Test Status Filters",
+  "captured_at": "2026-10-21T21:52:35+05:30",
+  "source": "https://www.oliveboard.in / course.js & dashboard filters",
+  "dom_structure": {
+    "filter_bar": "<div class=\"fltr-nav-wrapper\"><div class=\"fltr-status-group\">{filter_buttons}</div></div>",
+    "filter_button": "<button class=\"fltr-status-btn {active}\" data-status=\"{status_code}\"><span>{status_label}</span><span class=\"badge-count\">{count}</span></button>"
+  },
+  "status_filter_definitions": [
+    {
+      "status_code": "all",
+      "label": "All Tests",
+      "matching_criteria": "Returns 100% of available test cards in the selected exam category",
+      "dom_filter_logic": "$('.tpc-card').show()"
+    },
+    {
+      "status_code": "attempted",
+      "label": "Attempted / Completed",
+      "matching_criteria": "userAttempt != null && userAttempt.completed == true",
+      "dom_filter_logic": "$('.tpc-card').hide(); $('.completed_test').show();",
+      "rendered_elements": [
+        "Score strip: ${item.total} / ${item.scoremax}",
+        "Accuracy badge: ${Math.round(item.accuracy)}%",
+        "3-color progress bar: green (correct), red (wrong), grey (skipped)",
+        "Actions: 'Solutions' (primary) + 'Analytics' / 'Reattempt' (secondary)"
+      ]
+    },
+    {
+      "status_code": "unattempted",
+      "label": "Unattempted",
+      "matching_criteria": "userAttempt == null || userAttempt.completed == false",
+      "dom_filter_logic": "$('.tpc-card').hide(); $('.start_test_card:not(.completed_test)').show();",
+      "rendered_elements": [
+        "Question count badge: ${item.qmax} Questions",
+        "Duration badge: ${item.duration} Minutes",
+        "Action: 'Attempt Now' / 'Take Test'"
+      ]
+    },
+    {
+      "status_code": "free",
+      "label": "Free Mocks",
+      "matching_criteria": "item.isfree == 1 || item.isFree == true",
+      "dom_filter_logic": "$('.tpc-card').hide(); $('.tpc-card:has(.cls-tag, .badge-tag-free)').show();",
+      "rendered_elements": [
+        "Free badge: <span class=\"cls-tag\">Free</span>",
+        "Unlocked Take Test action without payment gate"
+      ]
+    }
+  ],
+  "computed_css_tokens": {
+    "filter_button": {
+      "display": "inline-flex",
+      "align-items": "center",
+      "gap": "6px",
+      "padding": "6px 14px",
+      "font-size": "12px",
+      "font-weight": "600",
+      "color": "#475569",
+      "background": "#ffffff",
+      "border": "1px solid #cbd5e1",
+      "border-radius": "16px",
+      "cursor": "pointer"
+    },
+    "filter_button_active": {
+      "color": "#ffffff",
+      "background": "#008479",
+      "border-color": "#008479"
+    },
+    "count_badge": {
+      "font-size": "11px",
+      "padding": "1px 6px",
+      "border-radius": "10px",
+      "background": "#e2e8f0",
+      "color": "#334155"
+    }
+  },
+  "filtering_logic_implementation": "displayCards = allCards.filter(card => { if (filter === 'free') return card.is_free === 1 || card.isFree; if (filter === 'attempted') return !!card.userAttempt; if (filter === 'unattempted') return !card.userAttempt; return true; })"
+}

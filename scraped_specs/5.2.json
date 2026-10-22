@@ -1,0 +1,42 @@
+{
+  "item_id": "5.2",
+  "phase": "PHASE 5: POST-TEST ANALYTICS & SOLUTIONS FUNCTIONALITY",
+  "title": "Sectional & Topic Breakdown Tables",
+  "captured_at": "2026-10-21T22:03:40+05:30",
+  "source": "https://u1.oliveboard.in / test-engine.js sectionBreakdownArr & index.html #scorecard-section-breakdown",
+  "dom_structure": {
+    "section_table_markup": "<table class=\"sectional-analysis-table\"><thead><tr><th>Section</th><th>Total Qs</th><th>Attempted</th><th>Correct</th><th>Wrong</th><th>Net Score</th><th>Cutoff</th><th>Status</th><th>Accuracy</th><th>Time Spent</th></tr></thead><tbody id=\"scorecard-section-rows\"><tr><td><strong>English Language</strong></td><td>40</td><td>32</td><td>28</td><td>4</td><td><span class=\"badge-score\">+27.00</span></td><td>12.50</td><td><span class=\"pill-cleared\">CLEARED</span></td><td>87.5%</td><td>18m 20s</td></tr><tr><td><strong>Quantitative Aptitude</strong></td><td>30</td><td>24</td><td>20</td><td>4</td><td><span class=\"badge-score\">+19.00</span></td><td>11.00</td><td><span class=\"pill-cleared\">CLEARED</span></td><td>83.3%</td><td>19m 40s</td></tr><tr><td><strong>Reasoning Ability</strong></td><td>30</td><td>24</td><td>20</td><td>4</td><td><span class=\"badge-score\">+19.00</span></td><td>10.00</td><td><span class=\"pill-cleared\">CLEARED</span></td><td>83.3%</td><td>19m 50s</td></tr></tbody></table>",
+    "topic_breakdown_markup": "<div class=\"topic-analysis-grid\"><div class=\"topic-card\"><div class=\"topic-name\">Reading Comprehension</div><div class=\"topic-stats\"><span class=\"stat-correct\">8/10 Correct</span><span class=\"stat-acc\">80% Acc</span><span class=\"stat-time\">Avg 42s/Q</span></div><div class=\"progress-bar\"><div class=\"fill-correct\" style=\"width: 80%;\"></div></div></div></div>"
+  },
+  "css_rules": {
+    ".sectional-analysis-table": "width: 100%; border-collapse: collapse; margin-top: 15px; font-family: verdana; font-size: 13px;",
+    ".sectional-analysis-table th": "background: #f1f5f9; color: #1e293b; padding: 10px 8px; border-bottom: 2px solid #cbd5e1; text-align: center; font-weight: 600;",
+    ".sectional-analysis-table td": "padding: 10px 8px; border-bottom: 1px solid #e2e8f0; text-align: center;",
+    ".pill-cleared": "background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 11px;",
+    ".pill-missed": "background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 11px;",
+    ".badge-score": "font-weight: 700; color: #1c4b79;"
+  },
+  "data_contract_schema": {
+    "sectionBreakdown": [
+      {
+        "sectionId": "EL",
+        "sectionName": "English Language",
+        "totalQuestions": 40,
+        "attempted": 32,
+        "correct": 28,
+        "wrong": 4,
+        "unanswered": 8,
+        "score": 27.0,
+        "sectionalCutoff": 12.5,
+        "cutoffCleared": true,
+        "accuracy": "87.5",
+        "timeSpentSeconds": 1100,
+        "topics": [
+          { "name": "Reading Comprehension", "total": 10, "correct": 8, "wrong": 1, "accuracy": 88.9 },
+          { "name": "Sentence Rearrangement", "total": 6, "correct": 5, "wrong": 1, "accuracy": 83.3 },
+          { "name": "Error Detection", "total": 10, "correct": 8, "wrong": 1, "accuracy": 88.9 }
+        ]
+      }
+    ]
+  }
+}

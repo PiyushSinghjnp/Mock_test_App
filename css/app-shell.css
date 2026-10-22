@@ -1,0 +1,782 @@
+/* ========================================================
+   OLIVEBOARD MOCK TEST APPLICATION - SHELL & LAYOUT
+   Designed exclusively for Mock Tests & Exam Simulation
+   ======================================================== */
+
+:root {
+  --ob-app-primary: #007bb5;
+  --ob-app-primary-dark: #005f8c;
+  --ob-app-teal: #008479;
+  --ob-app-teal-dark: #00665e;
+  --ob-app-accent-orange: #ff7a00;
+  --ob-app-accent-green: #2e7d32;
+  --ob-app-accent-red: #d32f2f;
+  --ob-app-navy: #1b2e4b;
+  --ob-app-bg: #f4f6f9;
+  --ob-app-card: #ffffff;
+  --ob-app-text-dark: #1e293b;
+  --ob-app-text-muted: #64748b;
+  --ob-app-border: #e2e8f0;
+}
+
+body.app-body {
+  background-color: var(--ob-app-bg);
+  color: var(--ob-app-text-dark);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* App Outer Shell Wrapper */
+.app-viewport {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #ffffff;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* 1. App Top Header */
+.app-header {
+  background: #ffffff;
+  border-bottom: 1px solid var(--ob-app-border);
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-logo-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #008479, #00bcd4);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 16px;
+  box-shadow: 0 2px 6px rgba(0, 132, 121, 0.3);
+}
+
+.app-brand-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0b2545;
+  letter-spacing: -0.3px;
+}
+
+.app-brand-name span {
+  color: var(--ob-app-teal);
+}
+
+/* Exam Selector Pill */
+.btn-exam-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #e6f4fa;
+  border: 1px solid #bce3f5;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ob-app-primary-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-exam-selector:hover {
+  background: #d4eef9;
+}
+
+.btn-exam-selector .chevron {
+  font-size: 10px;
+}
+
+/* Header Right Chips */
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f8fafc;
+  border: 1px solid var(--ob-app-border);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.user-avatar-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ob-app-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+/* 2. Target Exam Hero / Promo Banner */
+.exam-summary-strip {
+  background: linear-gradient(135deg, #1b2e4b 0%, #004d61 100%);
+  color: #ffffff;
+  padding: 22px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.exam-summary-info h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exam-summary-info p {
+  font-size: 13px;
+  color: #b2dfdb;
+  margin-bottom: 8px;
+}
+
+.exam-metrics-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.metric-pill {
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.btn-attempt-live-hero {
+  padding: 10px 20px;
+  background: #ff7a00;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.35);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-attempt-live-hero:hover {
+  background: #f57c00;
+  transform: translateY(-1px);
+}
+
+/* 3. Sticky Filter Tabs Row */
+.filter-tabs-bar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--ob-app-border);
+  padding: 10px 18px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  position: sticky;
+  top: 53px;
+  z-index: 450;
+  scrollbar-width: none;
+}
+
+.filter-tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-pill {
+  flex: 0 0 auto;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  border: 1px solid var(--ob-app-border);
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.tab-pill:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.tab-pill.active {
+  background: var(--ob-app-primary);
+  color: #ffffff;
+  border-color: var(--ob-app-primary);
+  box-shadow: 0 2px 6px rgba(0, 123, 181, 0.25);
+}
+
+/* 4. Main Mock Tests List Container */
+.app-content-area {
+  flex: 1;
+  padding: 20px 18px 80px;
+  background: #f8fafc;
+}
+
+.section-label-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-label-bar h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.section-label-bar span {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Mock Test Cards Grid */
+.mock-cards-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.mock-test-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid var(--ob-app-border);
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.mock-test-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.card-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mock-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.badge-tag-free {
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #c8e6c9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-tag-locked {
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+}
+
+.mock-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+/* Exact Oliveboard Instruction / Spec Row */
+.mock-specs-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.spec-entry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spec-icon {
+  font-size: 13px;
+  color: var(--ob-app-teal);
+}
+
+.mock-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.active-takers {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.btn-attempt-card {
+  padding: 9px 18px;
+  background: var(--ob-app-teal);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.18s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-attempt-card:hover {
+  background: var(--ob-app-teal-dark);
+  box-shadow: 0 4px 10px rgba(0, 132, 121, 0.3);
+}
+
+.btn-attempt-card.locked {
+  background: var(--ob-app-primary);
+}
+
+.btn-attempt-card.locked:hover {
+  background: var(--ob-app-primary-dark);
+}
+
+/* 5. Mobile & Desktop Bottom App Navigation Bar */
+.bottom-app-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1080px;
+  background: #ffffff;
+  border-top: 1px solid var(--ob-app-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  z-index: 600;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.app-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: color 0.18s;
+}
+
+.app-nav-item.active,
+.app-nav-item:hover {
+  color: var(--ob-app-teal);
+}
+
+.app-nav-item .nav-icon {
+  font-size: 18px;
+}
+
+/* 6. Exam Switcher Modal */
+.exam-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.exam-modal-overlay.active {
+  display: flex;
+}
+
+.exam-modal-dialog {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.exam-modal-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--ob-app-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.exam-modal-header h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.btn-close-exam-modal {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.exam-modal-list {
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exam-select-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--ob-app-border);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.exam-select-item:hover,
+.exam-select-item.selected {
+  border-color: var(--ob-app-teal);
+  background: #f0fdfa;
+}
+
+.exam-select-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.exam-badge-circ {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #e6f4fa;
+  color: var(--ob-app-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+/* 7. Tab Views: Analytics & Leaderboard */
+.app-view-tab {
+  display: none;
+}
+
+.app-view-tab.active {
+  display: block;
+}
+
+.analytics-top-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.analytics-stat-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid var(--ob-app-border);
+  padding: 16px;
+  text-align: center;
+}
+
+.analytics-stat-card .val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ob-app-navy);
+  margin-bottom: 4px;
+}
+
+.analytics-stat-card .desc {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Responsive Rules */
+@media (max-width: 768px) {
+  .mock-cards-list {
+    grid-template-columns: 1fr;
+  }
+  .analytics-top-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .exam-summary-strip {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ========================================================
+   USER PROFILE SWITCHER & MULTI-USER ISOLATION MODAL
+   ======================================================== */
+.user-profile-btn-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+
+.user-profile-btn-wrap:hover {
+  background: #f1f5f9;
+}
+
+.user-badge-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.user-badge-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.user-badge-roll {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.user-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.user-modal-overlay.active {
+  display: flex;
+}
+
+.user-modal-dialog {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.user-modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--ob-app-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+
+.user-modal-header h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.user-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.active-user-banner {
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid var(--ob-app-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #ffffff;
+  margin-bottom: 8px;
+}
+
+.user-item-card:hover {
+  border-color: #008479;
+  background: #f8fafc;
+}
+
+.user-item-card.selected {
+  border-color: #008479;
+  background: #f0fdfa;
+  box-shadow: 0 0 0 1px #008479;
+}
+
+.btn-new-user-form {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #008479;
+  transition: all 0.2s;
+}
+
+.btn-new-user-form:hover {
+  background: #f0fdfa;
+  border-color: #008479;
+}
+
+/* Attempted Card Badge & Actions */
+.card-attempt-banner {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.attempt-score-val {
+  font-weight: 800;
+  color: #15803d;
+}
+
+.mock-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-view-scorecard {
+  padding: 8px 14px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-view-scorecard:hover {
+  background: #e2e8f0;
+}
+

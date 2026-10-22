@@ -1,0 +1,41 @@
+{
+  "item_id": "3.4",
+  "phase": "PHASE 3: LIVE EXAM ENGINE — EVERY INTERACTIVE FUNCTIONALITY",
+  "title": "Language Toggle Functionality",
+  "captured_at": "2026-10-21T21:59:20+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html changelang() lines 1293-1335",
+  "dom_structure": {
+    "dropdown_markup": "<div class=\"lang-dropdown\" id=\"question-lang-dropdown\"><button class=\"btn btn-dropdown dropdown-toggle\" id=\"dropdownMenu2\" type=\"button\"><span class=\"dd-selected-item\">English</span><span class=\"caret\"></span></button><ul class=\"lang-dropdown-menu\" style=\"display:none;\"><li data-lang=\"eqt\">English</li><li data-lang=\"hqt\">Hindi</li></ul></div>",
+    "bilingual_question_spans": {
+      "english_span": "<span class=\"eqt\" style=\"display:inline;\">What is the capital of India?</span>",
+      "hindi_span": "<span class=\"hqt\" style=\"display:none;\">भारत की राजधानी क्या है?</span>"
+    },
+    "bilingual_option_spans": {
+      "markup": "<td><input type=\"radio\" name=\"option1001\" value=\"1\"></td><td><span class=\"optcl\">a) </span></td><td><span class=\"optcl lpad\"><span class=\"eqt\">New Delhi</span><span class=\"hqt\" style=\"display:none;\">नई दिल्ली</span></span></td>"
+    }
+  },
+  "css_rules": {
+    ".lang-dropdown": "position: relative; float: right; margin-right: 15px; margin-top: 4px;",
+    "#dropdownMenu2": "background: #fff; border: 1px solid #ccc; padding: 4px 10px; font-size: 13px; cursor: pointer; border-radius: 3px;",
+    ".lang-dropdown-menu": "position: absolute; right: 0; top: 100%; background: #fff; border: 1px solid #bbb; list-style: none; margin: 0; padding: 4px 0; z-index: 100; min-width: 100px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);",
+    ".lang-dropdown-menu li": "padding: 5px 12px; cursor: pointer; font-size: 13px;",
+    ".lang-dropdown-menu li:hover": "background-color: #f1f5fa;"
+  },
+  "runtime_state_preservation": {
+    "toggle_mechanism": [
+      "function changelang() {",
+      "  if (lang == 'eqt') {",
+      "    $('.eqt').hide();",
+      "    $('.hqt').show();",
+      "    lang = 'hqt';",
+      "  } else {",
+      "    $('.hqt').hide();",
+      "    $('.eqt').show();",
+      "    lang = 'eqt';",
+      "  }",
+      "}"
+    ],
+    "selection_integrity_guarantee": "Because the radio inputs (<input type=\"radio\">) and the quesAnswer[] state array exist outside the bilingual text spans (.eqt / .hqt), toggling language displays/hides the text nodes via CSS display property only. The checked property of inputs and all user response arrays remain 100% intact and unaffected.",
+    "network_payload_handoff": "params['lang'] = lang; included in /exams/tests/p/submittestpart.cgi payload on section/test submission."
+  }
+}

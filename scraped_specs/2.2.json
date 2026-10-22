@@ -1,0 +1,61 @@
+{
+  "item_id": "2.2",
+  "phase": "PHASE 2: PRE-EXAM INSTRUCTIONS & INITIALIZATION",
+  "title": "Instructions View 1",
+  "captured_at": "2026-10-21T21:54:00+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html .instruction-pane-1",
+  "dom_structure": {
+    "container": "<div class=\"instruction-pane-1\" id=\"instruction-pane-1\">...</div>",
+    "section_matrix_table": "<table class=\"tab-in\"><thead><tr><th>Section #</th><th>Section Name</th><th>Total Number of Questions</th><th>Max Score</th><th>Time (minutes)</th><th>Language</th></tr></thead><tbody id=\"in-tab-body\">...</tbody></table>",
+    "symbols_legend_table": "<table class=\"explain-butts\">...</table>"
+  },
+  "palette_symbol_definitions": [
+    {
+      "status_code": 0,
+      "name": "Not Visited",
+      "image_url": "https://s3-ap-southeast-1.amazonaws.com/sg.oliveboard.in/testapp/not_visited.png",
+      "sprite_position": "0px -223px",
+      "description": "You have not visited the question yet.",
+      "evaluation_status": "NOT evaluated"
+    },
+    {
+      "status_code": 1,
+      "name": "Not Answered",
+      "image_url": "https://s3-ap-southeast-1.amazonaws.com/sg.oliveboard.in/testapp/not_answered.png",
+      "sprite_position": "0px -136px",
+      "description": "You have not answered the question.",
+      "evaluation_status": "NOT evaluated"
+    },
+    {
+      "status_code": 2,
+      "name": "Answered",
+      "image_url": "https://s3-ap-southeast-1.amazonaws.com/sg.oliveboard.in/testapp/answered.png",
+      "sprite_position": "0px -264px",
+      "description": "You have answered the question.",
+      "evaluation_status": "EVALUATED for marks (+1.00 or -0.25)"
+    },
+    {
+      "status_code": 3,
+      "name": "Marked for Review",
+      "image_url": "https://s3-ap-southeast-1.amazonaws.com/sg.oliveboard.in/testapp/review.png",
+      "sprite_position": "0px -180px",
+      "description": "You have NOT answered the question, but have marked the question for review.",
+      "evaluation_status": "NOT evaluated"
+    },
+    {
+      "status_code": 4,
+      "name": "Answered Marked for Review",
+      "image_url": "https://s3-ap-southeast-1.amazonaws.com/sg.oliveboard.in/testapp/review_answer.png",
+      "sprite_position": "0px -353px",
+      "description": "You have answered the question, but marked it for review.",
+      "evaluation_status": "EVALUATED for marks (+1.00 or -0.25) as per official TCS/Oliveboard banking rule"
+    }
+  ],
+  "general_exam_rules": [
+    "Total duration countdown runs on server clock; auto-submits when time reaches 00:00:00",
+    "Sectional navigation lock enforces completing section time before next section unlocks",
+    "Clear Response deselects the currently checked radio option",
+    "Question Paper button renders full paper question text in modal overlay",
+    "Profile button presents candidate identification and roll number verification"
+  ]
+}

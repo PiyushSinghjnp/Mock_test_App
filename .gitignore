@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+package-lock.json.bak
+
+# SQLite temporary WAL and SHM files
+database.sqlite-shm
+database.sqlite-wal
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment and IDE
+.vscode/
+.idea/
+.env

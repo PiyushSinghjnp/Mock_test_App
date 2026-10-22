@@ -1,0 +1,81 @@
+{
+  "item_id": "3.7",
+  "phase": "PHASE 3: LIVE EXAM ENGINE — EVERY INTERACTIVE FUNCTIONALITY",
+  "title": "In-Exam Utility Modals & Actions",
+  "captured_at": "2026-10-21T22:00:50+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html getQuestionPaper(), getInstructions(), getCandProfile(), getAllBack(), openFullscreen()",
+  "utility_buttons": {
+    "b1_question_paper": {
+      "selector": "#b1",
+      "text": "Question Paper",
+      "trigger": "onclick=\"javascript:getQuestionPaper()\"",
+      "state_transition": [
+        "$('#b1').css({ 'background-color': '#2F72B7', 'color': '#FFF' });",
+        "$('#b2, #b3').css({ 'background-color': '#C7DCF0', 'color': '#000' });",
+        "$('#question-inner-pane, #instructions-onbutton, #candidate-details-onbutton, #button-holder, #question-no-bar').hide();",
+        "$('#question-list-onbutton, #main-back-button').show();",
+        "cryptQlist(1);"
+      ],
+      "modal_content": "Displays all questions of the paper in a single continuous scrollable view without option radios, allowing candidates to skim the entire paper."
+    },
+    "b2_instructions": {
+      "selector": "#b2",
+      "text": "Instructions",
+      "trigger": "onclick=\"javascript:getInstructions()\"",
+      "state_transition": [
+        "$('#b2').css({ 'background-color': '#2F72B7', 'color': '#FFF' });",
+        "$('#b1, #b3').css({ 'background-color': '#C7DCF0', 'color': '#000' });",
+        "$('#question-inner-pane, #question-list-onbutton, #candidate-details-onbutton, #button-holder, #question-no-bar').hide();",
+        "$('#instructions-onbutton').html($('#instruction-pane-1').html()).show();",
+        "$('#main-back-button').show();"
+      ],
+      "modal_content": "Presents initial general rules, section matrix, and palette legend in an in-exam overlay."
+    },
+    "b3_profile": {
+      "selector": "#b3",
+      "text": "Profile",
+      "trigger": "onclick=\"javascript:getCandProfile()\"",
+      "state_transition": [
+        "$('#b3').css({ 'background-color': '#2F72B7', 'color': '#FFF' });",
+        "$('#b1, #b2').css({ 'background-color': '#C7DCF0', 'color': '#000' });",
+        "$('#question-inner-pane, #instructions-onbutton, #question-list-onbutton, #button-holder, #question-no-bar').hide();",
+        "$('#candidate-details-onbutton, #main-back-button').show();"
+      ],
+      "modal_content": "Displays candidate passport photo, candidate name, registration number, allotted system ID, and exam date/session."
+    },
+    "back_button": {
+      "selector": "#back in #main-back-button",
+      "text": "Back",
+      "trigger": "onclick=\"javascript:getAllBack()\"",
+      "state_transition": [
+        "$('#b1, #b2, #b3').css({ 'background-color': '#C7DCF0', 'color': '#000' });",
+        "$('#instructions-onbutton, #question-list-onbutton, #candidate-details-onbutton, #main-back-button').hide();",
+        "$('#question-inner-pane, #question-no-bar, #button-holder').show();"
+      ]
+    }
+  },
+  "in_exam_action_bar": {
+    "fullscreen_toggle": {
+      "selector": ".screen-toggle",
+      "markup": "<button class=\"screen-toggle\" onclick=\"openFullscreen()\">Enter Full Screen</button>",
+      "logic": [
+        "let elem = document.getElementById('main-body-fscreen');",
+        "if (!document.fullscreenElement) {",
+        "  elem.requestFullscreen();",
+        "  $('.screen-toggle').text('Exit Full Screen');",
+        "} else {",
+        "  document.exitFullscreen();",
+        "  $('.screen-toggle').text('Enter Full Screen');",
+        "}"
+      ]
+    },
+    "bookmark_toggle": {
+      "selector": ".bookmark-btn",
+      "action": "Toggles active question in window.bookmarks[qid] boolean and displays star badge on question header."
+    },
+    "report_question": {
+      "selector": ".report-issue-btn",
+      "modal_markup": "<div class=\"modal-report\"><select id=\"report-reason\"><option>Incorrect Question</option><option>Option Error</option><option>Translation Mismatch</option><option>Image Missing</option></select><textarea id=\"report-desc\" placeholder=\"Describe the issue...\"></textarea><button id=\"submit-report-btn\">Submit Report</button></div>"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "item_id": "4.1",
+  "phase": "PHASE 4: PAUSE, AUTO-SUBMIT & MANUAL SUBMIT FLOW",
+  "title": "Pause / Exit Test",
+  "captured_at": "2026-10-21T22:01:20+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html pauseTest() lines 1231-1288",
+  "dom_structure": {
+    "pause_button": "<a href=\"#\" class=\"apausebut\" onclick=\"javascript:pauseTest(1)\"><img src=\"https://s3-ap-southeast-1.amazonaws.com/sg.oliveboard.in/testapp/pause_icon.png\"><span class=\"pausebut\">Pause Test</span></a>",
+    "overlay_and_modal": "<div id=\"dummy-black\" style=\"display:none;\"></div><div id=\"calert\" style=\"display:none;\"><div class=\"altext\"><div class=\"alt-table\" id=\"pausetext\">Please wait while we save your test.</div></div><span class=\"calin\"><a href=\"javascript:window.close();\" id=\"pauseok\" class=\"okbtn\">Saving..</a></span></div>"
+  },
+  "css_rules": {
+    "#dummy-black": "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0.6; z-index: 10000;",
+    "#calert": "position: fixed; top: 35%; left: 35%; width: 30%; background: #fff; border: 2px solid #3476BB; z-index: 10001; text-align: center; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-family: verdana;",
+    ".alt-table": "font-size: 14px; margin-bottom: 20px; color: #333;",
+    ".okbtn": "background: #3476BB; color: #fff; padding: 6px 20px; text-decoration: none; border-radius: 3px; font-weight: bold;"
+  },
+  "pause_engine_workflow": {
+    "step_1_ui_freeze": [
+      "window.onbeforeunload = null;",
+      "$('#dummy-black').show();",
+      "$('#calert').show();",
+      "$('#question-inner-pane').css('opacity', '0.1');",
+      "$('#main-container').css('opacity', '0.3');",
+      "clearInterval(intId); // Stops the countdown timer immediately"
+    ],
+    "step_2_data_serialization": [
+      "Records active question final exit timestamp into cloneResponse[questionIdent]['t'];",
+      "Compiles each question's selected option 'o' and palette state 's';",
+      "Extracts ltime = (hourt * 3600) + (minst * 60) + parseInt(secst);",
+      "Extracts lqn = questionIdent;"
+    ],
+    "step_3_network_post": {
+      "url": "/exams/tests/p/pause.cgi (or /exams/tests/p/save.cgi for periodic background auto-save)",
+      "method": "POST",
+      "headers": { "Content-Type": "application/x-www-form-urlencoded" },
+      "payload_parameters": {
+        "data": "JSON string: { \"tdata\": { <qid>: { \"o\": \"2\", \"s\": \"2\", \"t\": [...] } }, \"ltime\": \"1054\", \"lqn\": \"1004\" }",
+        "uid": "User ID / session token",
+        "qpi": "Test ID (e.g. '1')",
+        "ppi": "Current section ID (e.g. 'EL')",
+        "c": "Course identifier (e.g. 'sbipopre19')"
+      }
+    },
+    "step_4_confirmation": [
+      "On HTTP success response: $('#pausetext').html('Test has been paused. You can resume the test by visiting the main test page.');",
+      "$('#pauseok').html('OK');",
+      "Clicking OK executes window.close(); returning candidate to dashboard."
+    ]
+  }
+}

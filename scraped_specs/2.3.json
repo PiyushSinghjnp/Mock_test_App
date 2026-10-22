@@ -1,0 +1,34 @@
+{
+  "item_id": "2.3",
+  "phase": "PHASE 2: PRE-EXAM INSTRUCTIONS & INITIALIZATION",
+  "title": "Instructions View 2 & Validation Logic",
+  "captured_at": "2026-10-21T21:54:30+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html startTest() & changelangstart()",
+  "dom_structure": {
+    "language_selector": "<div class=\"lang-dropdown\"><button class=\"btn btn-dropdown dropdown-toggle\" id=\"dropdownMenu2\"><span class=\"dd-selected-item\">English</span><span class=\"caret\"></span></button><ul class=\"lang-dropdown-menu\"><li>English</li><li>Hindi</li></ul></div>",
+    "declaration_checkbox": "<label class=\"disclaimer-box\"><input type=\"checkbox\" id=\"disclaimer-check\"> <span>I have read and understood all instructions. All computer hardware allotted to me are in proper working condition.</span></label>",
+    "start_button": "<button id=\"start-test\" onclick=\"startTest()\">I am ready to begin</button>"
+  },
+  "declaration_validation_logic": {
+    "checked_state": "Boolean $('#disclaimer-check').is(':checked')",
+    "on_false_trigger": {
+      "behavior": "Blocks navigation; displays alert or highlight: 'Please accept terms and conditions before proceeding.'",
+      "button_state": "Either visually disabled or displays inline warning message"
+    },
+    "on_true_trigger": {
+      "dom_transition": [
+        "$('#left-container').hide()",
+        "$('#left-container-post').show()",
+        "$('#right-container-post').show()",
+        "$('#start-test').hide()",
+        "$('#loader-start-test').show() -> hides on first question paint"
+      ],
+      "timer_start": "intId = setInterval(countdown, 1000); begins countdown from totalTime"
+    }
+  },
+  "default_language_storage": {
+    "variable": "lang = 'eqt' (English) | 'hqt' (Hindi)",
+    "storage_target": "window.lang or sessionStorage.getItem('ob_default_lang')",
+    "propagation": "Sets display style: if 'eqt' -> $('.eqt').show(); $('.hqt').hide(); if 'hqt' -> $('.hqt').show(); $('.eqt').hide();"
+  }
+}

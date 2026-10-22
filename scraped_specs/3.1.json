@@ -1,0 +1,77 @@
+{
+  "item_id": "3.1",
+  "phase": "PHASE 3: LIVE EXAM ENGINE — EVERY INTERACTIVE FUNCTIONALITY",
+  "title": "Question Payload & Data Schema",
+  "captured_at": "2026-10-21T21:57:40+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html & sbi_po_2026_prelims_1_decrypted.json & ibps_so_it_mains-1_solutions_20260924_142005.json",
+  "payload_architecture": {
+    "load_mechanism": "Pre-rendered or JSON-hydrated on page load into global execution context (or retrieved via GET /exams/tests/p/load.cgi?c={c}&testid={id})",
+    "global_variables_injected": {
+      "lang": "String ('eqt' for English, 'hqt' for Hindi)",
+      "submitInterval": "String milliseconds (e.g. '1200000' = 20 mins auto-save interval)",
+      "pauseSet": "String ('0' = fresh test, '1' = resume existing attempt)",
+      "totalTime": "String seconds (e.g. '1200' = 20 min per section, '3600' = 60 min total)",
+      "timeTotal": "String human readable (e.g. '20 Minutes' or '60 Minutes')",
+      "testQpid": "String exam name (e.g. 'SBI PO 2026 Prelims - 1')",
+      "noOption": "String number of options per question (typically '5' for banking, '4' for SSC/regulatory)",
+      "secList": "Array<String> section display names: ['English Language', 'Quantitative Aptitude', 'Reasoning Ability']",
+      "secTracker": "Array<String> question counts per section: ['40', '30', '30']",
+      "secShortList": "Array<String> abbreviations: ['EL', 'QA', 'RA']",
+      "firstQid": "Integer initial question database ID (e.g. 1001)",
+      "nq": "Integer total questions in active section or test (e.g. 40)",
+      "lastQid": "Integer last question database ID (firstQid + nq - 1)"
+    }
+  },
+  "json_schema": {
+    "metadata": {
+      "test_name": { "type": "string", "example": "SBI PO 2026 Prelims - Mock 1" },
+      "test_id": { "type": "string|integer", "example": "1" },
+      "course_code": { "type": "string", "example": "sbipopre19" },
+      "total_questions": { "type": "integer", "example": 40 },
+      "total_time_seconds": { "type": "integer", "example": 1200 },
+      "sections": {
+        "type": "array",
+        "items": {
+          "section_id": { "type": "string", "example": "EL" },
+          "section_name": { "type": "string", "example": "English Language" },
+          "question_count": { "type": "integer", "example": 40 },
+          "time_limit_seconds": { "type": "integer", "example": 1200 },
+          "is_sectional_locked": { "type": "boolean", "example": true }
+        }
+      },
+      "marking_scheme": {
+        "positive_mark": { "type": "number", "example": 1.0 },
+        "negative_mark": { "type": "number", "example": 0.25 },
+        "unattempted_mark": { "type": "number", "example": 0.0 }
+      }
+    },
+    "question_item_schema": {
+      "qid": { "type": "integer", "description": "Global unique question identifier (e.g. 1001)" },
+      "questionNumber": { "type": "integer", "description": "1-based index within section or test (e.g. 1)" },
+      "section": { "type": "string", "description": "Section code or name (e.g. 'EL')" },
+      "hasPassage": { "type": "boolean", "description": "If true, renders 2-pane split; if false, renders single-pane MCQ" },
+      "passageHTML": { "type": "string", "description": "Full HTML markup of comprehension passage, RC, or DI directions" },
+      "questionHTML": { "type": "string", "description": "Full HTML markup of the question statement" },
+      "options": {
+        "type": "array",
+        "items": {
+          "letter": { "type": "string", "description": "'A', 'B', 'C', 'D', 'E'" },
+          "html": { "type": "string", "description": "HTML snippet of option content" },
+          "text": { "type": "string", "description": "Plain text extraction of option content" }
+        }
+      },
+      "correct_answer": { "type": "string", "description": "Correct option letter ('A'-'E') for solutions / evaluation" },
+      "explanation": { "type": "string", "description": "Detailed step-by-step HTML explanation for solution window" }
+    }
+  },
+  "runtime_state_response_schema": {
+    "description": "The exact 'resp' / 'cloneResponse' dictionary tracked in memory during exam execution",
+    "structure": {
+      "<qid>": {
+        "o": "String option selected: '1', '2', '3', '4', '5' (or '' if unattempted)",
+        "s": "String question palette status: '0' (not visited), '1' (not answered), '2' (answered), '3' (marked for review), '4' (answered & marked)",
+        "t": "Array<{ st: 'HH:MM:SS', end: 'HH:MM:SS' }> timestamp entry and exit tracking time spent on this question"
+      }
+    }
+  }
+}

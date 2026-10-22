@@ -1,0 +1,57 @@
+{
+  "item_id": "5.4",
+  "phase": "PHASE 5: POST-TEST ANALYTICS & SOLUTIONS FUNCTIONALITY",
+  "title": "Interactive Solutions & Re-attempt Mode",
+  "captured_at": "2026-10-21T22:04:30+05:30",
+  "source": "https://u1.oliveboard.in/exams/solution/index3.php?c=sbipopre19&testid=1&from=test & js/solution-engine.js & test-engine.css lines 830-1010",
+  "dom_structure": {
+    "solution_overlay": "<div class=\"solution-console-overlay active\" id=\"solution-console-overlay\">...</div>",
+    "filter_pills": "<div class=\"soln-filter-pills\" id=\"soln-filter-pills\"><span class=\"soln-pill all active\" data-filter=\"all\">All</span><span class=\"soln-pill correct\" data-filter=\"correct\">Correct</span><span class=\"soln-pill wrong\" data-filter=\"wrong\">Incorrect</span><span class=\"soln-pill unattempted\" data-filter=\"unattempted\">Unattempted</span></div>",
+    "status_badge_templates": {
+      "correct": "<span class=\"soln-status-badge correct\">✔ Correct (+1.00)</span>",
+      "wrong": "<span class=\"soln-status-badge wrong\">✖ Incorrect (-0.25)</span>",
+      "unattempted": "<span class=\"soln-status-badge unattempted\">⚪ Unattempted (0.00)</span>"
+    },
+    "option_highlighting_templates": {
+      "correct_option_row": "<tr class=\"soln-opt-row is-correct-ans\"><td style=\"width:28px;\"><input type=\"radio\" disabled></td><td style=\"width:25px;\">b)</td><td><span class=\"lpad\">Option Text</span><span class=\"opt-pill correct\">✔ Correct Option</span></td></tr>",
+      "user_wrong_row": "<tr class=\"soln-opt-row is-user-wrong\"><td style=\"width:28px;\"><input type=\"radio\" disabled checked></td><td style=\"width:25px;\">c)</td><td><span class=\"lpad\">Option Text</span><span class=\"opt-pill wrong\">✖ Your Answer</span></td></tr>"
+    },
+    "explanation_box": "<div class=\"soln-explanation-box\"><div class=\"soln-explanation-header\"><span>💡 Official Solution & Detailed Explanation</span></div><div class=\"soln-explanation-content\"><p>Step-by-step logical reasoning and answer derivation...</p></div></div>",
+    "reattempt_mode_bar": "<div class=\"reattempt-toolbar\"><label class=\"reattempt-toggle-label\"><input type=\"checkbox\" id=\"toggle-reattempt-mode\"> <span>Enable Re-attempt Mode (Hide Solutions & Try Solving)</span></label><button id=\"btn-check-reattempt-ans\" style=\"display:none;\">Check Answer</button></div>"
+  },
+  "css_rules": {
+    ".solution-console-overlay": "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: none; font-family: verdana;",
+    ".solution-console-overlay.active": "display: block;",
+    ".soln-filter-pills": "display: flex; gap: 6px; margin-right: 15px;",
+    ".soln-pill": "padding: 3px 10px; font-size: 11px; font-weight: 700; border-radius: 12px; cursor: pointer; border: 1px solid #cbd5e1; background: #fff;",
+    ".soln-pill.active": "background: #1c4b79; color: #fff; border-color: #1c4b79;",
+    ".soln-opt-row.is-correct-ans": "background-color: #f0fdf4 !important; border: 1px solid #86efac;",
+    ".soln-opt-row.is-user-wrong": "background-color: #fef2f2 !important; border: 1px solid #fca5a5;",
+    ".opt-pill.correct": "background: #2e7d32; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 12px;",
+    ".opt-pill.wrong": "background: #c62828; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 12px;",
+    ".soln-grid-btn.correct": "background: #2e7d32; color: #fff;",
+    ".soln-grid-btn.wrong": "background: #c62828; color: #fff;",
+    ".soln-grid-btn.unattempted": "background: #94a3b8; color: #fff;",
+    ".soln-grid-btn.current": "box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0284c7;"
+  },
+  "reattempt_mode_engine": {
+    "toggle_handler": [
+      "if (isReattemptModeEnabled) {",
+      "  $('.soln-explanation-box').hide();",
+      "  $('.soln-status-badge').hide();",
+      "  $('.opt-pill').hide();",
+      "  $('.soln-opt-row').removeClass('is-correct-ans is-user-wrong');",
+      "  $('.opts-table input[type=\"radio\"]').prop('disabled', false).prop('checked', false);",
+      "  $('#btn-check-reattempt-ans').show();",
+      "} else {",
+      "  // Re-render full solution with option highlights and explanation box",
+      "  loadQuestion(currentSectionIndex, currentQuestionIndex);",
+      "}"
+    ],
+    "on_check_answer_click": [
+      "Highlights chosen option against correctIndex;",
+      "Displays opt-pill and step-by-step explanation box;",
+      "Updates re-attempt score counter without overwriting initial exam attempt score."
+    ]
+  }
+}

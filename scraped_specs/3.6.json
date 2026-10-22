@@ -1,0 +1,48 @@
+{
+  "item_id": "3.6",
+  "phase": "PHASE 3: LIVE EXAM ENGINE — EVERY INTERACTIVE FUNCTIONALITY",
+  "title": "Palette & Section Navigation Mechanics",
+  "captured_at": "2026-10-21T22:00:15+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html displayQuestions(), nDisplayHoverbox(), darr-rightslide handler",
+  "palette_grid_direct_click": {
+    "onclick_handler": "displayQuestions(ko) where ko = k + firstQid - 1",
+    "unsaved_selection_behavior": "CRITICAL: Direct clicking a palette number DOES NOT call saveSelection(). Any unconfirmed radio button selected on the current question is abandoned and NOT saved to quesAnswer[]. If the previous question had not been answered, it remains in State 1 (Not Answered, red shield).",
+    "auto_scroll_behavior": "tp = $('#sprite-butts' + (k + 3)); if (tp.length) tp.get(0).scrollIntoView(false);"
+  },
+  "section_tabs_hoverbox_tooltip": {
+    "markup": "<div id=\"hover-con\"><div id=\"hover-con-child\">English Language</div><table><tbody><tr><td>Answered:</td><td id=\"answ\">0</td></tr><tr><td>Not Answered:</td><td id=\"unansw\">0</td></tr><tr><td>Marked for Review:</td><td id=\"marked\">0</td></tr><tr><td>Answered & Marked:</td><td id=\"ansmarked\">0</td></tr><tr><td>Not Visited:</td><td id=\"notvisited\">40</td></tr></tbody></table></div>",
+    "css_rules": {
+      "#hover-con": "position: absolute; display: none; z-index: 1000; background: #fff; border: 1px solid #777; box-shadow: 2px 2px 8px rgba(0,0,0,0.3); font-size: 12px; font-family: verdana; padding: 6px 10px;",
+      "#hover-con table td": "padding: 3px 6px;",
+      ".hrstyle": "border: 0; border-top: 1px solid #ccc; margin: 4px 0;"
+    },
+    "dynamic_positioning": [
+      "var position = getPosition(obj);",
+      "var x = position.x + (obj.clientWidth / 2);",
+      "var y = position.y + obj.clientHeight - 2;",
+      "$('#hover-con').css({ left: x + 'px', top: y + 'px', display: 'table' });"
+    ],
+    "section_filtering_counts": "getCountStatus(statusCode, sectionName) iterates through all questions in test, filters by matching section name, and tallies exact counts for 0, 1, 2, 3, 4."
+  },
+  "sidebar_collapse_expand_drawer": {
+    "collapse_button": {
+      "selector": ".darr-rightslide",
+      "icon": "images/ic-dright.png",
+      "action": [
+        "$('#question-outer-pane').animate({ width: '122%' }, 100);",
+        "$('#right-low-half-outer').hide();",
+        "$('.darr-leftslide').show();"
+      ]
+    },
+    "expand_button": {
+      "selector": ".darr-leftslide",
+      "icon": "images/ic-dleft.png",
+      "action": [
+        "$('#question-outer-pane').animate({ width: '95%' }, 100);",
+        "$('#right-low-half-outer').show();",
+        "$(this).hide();"
+      ]
+    },
+    "animation_profile": "100ms linear ease slide expanding question width to 122% to utilize full viewport width, hiding question palette for distraction-free reading."
+  }
+}

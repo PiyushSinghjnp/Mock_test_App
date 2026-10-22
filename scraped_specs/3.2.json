@@ -1,0 +1,57 @@
+{
+  "item_id": "3.2",
+  "phase": "PHASE 3: LIVE EXAM ENGINE — EVERY INTERACTIVE FUNCTIONALITY",
+  "title": "Timer & Per-Question Time Tracking",
+  "captured_at": "2026-10-21T21:58:00+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html timerActivate() & time tracking",
+  "dom_structure": {
+    "timer_container": "<div id=\"timer\"><b> Time Left: <span id=\"hour\">00</span><span id=\"mins\">03</span>:<span id=\"secs\">14</span></b> <br><i></i></div>",
+    "css_rules": {
+      "#timer": "float: right; margin-right: 15px; font-size: 15px; color: #222; font-family: verdana;",
+      "#timer b": "font-weight: bold; color: #D9534F;",
+      "#timer span": "font-size: 16px; font-weight: bold;"
+    }
+  },
+  "countdown_engine": {
+    "init_call": "timerActivate(totalTime)",
+    "interval_handle": "intId = setInterval(changeTime, 1000)",
+    "tick_logic": [
+      "if (totalTime == 0) { clearInterval(intId); sendData(); }",
+      "minst = parseInt((totalTime / 60) % 60);",
+      "hourt = parseInt(totalTime / 3600);",
+      "secst = parseInt(totalTime % 60);",
+      "var newmin = minst + 60 * hourt;",
+      "if (newmin < 10) newmin = '0' + newmin;",
+      "if (minst < 10) minst = '0' + minst;",
+      "if (secst < 10) secst = '0' + secst;",
+      "if (hourt < 10) hourt = '0' + hourt;",
+      "$('#mins').html(newmin);",
+      "$('#secs').html(secst);",
+      "totalTime -= 1;"
+    ],
+    "auto_save_timer": "autoSubmitInt = setInterval(function(){ pauseTest(0); }, submitInterval);"
+  },
+  "sectional_time_locking": {
+    "pattern": "Banking pattern (SBI / IBPS)",
+    "lock_behavior": "Sections have fixed sectional timers (e.g. 20 minutes / 1200 seconds per section). User cannot freely switch to other sections before time expires or user submits part via sendData(). Section tab clicks are intercepted/disabled or restricted.",
+    "expiry_action": "When totalTime hits 0, auto-submit triggers sendData(), which submits section part to /exams/tests/p/submittestpart.cgi and redirects to next section URL or summary."
+  },
+  "per_question_time_tracking": {
+    "timestamp_representation": "Countdown format: 'HH:MM:SS' (e.g. '00:19:45')",
+    "entry_exit_interception": {
+      "on_navigation": "Triggered in displayQuestions(), displayQuestionsSave(), displayQuestionsMark(), pauseTest(), sendData()",
+      "algorithm": [
+        "myDate = hourt + ':' + minst + ':' + secst;",
+        "if (!pauseSetter && myDate != myDatep) {",
+        "  var curtime = { st: myDatep, end: myDate };",
+        "  resp[questionIdentPrev]['t'].push(curtime);",
+        "}",
+        "myDatep = myDate;"
+      ]
+    },
+    "duration_calculation": {
+      "formula": "duration_seconds = parseSeconds(st) - parseSeconds(end)",
+      "explanation": "Because time counts down from initial totalTime, the start timestamp (st) has higher remaining seconds than the exit timestamp (end). The difference exactly equals time spent in that visit."
+    }
+  }
+}

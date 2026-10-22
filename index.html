@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oliveboard Mock Tests - India's #1 Exam Preparation & Test Series App</title>
+  <meta name="description" content="Prepare for IBPS SO IT Mains, SBI PO, SSC CGL with Oliveboard's authentic TCS iON Mock Tests, All India Ranking, Sectional Speed Tests & AI Performance Analytics.">
+  <meta name="keywords" content="Oliveboard, Mock Test App, IBPS SO IT Mains Mock Test, SBI PO Mock Test, SSC CGL Test Series, TCS iON Exam Console, Free Mock Test">
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- App Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/app-shell.css">
+  <link rel="stylesheet" href="css/test-engine.css">
+</head>
+<body class="app-body">
+
+  <!-- ========================================================
+       OLIVEBOARD MOCK TEST APPLICATION VIEWPORT SHELL
+       ======================================================== -->
+  <div class="app-viewport">
+    
+    <!-- 1. Sticky App Top Header -->
+    <header class="app-header">
+      <div class="app-brand">
+        <div class="app-logo-badge">ob</div>
+        <div class="app-brand-name">olive<span>board</span> <small style="font-size: 11px; font-weight: 700; color: #ff7a00; background: #fff3e0; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">TESTS</small></div>
+      </div>
+
+      <!-- Target Exam Switcher Dropdown Trigger -->
+      <button class="btn-exam-selector" id="btn-active-exam-selector" title="Switch Target Exam">
+        <span>💻 IBPS SO IT Officer</span>
+        <span class="chevron">▼</span>
+      </button>
+
+      <!-- User Badges / Multi-User Candidate Profile Switcher -->
+      <div class="app-header-right">
+        <div class="stat-chip" title="Active Study Streak">
+          <span>🔥</span>
+          <span id="header-user-streak">1d</span>
+        </div>
+        <div class="stat-chip" title="Reward Coins">
+          <span>🪙</span>
+          <span id="header-user-coins">300</span>
+        </div>
+        
+        <!-- Clickable Candidate Switcher Pill -->
+        <div class="user-profile-btn-wrap" id="btn-user-profile" title="Switch or Create Candidate Profile (Multi-User Isolation)">
+          <div class="user-badge-meta">
+            <span class="user-badge-name" id="header-user-name">Rahul Sharma</span>
+            <span class="user-badge-roll" id="header-user-roll">OB-2026-9041</span>
+          </div>
+          <div class="user-avatar-btn" id="header-user-avatar">R</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. Target Exam Hero Promo Strip -->
+    <section class="exam-summary-strip" id="exam-hero-banner">
+      <!-- Populated dynamically via OliveboardAppController.renderExamHero() -->
+    </section>
+
+    <!-- 3. Sticky Category Filter Tabs -->
+    <nav class="filter-tabs-bar" id="filter-tabs-bar">
+      <!-- Populated dynamically via OliveboardAppController.renderFilterTabs() -->
+    </nav>
+
+    <!-- 4. Main App Content Area -->
+    <main class="app-content-area">
+      
+      <!-- VIEW 1: Mock Tests Tab -->
+      <section class="app-view-tab active" id="view-tests">
+        <div class="section-label-bar">
+          <h3>Available Mock Tests</h3>
+          <span id="active-tab-tests-count">Loading Tests...</span>
+        </div>
+
+        <!-- Dynamic Mock Cards Grid -->
+        <div class="mock-cards-list" id="mock-cards-container">
+          <!-- Rendered dynamically by OliveboardAppController.renderMockCards() -->
+        </div>
+      </section>
+
+      <!-- VIEW 2: AI Analytics Tab (100% User-Isolated) -->
+      <section class="app-view-tab" id="view-analytics">
+        <div class="section-label-bar">
+          <div>
+            <h3>AI Performance Analytics & Weakness Heatmap</h3>
+            <span style="font-size: 12px; color: #008479; font-weight: 600;" id="analytics-user-tag">Showing attempts for: Rahul Sharma</span>
+          </div>
+          <span>Persistent in SQLite Database</span>
+        </div>
+        <div id="analytics-view-container">
+          <!-- Rendered dynamically by OliveboardAppController.renderAnalytics() -->
+        </div>
+      </section>
+
+      <!-- VIEW 3: All India Leaderboard Tab -->
+      <section class="app-view-tab" id="view-leaderboard">
+        <div class="section-label-bar">
+          <h3>All India Mock Test Leaderboard</h3>
+          <span>Live Rankings (Updated every 15 mins)</span>
+        </div>
+        <div id="leaderboard-list-container">
+          <!-- Rendered dynamically by OliveboardAppController.renderLeaderboard() -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 5. Fixed Bottom Navigation Bar -->
+    <nav class="bottom-app-bar" id="bottom-app-bar">
+      <button class="app-nav-item active" data-view="tests">
+        <span class="nav-icon">📝</span>
+        <span>Tests</span>
+      </button>
+      <button class="app-nav-item" data-view="analytics">
+        <span class="nav-icon">📊</span>
+        <span>Analytics</span>
+      </button>
+      <button class="app-nav-item" data-view="leaderboard">
+        <span class="nav-icon">🏆</span>
+        <span>Leaderboard</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ========================================================
+       MODAL 0: MULTI-USER ISOLATION CANDIDATE SWITCHER MODAL
+       ======================================================== -->
+  <div class="user-modal-overlay" id="user-profile-modal">
+    <div class="user-modal-dialog">
+      <div class="user-modal-header">
+        <div>
+          <h3>👥 Candidate Profiles & Isolation</h3>
+          <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Each user's attempts & analytics are permanently isolated in SQLite</p>
+        </div>
+        <button class="btn-close-exam-modal" id="btn-close-user-modal" title="Close">✕</button>
+      </div>
+      <div class="user-modal-body">
+        
+        <!-- Active Candidate Box -->
+        <div class="active-user-banner" id="active-user-profile-box">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div>
+          <h4 style="font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Switch Active Candidate</h4>
+          <div id="users-selection-list">
+            <!-- Populated dynamically with all database users -->
+          </div>
+        </div>
+
+        <!-- Add New Candidate Profile Form -->
+        <div style="border-top: 1px solid var(--ob-app-border); padding-top: 16px;">
+          <h4 style="font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px;">➕ Register New Candidate Profile</h4>
+          <form id="form-create-user" style="display: flex; flex-direction: column; gap: 10px;">
+            <input type="text" id="new-user-name" placeholder="Candidate Full Name (e.g. Ananya Sen)" required style="padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+            <div style="display: flex; gap: 8px;">
+              <select id="new-user-exam" style="flex: 1; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                <option value="ibps-so">IBPS SO IT Officer</option>
+                <option value="sbi-po">SBI PO 2026</option>
+                <option value="ssc-cgl">SSC CGL</option>
+                <option value="ibps-po">IBPS PO</option>
+              </select>
+              <input type="text" id="new-user-roll" placeholder="Roll No (optional)" style="flex: 1; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+            </div>
+            <button type="submit" style="padding: 10px; background: #008479; color: #ffffff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px;">Create Candidate Profile</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL 1: EXAM SWITCHER POPUP
+       ======================================================== -->
+  <div class="exam-modal-overlay" id="exam-switcher-modal">
+    <div class="exam-modal-dialog">
+      <div class="exam-modal-header">
+        <h3>Select Target Exam</h3>
+        <button class="btn-close-exam-modal" id="btn-close-exam-switcher" title="Close">✕</button>
+      </div>
+      <div class="exam-modal-list" id="exam-switcher-list">
+        <!-- Rendered dynamically by OliveboardAppController.renderExamSwitcherList() -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       AUTHENTIC OLIVEBOARD LIVE TEST ENGINE CONSOLE
+       1:1 Reverse-Engineered from u1.oliveboard.in
+       ======================================================== -->
+  <div class="test-modal-overlay" id="test-modal-overlay">
+    
+    <!-- Top Header Bar (#header-top) -->
+    <div id="header-top">
+      <div class="main-title-container">
+        <h2 id="exam-title-display">SBI PO 2026 Prelims - 1</h2>
+      </div>
+
+      <div class="logo-container">
+        <img src="images/oliveboard/logo-white.png" alt="Oliveboard">
+      </div>
+
+      <div class="header-right-tools">
+        <button class="screen-toggle" id="btn-screen-toggle">Enter Full Screen</button>
+        <button class="exit-exam-btn" id="btn-exit-exam" title="Exit Test">✕ Exit</button>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         PRE-EXAM INSTRUCTIONS PANE (Specs 2.2 & 2.3)
+         1:1 Oliveboard Pre-Exam Flow with Section Matrix, Symbols Legend,
+         Declaration Checkbox & Gated "I am ready to begin" Button
+         ======================================================== -->
+    <div class="instruction-pane-1" id="instruction-pane-1" style="display: none;">
+      <div class="instruction-content-container">
+        
+        <div class="instruction-header-row">
+          <h3 class="instruction-main-title">General Instructions &amp; Examination Rules</h3>
+          <div class="instr-lang-select-box">
+            <span>Choose your default language: </span>
+            <div class="lang-dropdown" id="instr-lang-dropdown">
+              <button class="btn btn-dropdown dropdown-toggle" id="instrDropdownMenu" type="button">
+                <span class="dd-selected-item">English</span> <span class="caret">▼</span>
+              </button>
+              <ul class="lang-dropdown-menu" id="instr-lang-menu" style="display: none;">
+                <li data-lang="eqt">English</li>
+                <li data-lang="hqt">Hindi</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="instruction-scrollable-body">
+          <p class="instr-lead-text">Please read the instructions carefully before starting the examination:</p>
+
+          <h4 class="instr-subheading">1. General Instructions:</h4>
+          <ol class="instr-numbered-list">
+            <li>The total duration of the examination is displayed on the countdown timer. The clock will be set at the server and the countdown timer at the top right corner of your screen will display the remaining time available for you to complete the exam.</li>
+            <li>When the timer reaches zero, the examination will end by itself. You will not be required to end or submit your examination.</li>
+            <li>In Banking &amp; Regulatory exams (SBI PO, IBPS PO, IBPS SO), <strong>sectional timing is strictly enforced</strong>. You cannot navigate to other sections until the current section time has elapsed or you confirm section submission. Once a section is submitted, it is locked and you cannot revisit it.</li>
+          </ol>
+
+          <h4 class="instr-subheading">2. Section-wise Pattern &amp; Sectional Timing:</h4>
+          <table class="tab-in" id="instr-section-matrix-table">
+            <thead>
+              <tr>
+                <th>Section #</th>
+                <th>Section Name</th>
+                <th>Total Questions</th>
+                <th>Max Marks</th>
+                <th>Time (Minutes)</th>
+                <th>Language</th>
+              </tr>
+            </thead>
+            <tbody id="in-tab-body">
+              <!-- Dynamically populated from testData.sections -->
+            </tbody>
+          </table>
+
+          <h4 class="instr-subheading">3. Question Palette Symbol Definitions:</h4>
+          <p class="instr-note">The question palette displayed on the right side of the screen will show the status of each question using one of the following official symbols:</p>
+          <table class="explain-butts">
+            <tbody>
+              <tr>
+                <td class="symbol-col"><span class="sprite-butts stic-notvisited"><br>1</span></td>
+                <td class="desc-col"><strong>Not Visited:</strong> You have not visited the question yet. (Not evaluated for marks)</td>
+              </tr>
+              <tr>
+                <td class="symbol-col"><span class="sprite-butts stic-notanswered"><br>2</span></td>
+                <td class="desc-col"><strong>Not Answered:</strong> You have not answered the question. (Not evaluated for marks)</td>
+              </tr>
+              <tr>
+                <td class="symbol-col"><span class="sprite-butts stic-answered"><br>3</span></td>
+                <td class="desc-col"><strong>Answered:</strong> You have answered the question. (Evaluated for marks: +1.00 or -0.25)</td>
+              </tr>
+              <tr>
+                <td class="symbol-col"><span class="sprite-butts stic-marked"><br>4</span></td>
+                <td class="desc-col"><strong>Marked for Review:</strong> You have NOT answered the question, but have marked the question for review. (Not evaluated for marks)</td>
+              </tr>
+              <tr>
+                <td class="symbol-col"><span class="sprite-butts stic-answered-marked"><br>5</span></td>
+                <td class="desc-col"><strong>Answered Marked for Review:</strong> You have answered the question, but marked it for review. <span class="highlight-rule">(EVALUATED for marks as per official banking rules)</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4 class="instr-subheading">4. Navigating to a Question:</h4>
+          <ol class="instr-numbered-list">
+            <li>Click on the question number in the Question Palette at the right of your screen to go to that question directly. Note that using this option does NOT save your answer to the current question.</li>
+            <li>Click on <strong>Save &amp; Next</strong> to save your answer for the current question and then go to the next question.</li>
+            <li>Click on <strong>Mark for Review &amp; Next</strong> to save your answer if selected, mark it for review, and go to the next question.</li>
+            <li>To deselect your chosen answer, click on the button <strong>Clear Response</strong>.</li>
+          </ol>
+
+          <h4 class="instr-subheading">5. Negative Marking Scheme:</h4>
+          <p class="instr-note">There will be penalty for wrong answers marked in the Objective Tests. For each question for which a wrong answer has been given by the candidate, one fourth or <strong>0.25 of the marks</strong> assigned to that question will be deducted as penalty to arrive at corrected score. If a question is left blank, i.e. no answer is marked by the candidate, there will be no penalty for that question.</p>
+        </div>
+
+        <div class="instruction-footer-action-panel">
+          <div class="disclaimer-container">
+            <label class="disclaimer-box" for="disclaimer-check">
+              <input type="checkbox" id="disclaimer-check">
+              <span>I have read and understood the instructions. All computer hardware allotted to me are in proper working condition. I declare that I am not in possession of any electronic devices or prohibited materials.</span>
+            </label>
+            <div class="disclaimer-warning" id="disclaimer-warning" style="display: none;">
+              ⚠️ Please accept the declaration terms and conditions before proceeding.
+            </div>
+          </div>
+          <div class="start-btn-container">
+            <button id="start-test" class="btn-start-test">I am ready to begin</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Main Container (#main-container) -->
+    <div id="main-container">
+      
+      <!-- Drawer Expand Arrow (Visible when palette is collapsed) -->
+      <span class="darr-leftslide" id="btn-expand-sidebar" title="Show Question Palette">
+        <span class="darrleft-inner">&#9664;</span>
+      </span>
+
+      <!-- Section Hoverbox Tooltip (#hover-con) -->
+      <div id="hover-con" style="display: none;">
+        <div id="hover-con-child">English Language</div>
+        <table cellpadding="2" cellspacing="2">
+          <tbody>
+            <tr><td>Answered:</td><td id="answ" style="font-weight: bold; color: #2e7d32;">0</td></tr>
+            <tr><td>Not Answered:</td><td id="unansw" style="font-weight: bold; color: #c62828;">0</td></tr>
+            <tr><td>Marked for Review:</td><td id="marked" style="font-weight: bold; color: #6a1b9a;">0</td></tr>
+            <tr><td>Answered &amp; Marked:</td><td id="ansmarked" style="font-weight: bold; color: #008479;">0</td></tr>
+            <tr><td>Not Visited:</td><td id="notvisited" style="font-weight: bold; color: #64748b;">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Left 78% Container - Question & Sections (#left-container-post) -->
+      <div id="left-container-post">
+        
+        <!-- Sections Top Bar -->
+        <div id="section-name-container">
+          <div class="title-box"><b>Sections</b></div>
+          <span class="section-wrapper">
+            <table>
+              <tbody>
+                <tr id="exam-section-tabs">
+                  <!-- Rendered dynamically by OliveboardTestEngine.renderSectionTabs() -->
+                </tr>
+              </tbody>
+            </table>
+          </span>
+        </div>
+
+        <!-- Question Outer Pane -->
+        <div id="question-outer-pane">
+          
+          <!-- Question No & Marks Bar with Language Toggle & Bookmark -->
+          <div id="question-no-bar">
+            <div style="display: flex; align-items: center;">
+              <div>Question No <span id="exam-q-num-label">1</span></div>
+              <div class="lang-dropdown" id="question-lang-dropdown">
+                <button class="btn btn-dropdown dropdown-toggle" id="dropdownMenu2" type="button">
+                  <span class="dd-selected-item">English</span> <span class="caret">▼</span>
+                </button>
+                <ul class="lang-dropdown-menu" id="lang-dropdown-menu" style="display: none;">
+                  <li data-lang="eqt">English</li>
+                  <li data-lang="hqt">Hindi</li>
+                </ul>
+              </div>
+              <button class="btn-bookmark-toggle" id="btn-toggle-bookmark" title="Bookmark Question">★ Bookmark</button>
+            </div>
+            <div class="marks-strip" id="exam-marks-info">
+              Marks for correct answer: <strong class="pos">+1</strong> | Negative mark: <strong class="neg">-0.25</strong>
+            </div>
+          </div>
+
+          <!-- Question Inner Pane -->
+          <div id="question-inner-pane">
+            
+            <!-- 2-SIDED TEST WINDOW (Directions/Passage on Left, Question & Options on Right) -->
+            <div class="two-sided-wrapper" id="exam-two-sided-wrapper" style="display: block;">
+              <!-- Left Pane: Passage/Directions -->
+              <div class="leftpane" id="exam-leftpane">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td id="exam-passage-panel"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- Right Pane: Question & Options Table -->
+              <div class="rightpane" id="exam-rightpane">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td id="exam-question-text-2sided"></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <table class="opts-table" cellpadding="0" cellspacing="0" id="exam-options-table-2sided"></table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- SINGLE PANE VIEW (For standalone questions fallback) -->
+            <div class="question-outer-div" id="exam-single-wrapper" style="display: none;">
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <!-- Inline Question Image if any -->
+                      <div id="exam-question-image" style="display: none; margin-bottom: 10px;"></div>
+                      <div id="exam-question-text"></div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <table class="opts-table answer-outer-div" cellpadding="0" cellspacing="0" id="exam-options-container"></table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- Bottom Action Buttons (#button-holder) -->
+          <div id="button-holder">
+            <div class="action-left-buttons">
+              <a href="javascript:void(0)" id="btn-mark-review">
+                <span id="mark">Mark for Review & Next</span>
+              </a>
+              <a href="javascript:void(0)" id="btn-clear-response">
+                <span id="clear">Clear Response</span>
+              </a>
+              <a href="javascript:void(0)" id="btn-prev-question">
+                <span id="prev-btn">&lsaquo; Previous</span>
+              </a>
+            </div>
+            <div>
+              <a href="javascript:void(0)" id="btn-save-next">
+                <span id="next">Save & Next</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Right 22% Container - Candidate, Timer, Legend & Palette (#right-container-post) -->
+      <div id="right-container-post">
+        
+        <!-- Candidate Card & Timer (#cand-time-outer) -->
+        <div id="cand-time-outer">
+          <div id="cand-image">
+            <img src="images/oliveboard/cand_img.png" alt="Candidate">
+          </div>
+          <div id="timer">
+            <div class="sectional-timer-badge" id="exam-sectional-label">Section Time Left</div>
+            <b>Time Left: <span id="exam-timer-display">00:20:00</span></b>
+            <div class="sec-timer-name" id="exam-sec-timer-name">English Language (20m)</div>
+          </div>
+          <a href="javascript:void(0)" class="apausebut" id="btn-pause-test">
+            <img src="images/oliveboard/pause_icon.png" alt="Pause">
+            <span class="pausebut">Pause Test</span>
+          </a>
+        </div>
+
+        <!-- Lower Half: Legend, Palette, and Bottom Buttons (#right-low-half-outer) -->
+        <div id="right-low-half-outer">
+          <!-- Drawer Collapse Arrow -->
+          <span class="darr-rightslide" id="btn-collapse-sidebar" title="Hide Question Palette">&#9654;</span>
+          
+          <!-- Legend Table -->
+          <div id="legend">
+            <b>Legend</b>
+            <table>
+              <tbody>
+                <tr>
+                  <td><span id="count-answered" class="icons-status stic-answered">0</span> Answered &nbsp;&nbsp;</td>
+                  <td><span id="count-not-answered" class="icons-status stic-notanswered">0</span> Not Answered</td>
+                </tr>
+                <tr>
+                  <td><span id="count-review" class="icons-status stic-marked">0</span> Marked &nbsp;&nbsp;</td>
+                  <td><span id="count-not-visited" class="icons-status stic-notvisited">0</span> Not Visited</td>
+                </tr>
+                <tr>
+                  <td colspan="2"><span id="count-review-answered" class="icons-status stic-answered-marked">0</span> Answered Marked</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 4-Column Question Palette Grid (#question-main-pallette) -->
+          <div id="question-main-pallette">
+            <table id="palette-numbers-grid">
+              <!-- Rendered dynamically as 4-column sprite buttons -->
+            </table>
+          </div>
+
+          <!-- Bottom Navigation Grid (#button-bottom) -->
+          <div id="button-bottom">
+            <table cellpadding="2" cellspacing="6">
+              <tbody>
+                <tr>
+                  <td>
+                    <a href="javascript:void(0)" id="btn-bottom-paper">
+                      <div id="b1">Question Paper</div>
+                    </a>
+                  </td>
+                  <td>
+                    <a href="javascript:void(0)" id="btn-bottom-instructions">
+                      <div id="b2">Instructions</div>
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <a href="javascript:void(0)" id="btn-bottom-profile">
+                      <div id="b3">Profile</div>
+                    </a>
+                  </td>
+                  <td>
+                    <a href="javascript:void(0)" id="btn-submit-exam">
+                      <div id="b4">Submit</div>
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Pause Dialog Modal (#calert) -->
+    <div id="dummy-black"></div>
+    <div id="calert">
+      <div class="altext">
+        <div id="pausetext">Your test has been paused. All answers and time remaining are safely preserved.</div>
+      </div>
+      <div class="calin">
+        <a href="javascript:void(0)" id="btn-resume-test" class="okbtn">Resume Test</a>
+      </div>
+    </div>
+
+    <!-- Question Paper Modal -->
+    <div class="ob-dialog-overlay" id="paper-modal-overlay">
+      <div class="ob-dialog-card">
+        <div class="ob-dialog-header">
+          <span>Question Paper Overview</span>
+          <button id="btn-close-paper-modal">✕</button>
+        </div>
+        <div class="ob-dialog-body" id="paper-modal-content"></div>
+        <div class="ob-dialog-footer">
+          <button class="exit-exam-btn" style="background: #3476BB; border-color: #245b95;" id="btn-close-paper-modal-footer">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div class="ob-dialog-overlay" id="instructions-modal-overlay">
+      <div class="ob-dialog-card">
+        <div class="ob-dialog-header">
+          <span>Exam Instructions</span>
+          <button id="btn-close-instructions-modal">✕</button>
+        </div>
+        <div class="ob-dialog-body" id="instructions-modal-content">
+          <h4>General Instructions:</h4>
+          <ol>
+            <li>The clock has been set at the server and the countdown timer at the top right corner of your screen will display the remaining time available for you to complete the examination.</li>
+            <li>The question palette displayed on the right side of the screen will show the status of each question using one of the official Oliveboard symbols:
+              <ul>
+                <li><strong style="color: #4D4D4D;">Not Visited:</strong> You have not visited the question yet.</li>
+                <li><strong style="color: #e03131;">Not Answered:</strong> You have not answered the question.</li>
+                <li><strong style="color: #2b8a3e;">Answered:</strong> You have answered the question.</li>
+                <li><strong style="color: #6a1b9a;">Marked for Review:</strong> You have NOT answered the question, but have marked the question for review.</li>
+                <li><strong style="color: #008479;">Answered &amp; Marked:</strong> The question(s) "Answered and Marked for Review" will be considered for evaluation.</li>
+              </ul>
+            </li>
+            <li>For Comprehension / Reading Passage / Direction questions, the test window displays a <strong>2-Sided Test Window</strong> with passage on the left and question statement &amp; options on the right.</li>
+          </ol>
+        </div>
+        <div class="ob-dialog-footer">
+          <button class="exit-exam-btn" style="background: #3476BB; border-color: #245b95;" id="btn-close-instructions-footer">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit / Next Section Confirmation Modal -->
+    <div class="ob-dialog-overlay" id="submit-confirm-overlay">
+      <div class="ob-dialog-card" style="max-width: 650px;">
+        <div class="ob-dialog-header">
+          <span id="submit-confirm-modal-title">Exam Submission Summary</span>
+          <button id="btn-close-submit-confirm">✕</button>
+        </div>
+        <div class="ob-dialog-body">
+          <p id="submit-confirm-lead-text">Please review your test summary before proceeding:</p>
+          <table class="submit-summary-table" id="submit-summary-table">
+            <thead>
+              <tr>
+                <th>Section Name</th>
+                <th>No of Questions</th>
+                <th>Answered</th>
+                <th>Not Answered</th>
+                <th>Marked for Review</th>
+                <th>Not Visited</th>
+              </tr>
+            </thead>
+            <tbody id="submit-summary-tbody"></tbody>
+          </table>
+          <p id="submit-confirm-warning" style="text-align: center; font-weight: bold; margin-top: 16px; color: #d32f2f;">Are you sure you want to submit the test?</p>
+        </div>
+        <div class="ob-dialog-footer">
+          <button id="btn-submit-cancel" style="padding: 6px 16px; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 600;">Back to Test</button>
+          <button id="btn-submit-final" style="padding: 6px 18px; background: #2e7d32; color: #fff; border: 1px solid #1b5e20; border-radius: 4px; cursor: pointer; font-weight: bold;">Yes, Submit Test</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Candidate Profile Modal (#b3) -->
+    <div class="ob-dialog-overlay" id="profile-modal-overlay">
+      <div class="ob-dialog-card" style="max-width: 520px;">
+        <div class="ob-dialog-header">
+          <span>Candidate Information & Examination Details</span>
+          <button id="btn-close-profile-modal">✕</button>
+        </div>
+        <div class="ob-dialog-body">
+          <div class="profile-info-grid">
+            <img src="images/oliveboard/cand_img.png" alt="Candidate" id="profile-modal-img">
+            <table class="profile-details-table" style="width: 100%; border-collapse: collapse;">
+              <tbody>
+                <tr><td style="color: #64748b; font-weight: 600; width: 110px;">Candidate:</td><td id="profile-modal-name" style="font-weight: 700; color: #1e293b;">Candidate</td></tr>
+                <tr><td style="color: #64748b; font-weight: 600;">Roll Number:</td><td id="profile-modal-roll" style="font-family: monospace; font-weight: 700; color: #0284c7;">OB-2026-98412</td></tr>
+                <tr><td style="color: #64748b; font-weight: 600;">System ID:</td><td id="profile-modal-sysid" style="font-family: monospace; color: #475569;">C23-LAB-NODE-04</td></tr>
+                <tr><td style="color: #64748b; font-weight: 600;">Subject / Exam:</td><td id="profile-modal-exam" style="font-weight: 600; color: #1e293b;">SBI PO 2026 Prelims</td></tr>
+                <tr><td style="color: #64748b; font-weight: 600;">Status:</td><td><span style="display: inline-block; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px;">Exam in Progress</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="ob-dialog-footer">
+          <button class="exit-exam-btn" style="background: #3476BB; border-color: #245b95;" id="btn-close-profile-footer">Close</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================
+       AUTHENTIC OLIVEBOARD LIVE SOLUTION & REVIEW CONSOLE
+       1:1 Reverse-Engineered from Oliveboard Solution Window
+       ======================================================== -->
+  <div class="solution-console-overlay" id="solution-console-overlay">
+    
+    <!-- Top Header Bar (#header-top) -->
+    <div id="header-top">
+      <div class="main-title-container">
+        <h2 id="soln-title-display">SBI PO 2026 Prelims - 1 (Solutions & Analysis)</h2>
+      </div>
+
+      <div class="logo-container">
+        <img src="images/oliveboard/logo-white.png" alt="Oliveboard">
+      </div>
+
+      <div class="header-right-tools">
+        <button class="screen-toggle" id="btn-toggle-reattempt" style="margin-right: 8px; background: #e0f2fe; color: #0284c7; border-color: #38bdf8; font-weight: 700;">🔄 Re-attempt Mode</button>
+        <button class="screen-toggle" id="btn-soln-scorecard-summary" style="margin-right: 8px;">📊 Scorecard</button>
+        <button class="exit-exam-btn" id="btn-exit-soln-console" title="Exit Solutions">✕ Exit</button>
+      </div>
+    </div>
+
+    <!-- Main Container (#main-container) -->
+    <div id="main-container">
+      
+      <!-- Left 78% Container - Question & Sections -->
+      <div id="left-container-post" style="display: block;">
+        
+        <!-- Sections & Filter Bar -->
+        <div id="section-name-container" style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; overflow-x: auto; flex: 1;">
+            <div class="title-box"><b>Sections</b></div>
+            <span class="section-wrapper">
+              <table>
+                <tbody>
+                  <tr id="soln-section-tabs">
+                    <!-- Populated dynamically -->
+                  </tr>
+                </tbody>
+              </table>
+            </span>
+          </div>
+
+          <!-- Quick Filter Pills -->
+          <div class="soln-filter-pills" id="soln-filter-pills">
+            <span class="soln-pill all active" data-filter="all">All</span>
+            <span class="soln-pill correct" data-filter="correct">Correct</span>
+            <span class="soln-pill wrong" data-filter="wrong">Incorrect</span>
+            <span class="soln-pill unattempted" data-filter="unattempted">Unattempted</span>
+          </div>
+        </div>
+
+        <!-- Question Outer Pane -->
+        <div id="question-outer-pane">
+          
+          <!-- Question No & Solution Status Bar -->
+          <div id="question-no-bar">
+            <div style="display: flex; align-items: center;">
+              Question No <span id="soln-q-num-label" style="margin-left: 4px;">1</span>
+              <span id="soln-status-badge-container"></span>
+            </div>
+            <div class="soln-time-meta" id="soln-time-meta">
+              <span>⏱ Your Time: <strong id="soln-meta-user-time">32s</strong></span>
+              <span>Avg: <strong>45s</strong></span>
+              <span>Topper: <strong>18s</strong></span>
+            </div>
+          </div>
+
+          <!-- Question Inner Pane -->
+          <div id="question-inner-pane">
+            
+            <!-- 2-SIDED VIEW FOR PASSAGE & STANDALONE QUESTIONS (DUPLEX UI) -->
+            <div class="two-sided-wrapper" id="soln-two-sided-wrapper" style="display: block;">
+              <div class="leftpane" id="soln-leftpane">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td id="soln-passage-panel"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="rightpane" id="soln-rightpane">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td id="soln-question-text-2sided"></td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <table class="opts-table answer-outer-div" cellpadding="0" cellspacing="0" id="soln-options-table-2sided"></table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="soln-explanation-box" id="soln-explanation-box-2sided"></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- SINGLE PANE VIEW FOR FALLBACK -->
+            <div class="question-outer-div" id="soln-single-wrapper" style="display: none;">
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div id="soln-question-image" style="display: none; margin-bottom: 10px;"></div>
+                      <div id="soln-question-text"></div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <table class="opts-table answer-outer-div" cellpadding="0" cellspacing="0" id="soln-options-container"></table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="soln-explanation-box" id="soln-explanation-box-single"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div id="button-holder">
+            <div class="action-left-buttons">
+              <a href="javascript:void(0)" id="btn-soln-prev">
+                <span id="mark" style="min-width: 150px;">&lsaquo; Previous Question</span>
+              </a>
+            </div>
+            <div>
+              <a href="javascript:void(0)" id="btn-soln-next">
+                <span id="next" style="min-width: 150px;">Next Question &rsaquo;</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Right 22% Container - Solution Palette & Legend -->
+      <div id="right-container-post" style="display: block;">
+        
+        <!-- Candidate Profile Box -->
+        <div id="cand-time-outer" style="height: 60px;">
+          <div id="cand-image">
+            <img src="images/oliveboard/default-avatar.png" alt="Candidate" onerror="this.src='https://s3-ap-southeast-1.amazonaws.com/sg.oliveboard.in/testapp/logo-white.png'">
+          </div>
+          <div style="font-size: 12px; font-family: verdana; line-height: 18px; text-align: right;">
+            <div><strong id="soln-cand-name">Aspirant</strong></div>
+            <div style="color: #64748b;" id="soln-cand-score">Score: 0.00 / 100</div>
+          </div>
+        </div>
+
+        <!-- Lower Half Outer -->
+        <div id="right-low-half-outer" style="top: 60px; height: calc(100% - 60px);">
+          
+          <!-- Solution Legend -->
+          <div id="legend" style="height: auto; padding: 6px 10px;">
+            <table cellpadding="2" cellspacing="2" style="font-size: 11px; width: 100%;">
+              <tbody>
+                <tr>
+                  <td><span style="display: inline-block; width: 12px; height: 12px; background: #2e7d32; border-radius: 2px;"></span></td>
+                  <td>Correct: <strong id="soln-legend-correct">0</strong></td>
+                  <td><span style="display: inline-block; width: 12px; height: 12px; background: #c62828; border-radius: 2px;"></span></td>
+                  <td>Wrong: <strong id="soln-legend-wrong">0</strong></td>
+                </tr>
+                <tr>
+                  <td><span style="display: inline-block; width: 12px; height: 12px; background: #94a3b8; border-radius: 2px;"></span></td>
+                  <td>Skipped: <strong id="soln-legend-unattempted">0</strong></td>
+                  <td colspan="2"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Solution Question Palette Grid -->
+          <div id="question-main-pallette" style="top: 55px; height: calc(100% - 135px);">
+            <table style="width: 100%;">
+              <tbody id="soln-palette-grid">
+                <!-- Rendered dynamically as 4-column color-coded buttons -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bottom Navigation Grid -->
+          <div id="button-bottom">
+            <table cellpadding="2" cellspacing="6">
+              <tbody>
+                <tr>
+                  <td>
+                    <a href="javascript:void(0)" id="btn-soln-open-scorecard">
+                      <div id="b1">Scorecard</div>
+                    </a>
+                  </td>
+                  <td>
+                    <a href="javascript:void(0)" id="btn-soln-exit-footer">
+                      <div id="b2">Exit Review</div>
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================
+       MODAL 3: POST-TEST AI SCORECARD & SOLUTIONS MODAL
+       ======================================================== -->
+  <div class="scorecard-modal-overlay" id="scorecard-modal-overlay">
+    <div class="scorecard-dialog">
+      
+      <div class="scorecard-header">
+        <div>
+          <h2>Performance Scorecard & AI Analysis</h2>
+          <span style="font-size: 13px; color: #b2dfdb;" id="scorecard-test-title">IBPS SO IT Officer Mains - Full Mock 1</span>
+        </div>
+      </div>
+
+      <div class="scorecard-body">
+        
+        <!-- Metrics Cards Row -->
+        <div class="metrics-row">
+          <div class="metric-card highlight">
+            <div class="label">Total Score</div>
+            <div class="number" id="metric-score">0.00</div>
+          </div>
+          <div class="metric-card">
+            <div class="label">All India Percentile</div>
+            <div class="number" id="metric-percentile">0.0%ile</div>
+          </div>
+          <div class="metric-card">
+            <div class="label">Accuracy Rate</div>
+            <div class="number" id="metric-accuracy">0%</div>
+          </div>
+          <div class="metric-card">
+            <div class="label">Estimated AIR</div>
+            <div class="number" id="metric-rank">#--</div>
+          </div>
+        </div>
+
+        <!-- Detailed Metrics Strip -->
+        <div style="display: flex; gap: 12px; margin-bottom: 20px; background: #f8fafc; padding: 12px 18px; border-radius: 10px; border: 1px solid #e2e8f0; justify-content: space-around; text-align: center;">
+          <div><span style="font-size: 11px; color: #64748b;">Correct:</span> <strong style="color: #2e7d32;" id="metric-correct">0</strong></div>
+          <div><span style="font-size: 11px; color: #64748b;">Wrong:</span> <strong style="color: #e53935;" id="metric-wrong">0</strong></div>
+          <div><span style="font-size: 11px; color: #64748b;">Unanswered:</span> <strong style="color: #64748b;" id="metric-unanswered">0</strong></div>
+          <div><span style="font-size: 11px; color: #64748b;">Time Spent:</span> <strong style="color: #008479;" id="metric-time">0m 0s</strong></div>
+        </div>
+
+        <!-- Sectional Performance Analysis Table (Spec 5.2) -->
+        <div class="solutions-section-title">Sectional Performance &amp; Cutoff Analysis</div>
+        <div class="sectional-table-wrapper" style="overflow-x: auto; margin-bottom: 20px;">
+          <table class="sectional-analysis-table" id="scorecard-sectional-table">
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Total Qs</th>
+                <th>Attempted</th>
+                <th>Correct</th>
+                <th>Wrong</th>
+                <th>Net Score</th>
+                <th>Cutoff</th>
+                <th>Status</th>
+                <th>Accuracy</th>
+                <th>Time Spent</th>
+              </tr>
+            </thead>
+            <tbody id="scorecard-section-rows">
+              <!-- Rendered dynamically by test-engine.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Topic-wise Breakdown Grid (Spec 5.2) -->
+        <div class="solutions-section-title">Topic-wise Mastery Breakdown</div>
+        <div class="topic-analysis-grid" id="scorecard-topic-breakdown" style="margin-bottom: 24px;"></div>
+
+        <!-- Topper vs You Comparative Analysis Module (Spec 5.3) -->
+        <div class="solutions-section-title">Comparative Analysis: You vs Average vs Topper</div>
+        <div class="topper-comparison-module" id="scorecard-topper-module" style="margin-bottom: 24px;">
+          <div class="comparison-tabs" id="comp-tabs-bar">
+            <button class="comp-tab active" data-tab="score">Score &amp; Accuracy</button>
+            <button class="comp-tab" data-tab="time">Time Allocation</button>
+            <button class="comp-tab" data-tab="sections">Sectional Comparison</button>
+          </div>
+          <div class="comparison-cards-grid" id="comp-cards-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Legacy section breakdown container for backwards compat -->
+        <div id="scorecard-section-breakdown" style="display: none;"></div>
+
+        <!-- Detailed HTML Solutions Explanations -->
+        <div class="solutions-section-title">Question-by-Question Solution Explanations</div>
+        <div id="scorecard-solutions-list"></div>
+
+      </div>
+
+      <div class="scorecard-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-take-mock" id="btn-scorecard-launch-solutions" style="flex: 0 0 auto; padding: 10px 24px; background: #3476BB; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">📘 Interactive Solution Window</button>
+        <button class="btn-take-mock" id="btn-close-scorecard" style="flex: 0 0 auto; padding: 10px 24px; background: #64748b; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Close Scorecard</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/data-manager.js"></script>
+  <script src="js/test-engine.js"></script>
+  <script src="js/solution-engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

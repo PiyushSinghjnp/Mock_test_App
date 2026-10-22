@@ -1,0 +1,54 @@
+{
+  "item_id": "5.3",
+  "phase": "PHASE 5: POST-TEST ANALYTICS & SOLUTIONS FUNCTIONALITY",
+  "title": "Topper vs. You Comparison",
+  "captured_at": "2026-10-21T22:04:00+05:30",
+  "source": "https://u1.oliveboard.in / analytics modal & solution-engine.js #soln-time-meta",
+  "dom_structure": {
+    "comparative_table": "<div class=\"topper-comparison-module\"><div class=\"comparison-tabs\"><button class=\"comp-tab active\" data-tab=\"score\">Score & Accuracy</button><button class=\"comp-tab\" data-tab=\"time\">Time Allocation</button><button class=\"comp-tab\" data-tab=\"sections\">Section Breakdown</button></div><div class=\"comparison-cards-grid\"><div class=\"comp-card\"><div class=\"comp-title\">Total Score</div><div class=\"comp-bars\"><div class=\"bar-row\"><span class=\"lbl\">You:</span><div class=\"bar-bg\"><div class=\"bar-fill you\" style=\"width: 65%;\"></div></div><span class=\"val\">65.00</span></div><div class=\"bar-row\"><span class=\"lbl\">Avg:</span><div class=\"bar-bg\"><div class=\"bar-fill avg\" style=\"width: 44%;\"></div></div><span class=\"val\">44.20</span></div><div class=\"bar-row\"><span class=\"lbl\">Topper:</span><div class=\"bar-bg\"><div class=\"bar-fill topper\" style=\"width: 90%;\"></div></div><span class=\"val\">89.75</span></div></div></div><div class=\"comp-card\"><div class=\"comp-title\">Accuracy Rate</div><div class=\"comp-bars\"><div class=\"bar-row\"><span class=\"lbl\">You:</span><div class=\"bar-bg\"><div class=\"bar-fill you\" style=\"width: 88%;\"></div></div><span class=\"val\">88.5%</span></div><div class=\"bar-row\"><span class=\"lbl\">Avg:</span><div class=\"bar-bg\"><div class=\"bar-fill avg\" style=\"width: 68%;\"></div></div><span class=\"val\">68.2%</span></div><div class=\"bar-row\"><span class=\"lbl\">Topper:</span><div class=\"bar-bg\"><div class=\"bar-fill topper\" style=\"width: 96%;\"></div></div><span class=\"val\">96.5%</span></div></div></div></div></div>",
+    "question_level_comparison_strip": "<div class=\"soln-time-meta\" id=\"soln-time-meta\"><span>⏱ Your Time: <strong id=\"soln-meta-user-time\">32s</strong></span> <span>Avg: <strong>45s</strong></span> <span>Topper: <strong>18s</strong></span></div>"
+  },
+  "css_rules": {
+    ".topper-comparison-module": "background: #fff; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0; margin-top: 15px; font-family: verdana;",
+    ".comparison-tabs": "display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 16px;",
+    ".comp-tab": "background: transparent; border: none; padding: 6px 14px; font-weight: 600; cursor: pointer; color: #64748b; font-size: 13px;",
+    ".comp-tab.active": "color: #3476BB; border-bottom: 2px solid #3476BB;",
+    ".comparison-cards-grid": "display: grid; grid-template-columns: 1fr 1fr; gap: 16px;",
+    ".comp-card": "background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px;",
+    ".comp-title": "font-weight: 700; color: #1e293b; font-size: 14px; margin-bottom: 10px;",
+    ".bar-row": "display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px;",
+    ".bar-row .lbl": "width: 50px; font-weight: 600;",
+    ".bar-bg": "flex: 1; height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden;",
+    ".bar-fill.you": "height: 100%; background: #3476BB;",
+    ".bar-fill.avg": "height: 100%; background: #94a3b8;",
+    ".bar-fill.topper": "height: 100%; background: #16a34a;"
+  },
+  "metrics_data_schema": {
+    "comparison": {
+      "user": {
+        "score": 65.0,
+        "accuracy": 88.5,
+        "attempts": 74,
+        "timeSpentSeconds": 3252,
+        "speedCorrectSeconds": 38,
+        "speedWrongSeconds": 64
+      },
+      "average": {
+        "score": 44.2,
+        "accuracy": 68.2,
+        "attempts": 58,
+        "timeSpentSeconds": 3510,
+        "speedCorrectSeconds": 45,
+        "speedWrongSeconds": 75
+      },
+      "topper": {
+        "score": 89.75,
+        "accuracy": 96.5,
+        "attempts": 94,
+        "timeSpentSeconds": 2890,
+        "speedCorrectSeconds": 22,
+        "speedWrongSeconds": 34
+      }
+    }
+  }
+}

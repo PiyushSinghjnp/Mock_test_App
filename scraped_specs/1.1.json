@@ -1,0 +1,95 @@
+{
+  "item_id": "1.1",
+  "phase": "PHASE 1: MOCK TEST DASHBOARD & CATALOG LOGIC",
+  "title": "Category & Sub-category Tabs",
+  "captured_at": "2026-10-21T21:52:10+05:30",
+  "source": "https://www.oliveboard.in / content.php & course.js",
+  "dom_structure": {
+    "tab_container": "<div class=\"fltr-tabs-row\"><div class=\"fltr-tabs-wrapper\"><div class=\"fltr-tabs-nav\">...</div></div></div>",
+    "tab_item": "<a class=\"fltr-tab-link {active_class}\" data-tabcode=\"{tab_code}\" href=\"javascript:void(0)\"><span>{tab_name}</span></a>",
+    "category_switcher": "<button class=\"hdr-category-btn\" id=\"btn-active-exam-selector\"><span class=\"cat-icon\">🏦</span><span class=\"cat-title\">{exam_name}</span><span class=\"chevron\">▼</span></button>"
+  },
+  "sub_category_tabs": [
+    {
+      "tab_code": "all",
+      "tab_label": "All Tests",
+      "api_query": "?c={coursename}&i={categoryname}&tab=all",
+      "filter_behavior": "Renders all mock test sections in page order without section hiding"
+    },
+    {
+      "tab_code": "prelims",
+      "tab_label": "Prelims Full Tests",
+      "api_query": "?c={coursename}&i={categoryname}&tab=prelims",
+      "filter_behavior": "Scrolls smoothly to target section .prelims (offset - headerHeight - 70px) and filters active mock cards"
+    },
+    {
+      "tab_code": "mains",
+      "tab_label": "Mains Full Tests",
+      "api_query": "?c={coursename}&i={categoryname}&tab=mains",
+      "filter_behavior": "Scrolls smoothly to target section .mains and isolates 150-155 Qs full length mains packs"
+    },
+    {
+      "tab_code": "sectional",
+      "tab_label": "Sectional Speed Tests",
+      "api_query": "?c={coursename}&i={categoryname}&tab=sectional",
+      "filter_behavior": "Targets .sectional section; displays 20-35 Qs single-subject speed drills (Quant, Reasoning, English)"
+    },
+    {
+      "tab_code": "topic",
+      "tab_label": "Topic Tests & Drills",
+      "api_query": "?c={coursename}&i={categoryname}&tab=topic",
+      "filter_behavior": "Targets .topic section; displays micro-tests (DI, Syllogisms, Puzzles, Coding-Decoding)"
+    },
+    {
+      "tab_code": "pyp",
+      "tab_label": "Previous Year Papers",
+      "api_query": "?c={coursename}&i={categoryname}&tab=pyp",
+      "filter_behavior": "Targets .pyp section; sets title to PYPs and displays official memory-based past exam shifts"
+    }
+  ],
+  "computed_css_tokens": {
+    "tab_link": {
+      "display": "inline-flex",
+      "align-items": "center",
+      "padding": "8px 18px",
+      "font-family": "Inter, Roboto, sans-serif",
+      "font-size": "13px",
+      "font-weight": "600",
+      "color": "#475569",
+      "border-radius": "20px",
+      "background": "#f1f5f9",
+      "transition": "all 0.18s ease"
+    },
+    "tab_link_active": {
+      "color": "#ffffff",
+      "background": "#008479",
+      "box-shadow": "0 2px 6px rgba(0, 132, 121, 0.25)"
+    }
+  },
+  "state_transitions": {
+    "on_tab_click": [
+      "Remove .active class from all .fltr-tab-link elements",
+      "Add .active class to clicked tab",
+      "Read data-tabcode attribute",
+      "If container horizontal scroll overflow exists, animate scrollLeft to bring tab into view with 20px padding",
+      "Find first DOM container matching .${tabcode}",
+      "Trigger smooth scroll: container.animate({ scrollTop: target.offset().top - headerHeight - 70 }, 400)",
+      "Update URL hash or query state: history.pushState(null, '', `?tab=${tabcode}`)"
+    ]
+  },
+  "network_intercept": {
+    "url": "https://www.oliveboard.in/content.php",
+    "method": "GET",
+    "params": {
+      "c": "sbipopre19",
+      "i": "prelims"
+    },
+    "response_shape": {
+      "categorytitle": "string",
+      "title_txt": "string",
+      "buyurlcourse": "string",
+      "tabdata": "array",
+      "blocks": "array"
+    }
+  }
+}

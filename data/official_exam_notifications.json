@@ -1,0 +1,596 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-10-22",
+  "source": "Official Notifications of SBI, IBPS, SSC, RBI, and RRB",
+  "exams": {
+    "sbi-po": {
+      "exam_name": "State Bank of India Probationary Officer (SBI PO)",
+      "authority": "State Bank of India (Central Recruitment & Promotion Department)",
+      "stages": {
+        "prelims": {
+          "title": "SBI PO Preliminary Examination",
+          "total_questions": 100,
+          "total_marks": 100,
+          "total_duration_minutes": 60,
+          "total_duration_seconds": 3600,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "english-language",
+              "name": "English Language",
+              "questions_count": 30,
+              "max_marks": 30,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": ["English"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "questions_count": 35,
+              "max_marks": 35,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "reasoning-ability",
+              "name": "Reasoning Ability",
+              "questions_count": 35,
+              "max_marks": 35,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            }
+          ]
+        },
+        "mains": {
+          "title": "SBI PO Main Examination (Objective)",
+          "total_questions": 155,
+          "total_marks": 200,
+          "total_duration_minutes": 180,
+          "total_duration_seconds": 10800,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "reasoning-computer",
+              "name": "Reasoning & Computer Aptitude",
+              "questions_count": 40,
+              "max_marks": 60,
+              "duration_minutes": 50,
+              "duration_seconds": 3000,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "data-analysis",
+              "name": "Data Analysis & Interpretation",
+              "questions_count": 30,
+              "max_marks": 60,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "general-awareness",
+              "name": "General/Economy/Banking Awareness",
+              "questions_count": 50,
+              "max_marks": 60,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 4,
+              "id": "english-language",
+              "name": "English Language",
+              "questions_count": 35,
+              "max_marks": 20,
+              "duration_minutes": 40,
+              "duration_seconds": 2400,
+              "medium": ["English"],
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "ibps-so": {
+      "exam_name": "IBPS Specialist Officer (Scale-I) IT Officer",
+      "authority": "Institute of Banking Personnel Selection (CRP SPL-XVI)",
+      "stages": {
+        "prelims": {
+          "title": "IBPS SO Prelims (IT Officer)",
+          "total_questions": 150,
+          "total_marks": 125,
+          "total_duration_minutes": 120,
+          "total_duration_seconds": 7200,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "english-language",
+              "name": "English Language",
+              "questions_count": 50,
+              "max_marks": 25,
+              "duration_minutes": 40,
+              "duration_seconds": 2400,
+              "medium": ["English"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "reasoning-ability",
+              "name": "Reasoning Ability",
+              "questions_count": 50,
+              "max_marks": 50,
+              "duration_minutes": 40,
+              "duration_seconds": 2400,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "questions_count": 50,
+              "max_marks": 50,
+              "duration_minutes": 40,
+              "duration_seconds": 2400,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            }
+          ]
+        },
+        "mains": {
+          "title": "IBPS SO IT Officer Mains Full Mock (Comprehensive Pattern)",
+          "total_questions": 150,
+          "total_marks": 150,
+          "total_duration_minutes": 120,
+          "total_duration_seconds": 7200,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "english-language",
+              "name": "English Language",
+              "questions_count": 30,
+              "max_marks": 30,
+              "duration_minutes": 25,
+              "duration_seconds": 1500,
+              "medium": ["English"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "reasoning-ability",
+              "name": "Reasoning Ability",
+              "questions_count": 40,
+              "max_marks": 40,
+              "duration_minutes": 35,
+              "duration_seconds": 2100,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "questions_count": 30,
+              "max_marks": 30,
+              "duration_minutes": 25,
+              "duration_seconds": 1500,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 4,
+              "id": "professional-knowledge",
+              "name": "Professional Knowledge",
+              "questions_count": 50,
+              "max_marks": 50,
+              "duration_minutes": 35,
+              "duration_seconds": 2100,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "ibps-po": {
+      "exam_name": "IBPS Probationary Officer (CRP PO/MT)",
+      "authority": "Institute of Banking Personnel Selection",
+      "stages": {
+        "prelims": {
+          "title": "IBPS PO Preliminary Examination",
+          "total_questions": 100,
+          "total_marks": 100,
+          "total_duration_minutes": 60,
+          "total_duration_seconds": 3600,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "english-language",
+              "name": "English Language",
+              "questions_count": 30,
+              "max_marks": 30,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": ["English"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "questions_count": 35,
+              "max_marks": 35,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "reasoning-ability",
+              "name": "Reasoning Ability",
+              "questions_count": 35,
+              "max_marks": 35,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            }
+          ]
+        },
+        "mains": {
+          "title": "IBPS PO Main Examination",
+          "total_questions": 155,
+          "total_marks": 200,
+          "total_duration_minutes": 180,
+          "total_duration_seconds": 10800,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "reasoning-computer",
+              "name": "Reasoning & Computer Aptitude",
+              "questions_count": 45,
+              "max_marks": 60,
+              "duration_minutes": 60,
+              "duration_seconds": 3600,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "general-awareness",
+              "name": "General/Economy/Banking Awareness",
+              "questions_count": 40,
+              "max_marks": 40,
+              "duration_minutes": 35,
+              "duration_seconds": 2100,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "english-language",
+              "name": "English Language",
+              "questions_count": 35,
+              "max_marks": 40,
+              "duration_minutes": 40,
+              "duration_seconds": 2400,
+              "medium": ["English"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 4,
+              "id": "data-analysis",
+              "name": "Data Analysis & Interpretation",
+              "questions_count": 35,
+              "max_marks": 60,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "ssc-cgl": {
+      "exam_name": "Staff Selection Commission - Combined Graduate Level (SSC CGL)",
+      "authority": "Staff Selection Commission (SSC)",
+      "stages": {
+        "tier-1": {
+          "title": "SSC CGL Tier-1 Examination",
+          "total_questions": 100,
+          "total_marks": 200,
+          "total_duration_minutes": 60,
+          "total_duration_seconds": 3600,
+          "has_sectional_timing": false,
+          "is_sectional_locked": false,
+          "composite_time_rule": "Candidates can switch freely between sections within 60 minutes",
+          "marking_scheme": {
+            "positive_mark": 2.0,
+            "negative_mark": 0.50,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "general-intelligence",
+              "name": "General Intelligence and Reasoning",
+              "questions_count": 25,
+              "max_marks": 50,
+              "duration_minutes": 60,
+              "duration_seconds": 3600,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": false
+            },
+            {
+              "section_index": 2,
+              "id": "general-awareness",
+              "name": "General Awareness",
+              "questions_count": 25,
+              "max_marks": 50,
+              "duration_minutes": 60,
+              "duration_seconds": 3600,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": false
+            },
+            {
+              "section_index": 3,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "questions_count": 25,
+              "max_marks": 50,
+              "duration_minutes": 60,
+              "duration_seconds": 3600,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": false
+            },
+            {
+              "section_index": 4,
+              "id": "english-comprehension",
+              "name": "English Comprehension",
+              "questions_count": 25,
+              "max_marks": 50,
+              "duration_minutes": 60,
+              "duration_seconds": 3600,
+              "medium": ["English"],
+              "sectional_lock": false
+            }
+          ]
+        },
+        "tier-2": {
+          "title": "SSC CGL Tier-2 (Paper-I Session-I)",
+          "total_questions": 150,
+          "total_marks": 450,
+          "total_duration_minutes": 135,
+          "total_duration_seconds": 8100,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 3.0,
+            "negative_mark": 1.00,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/3rd"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "section-1-math-reasoning",
+              "name": "Section I: Mathematical Abilities & Reasoning",
+              "questions_count": 60,
+              "max_marks": 180,
+              "duration_minutes": 60,
+              "duration_seconds": 3600,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "section-2-english-ga",
+              "name": "Section II: English Language & General Awareness",
+              "questions_count": 70,
+              "max_marks": 210,
+              "duration_minutes": 60,
+              "duration_seconds": 3600,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "section-3-computer",
+              "name": "Section III: Computer Knowledge Module",
+              "questions_count": 20,
+              "max_marks": 60,
+              "duration_minutes": 15,
+              "duration_seconds": 900,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "rbi-grade-b": {
+      "exam_name": "Reserve Bank of India Grade B Officers (General)",
+      "authority": "Reserve Bank of India Services Board",
+      "stages": {
+        "phase-1": {
+          "title": "RBI Grade B Phase-1 Examination",
+          "total_questions": 200,
+          "total_marks": 200,
+          "total_duration_minutes": 120,
+          "total_duration_seconds": 7200,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "general-awareness",
+              "name": "General Awareness",
+              "questions_count": 80,
+              "max_marks": 80,
+              "duration_minutes": 25,
+              "duration_seconds": 1500,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "reasoning",
+              "name": "Reasoning Ability",
+              "questions_count": 60,
+              "max_marks": 60,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "english-language",
+              "name": "English Language",
+              "questions_count": 30,
+              "max_marks": 30,
+              "duration_minutes": 25,
+              "duration_seconds": 1500,
+              "medium": ["English"],
+              "sectional_lock": true
+            },
+            {
+              "section_index": 4,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "questions_count": 30,
+              "max_marks": 30,
+              "duration_minutes": 25,
+              "duration_seconds": 1500,
+              "medium": ["English", "Hindi"],
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "rrb-ntpc": {
+      "exam_name": "Railway Recruitment Board Non-Technical Popular Categories (RRB NTPC)",
+      "authority": "Railway Recruitment Boards (Ministry of Railways)",
+      "stages": {
+        "cbt-1": {
+          "title": "RRB NTPC CBT-1 (1st Stage Computer Based Test)",
+          "total_questions": 100,
+          "total_marks": 100,
+          "total_duration_minutes": 90,
+          "total_duration_seconds": 5400,
+          "has_sectional_timing": false,
+          "is_sectional_locked": false,
+          "composite_time_rule": "Candidates can switch freely between sections within 90 minutes",
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.33,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/3rd"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "general-awareness",
+              "name": "General Awareness",
+              "questions_count": 40,
+              "max_marks": 40,
+              "duration_minutes": 90,
+              "duration_seconds": 5400,
+              "medium": ["English", "Hindi", "Regional"],
+              "sectional_lock": false
+            },
+            {
+              "section_index": 2,
+              "id": "mathematics",
+              "name": "Mathematics",
+              "questions_count": 30,
+              "max_marks": 30,
+              "duration_minutes": 90,
+              "duration_seconds": 5400,
+              "medium": ["English", "Hindi", "Regional"],
+              "sectional_lock": false
+            },
+            {
+              "section_index": 3,
+              "id": "general-intelligence",
+              "name": "General Intelligence and Reasoning",
+              "questions_count": 30,
+              "max_marks": 30,
+              "duration_minutes": 90,
+              "duration_seconds": 5400,
+              "medium": ["English", "Hindi", "Regional"],
+              "sectional_lock": false
+            }
+          ]
+        }
+      }
+    }
+  }
+}

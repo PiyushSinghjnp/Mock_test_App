@@ -1,0 +1,134 @@
+{
+  "item_id": "3.5",
+  "phase": "PHASE 3: LIVE EXAM ENGINE — EVERY INTERACTIVE FUNCTIONALITY",
+  "title": "All 5 Question Palette State Transitions",
+  "captured_at": "2026-10-21T21:59:45+05:30",
+  "source": "https://u1.oliveboard.in / oliveboard_live_player.html displayQuestions(), displayQuestionsSave(), displayQuestionsMark(), clearOption() & style_pallet.css",
+  "palette_sprite_definition": {
+    "sprite_asset": "images/button-sprite.png",
+    "base_element_css": {
+      "display": "block",
+      "height": "39px",
+      "width": "35px",
+      "text-align": "center",
+      "font-size": "12px",
+      "font-family": "verdana,helvetica,sans-serif",
+      "font-weight": "bold",
+      "text-decoration": "none"
+    }
+  },
+  "states": {
+    "0": {
+      "name": "NOT_VISITED",
+      "sprite_position": "0px -223px",
+      "text_color": "#4D4D4D",
+      "shape_description": "Silver/Grey square badge",
+      "meaning": "Candidate has not yet navigated to this question.",
+      "evaluated": false
+    },
+    "1": {
+      "name": "NOT_ANSWERED",
+      "sprite_position": "0px -136px",
+      "text_color": "#FFFFFF",
+      "shape_description": "Red shield shape with pointed downward bottom",
+      "meaning": "Question visited but no option saved.",
+      "evaluated": false
+    },
+    "2": {
+      "name": "ANSWERED",
+      "sprite_position": "0px -264px",
+      "text_color": "#FFFFFF",
+      "shape_description": "Green hexagon shape",
+      "meaning": "Option selected and confirmed via 'Save & Next'.",
+      "evaluated": true
+    },
+    "3": {
+      "name": "MARKED_FOR_REVIEW",
+      "sprite_position": "0px -180px",
+      "text_color": "#FFFFFF",
+      "shape_description": "Violet circle",
+      "meaning": "Marked for review without answering.",
+      "evaluated": false
+    },
+    "4": {
+      "name": "ANSWERED_AND_MARKED_FOR_REVIEW",
+      "sprite_position": "0px -350px",
+      "text_color": "#FFFFFF",
+      "shape_description": "Violet circle with small green tick symbol at bottom-right",
+      "meaning": "Answered AND marked for review.",
+      "evaluated": true
+    }
+  },
+  "state_machine_transitions": [
+    {
+      "trigger": "Navigate to question directly or sequentially",
+      "initial_state": 0,
+      "condition": "quesStatus[qIndex] === 0",
+      "action": [
+        "quesStatus[qIndex] = 1;",
+        "$('#sprite-butts' + qIndex).css({ 'background-position': '0px -136px', 'color': '#FFF' });",
+        "questStatusCount();"
+      ],
+      "next_state": 1
+    },
+    {
+      "trigger": "Click 'Save & Next'",
+      "initial_state": "1, 2, 3, or 4",
+      "condition": "saveSelection() != 0",
+      "action": [
+        "quesAnswer[qIndex] = qansp;",
+        "quesStatus[qIndex] = 2;",
+        "$('#sprite-butts' + qIndex).css({ 'background-position': '0px -264px', 'color': '#FFF' });",
+        "Advance question to qIndex + 1;",
+        "questStatusCount();"
+      ],
+      "next_state": 2
+    },
+    {
+      "trigger": "Click 'Mark for Review & Next' without selecting an option",
+      "initial_state": "0 or 1",
+      "condition": "saveSelection() == 0",
+      "action": [
+        "quesAnswer[qIndex] = 0;",
+        "quesStatus[qIndex] = 3;",
+        "$('#sprite-butts' + qIndex).css({ 'background-position': '0px -180px', 'color': '#FFF' });",
+        "Advance question to qIndex + 1;",
+        "questStatusCount();"
+      ],
+      "next_state": 3
+    },
+    {
+      "trigger": "Click 'Mark for Review & Next' with an option selected",
+      "initial_state": "1, 2, or 3",
+      "condition": "saveSelection() != 0",
+      "action": [
+        "quesAnswer[qIndex] = qanspm;",
+        "quesStatus[qIndex] = 4;",
+        "$('#sprite-butts' + qIndex).css({ 'background-position': '0px -350px', 'color': '#FFF' });",
+        "Advance question to qIndex + 1;",
+        "questStatusCount();"
+      ],
+      "next_state": 4
+    },
+    {
+      "trigger": "Click 'Clear Response' (or click selected radio again)",
+      "initial_state": "2, 3, or 4",
+      "condition": "Active question has a checked option or status 2/3/4",
+      "action": [
+        "$('[name=\"option' + qid + '\"]').prop('checked', false);",
+        "quesAnswer[qIndex] = 0;",
+        "quesStatus[qIndex] = 1;",
+        "$('#sprite-butts' + qIndex).css({ 'background-position': '0px -136px', 'color': '#FFF' });",
+        "questStatusCount();"
+      ],
+      "next_state": 1
+    }
+  ],
+  "legend_live_counter_bindings": {
+    "answered": "#stic-answered",
+    "not_answered": "#stic-notanswered",
+    "not_visited": "#stic-notvisited",
+    "marked": "#stic-marked",
+    "answered_marked": "#stic-answered-marked"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "item_id": "1.3",
+  "phase": "PHASE 1: MOCK TEST DASHBOARD & CATALOG LOGIC",
+  "title": "Test Card States",
+  "captured_at": "2026-10-21T21:53:00+05:30",
+  "source": "https://www.oliveboard.in / course.js renderCompletedTest() & renderAvailableTest()",
+  "card_variants": [
+    {
+      "state_id": "free_unattempted",
+      "display_name": "Free Mock - Ready to Attempt",
+      "dom_template": "<div class=\"tpc-card start_test_card\" data-url=\"{test_url}\" onclick=\"openwin('{test_url}');\"><div class=\"tpc-col-info\"><h3 class=\"tpc-title\">{testname} <span class=\"cls-tag\">Free</span></h3><div class=\"tpc-scores\"><div class=\"tpc-score-item\"><span class=\"tpc-val\">{qmax} Questions</span></div><div class=\"tpc-score-item\"><span class=\"tpc-val\">{duration} Mins</span></div></div></div><div class=\"tpc-col-actions\"><button class=\"tpc-btn-start\">Attempt Now 🚀</button></div></div>",
+      "button_label": "Attempt Now / Take Test",
+      "action_trigger": "openwin(item.buttons[0][1], 'OliveboardTestPlayer');"
+    },
+    {
+      "state_id": "locked_pro",
+      "display_name": "PRO Test - Locked",
+      "dom_template": "<div class=\"tpc-card locked_test_card\"><div class=\"tpc-col-info\"><h3 class=\"tpc-title\">{testname} <span class=\"cls-tag-locked\">🔒 PRO</span></h3><div class=\"tpc-scores\"><div class=\"tpc-score-item\"><span class=\"tpc-val\">{qmax} Questions</span></div><div class=\"tpc-score-item\"><span class=\"tpc-val\">{duration} Mins</span></div></div></div><div class=\"tpc-col-actions\"><button class=\"tpc-btn-buy\" onclick=\"window.open('{buyurlcourse}', '_blank');\">Unlock Mock</button></div></div>",
+      "button_label": "Unlock Mock / Buy Package",
+      "action_trigger": "window.open(buyurlcourse, '_blank');"
+    },
+    {
+      "state_id": "paused_in_progress",
+      "display_name": "Paused Test - In Progress",
+      "dom_template": "<div class=\"tpc-card paused_test_card\"><div class=\"tpc-col-info\"><h3 class=\"tpc-title\">{testname} <span class=\"cls-tag-paused\">⏸ In Progress</span></h3><div class=\"tpc-meta-row\"><span>Last saved: Question {last_q}</span> • <span>Time left: {remaining_time}</span></div></div><div class=\"tpc-col-actions\"><button class=\"tpc-btn-resume\" onclick=\"openwin('{resume_url}');\">Resume Test ▶</button></div></div>",
+      "button_label": "Resume Test",
+      "action_trigger": "openwin(item.resumeUrl, 'OliveboardTestPlayer'); restores quesAnswer, quesStatus, and clock countdown"
+    },
+    {
+      "state_id": "completed_attempted",
+      "display_name": "Completed Test - Analysis & Solutions Available",
+      "dom_template": "<div class=\"tpc-card bg_comp_green completed_test\"><div class=\"tpc-col-info\"><h3 class=\"tpc-title\">{testname}</h3><div class=\"tpc-scores\"><div class=\"tpc-score-item\"><span class=\"tpc-val\">{score} / {scoremax}</span><span class=\"tpc-lbl\">Score</span></div><div class=\"tpc-score-item\"><span class=\"tpc-val\">{accuracy}%</span><span class=\"tpc-lbl\">Accuracy</span></div></div></div><div class=\"tpc-col-progress\"><div class=\"tpc-bar-container\"><div class=\"tpc-bar-green\" style=\"width:{correctperc}%;\"></div><div class=\"tpc-bar-red\" style=\"width:{wrongperc}%;\"></div><div class=\"tpc-bar-grey\" style=\"width:{unattperc}%;\"></div></div><div class=\"tpc-legends\"><span class=\"tpc-leg\"><span class=\"tpc-dot tpc-dot-green\"></span>{correct} Correct</span><span class=\"tpc-leg\"><span class=\"tpc-dot tpc-dot-red\"></span>{wrong} Wrong</span><span class=\"tpc-leg\"><span class=\"tpc-dot tpc-dot-grey\"></span>{unatt} Skipped</span></div></div><div class=\"tpc-col-actions\"><button class=\"tpc-btn-main\" onclick=\"openwin('{solnurl}', 'Solutions');\"><img src=\"img/ic-sol.svg\"> Solutions</button><div class=\"tpc-secondary-actions\"><a onclick=\"openmodal('{analysisurl}', '{solnurl}');\" class=\"tpc-sec-link\">Analysis</a><a onclick=\"openwin('{reattempturl}');\" class=\"tpc-sec-link\">Re-attempt</a></div></div></div>",
+      "button_labels": ["Solutions", "Analysis", "Re-attempt"],
+      "action_triggers": {
+        "solutions": "openwin(item.buttons[0][1], 'Solutions'); launches Oliveboard interactive Solution Window",
+        "analysis": "openmodal(item.buttons[1][1], item.buttons[0][1]); launches summary scorecard",
+        "reattempt": "openwin(item.buttons[2][1]); starts clean new attempt"
+      }
+    }
+  ],
+  "progress_bar_css": {
+    "container": "height: 6px; width: 100%; display: flex; border-radius: 3px; overflow: hidden; background: #e2e8f0;",
+    "correct_green": "background: #2e7d32; transition: width 0.3s ease;",
+    "wrong_red": "background: #c62828; transition: width 0.3s ease;",
+    "skipped_grey": "background: #94a3b8; transition: width 0.3s ease;"
+  }
+}

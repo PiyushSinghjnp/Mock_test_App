@@ -1,0 +1,62 @@
+{
+  "item_id": "3.3",
+  "phase": "PHASE 3: LIVE EXAM ENGINE — EVERY INTERACTIVE FUNCTIONALITY",
+  "title": "Question Layout Variants",
+  "captured_at": "2026-10-21T21:58:50+05:30",
+  "source": "https://u1.oliveboard.in / style_pallet.css lines 517-558 & oliveboard_live_player.html displayQuestions()",
+  "layout_variants": {
+    "variant_1_single_column_mcq": {
+      "detection": "Boolean ($('#myquestion' + ident).length > 0)",
+      "dom_structure": {
+        "container": "<div class=\"question-outer-div\"><table id=\"myquestion{qid}\"><tbody><tr><td id=\"question-box\">...questionHTML...</td></tr><tr><td><table id=\"myanswer{qid}\" class=\"answer-outer-div opts-table\">...options...</table></td></tr></tbody></table></div>",
+        "option_row": "<tr><td><input type=\"radio\" onclick=\"clearme({idx})\" name=\"option{qid}\" value=\"{idx}\" id=\"radio{qid}\"></td><td><span onclick=\"clearme({idx})\" class=\"optcl\">{letter}) </span></td><td><span onclick=\"clearme({idx})\" class=\"optcl lpad opn{qid}\">{text}<br></span></td></tr>"
+      },
+      "css_rules": {
+        ".question-outer-div": "overflow: auto; font-size: 16px; line-height: 24px;",
+        ".opts-table": "margin-top: 15px; border-collapse: collapse;",
+        ".opts-table td": "padding: 6px 4px; vertical-align: top;",
+        ".optcl": "cursor: pointer; font-size: 15px;",
+        ".lpad": "padding-left: 8px;"
+      }
+    },
+    "variant_2_split_pane_passage": {
+      "detection": "Boolean ($('#leftpane' + ident).length > 0)",
+      "dom_structure": {
+        "left_pane": "<div id=\"leftpane{qid}\" class=\"leftpane\"><table><tbody><tr><td id=\"pane-direction-box\">...passageHTML / Directions / RC text...</td></tr></tbody></table></div>",
+        "right_pane": "<div id=\"rightpane{qid}\" class=\"rightpane\"><table><tbody><tr><td id=\"pane-question-box\">...questionHTML...</td></tr><tr><td><table class=\"opts-table\" id=\"rightpane-answer{qid}\">...options...</table></td></tr></tbody></table></div>"
+      },
+      "css_rules": {
+        ".leftpane": {
+          "position": "absolute",
+          "top": "0%",
+          "left": "0%",
+          "height": "95%",
+          "width": "50%",
+          "overflow": "auto",
+          "padding": "1%",
+          "box-sizing": "border-box"
+        },
+        ".rightpane": {
+          "position": "absolute",
+          "top": "0%",
+          "left": "52%",
+          "height": "95%",
+          "width": "45%",
+          "border-left": "1px solid #000",
+          "overflow": "auto",
+          "padding": "1%",
+          "box-sizing": "border-box"
+        }
+      },
+      "scroll_behavior": "Independent scrollbars: User can scroll long reading comprehension passages or Data Interpretation charts on the left while keeping question and radio options fixed/scrollable independently on the right."
+    },
+    "variant_3_numerical_tita_keypad": {
+      "detection": "Question type == 'NUMERICAL' | 'TITA'",
+      "dom_structure": {
+        "input_display": "<div class=\"tita-input-wrapper\"><input type=\"text\" id=\"tita-input-{qid}\" class=\"tita-display\" readonly placeholder=\"Type answer using virtual keypad\"></div>",
+        "virtual_keypad": "<div class=\"tita-keypad\"><table><tr><td><button class=\"tita-key\" data-val=\"1\">1</button></td><td><button class=\"tita-key\" data-val=\"2\">2</button></td><td><button class=\"tita-key\" data-val=\"3\">3</button></td></tr><tr><td><button class=\"tita-key\" data-val=\"4\">4</button></td><td><button class=\"tita-key\" data-val=\"5\">5</button></td><td><button class=\"tita-key\" data-val=\"6\">6</button></td></tr><tr><td><button class=\"tita-key\" data-val=\"7\">7</button></td><td><button class=\"tita-key\" data-val=\"8\">8</button></td><td><button class=\"tita-key\" data-val=\"9\">9</button></td></tr><tr><td><button class=\"tita-key\" data-val=\".\">.</button></td><td><button class=\"tita-key\" data-val=\"0\">0</button></td><td><button class=\"tita-key\" data-val=\"-\">-</button></td></tr><tr><td colspan=\"2\"><button class=\"tita-action\" data-action=\"bksp\">Backspace</button></td><td><button class=\"tita-action\" data-action=\"clear\">Clear</button></td></tr></table></div>"
+      },
+      "functional_logic": "Clicking keys appends values to '#tita-input-' + qid; updates in-memory value quesAnswer[qq] = val; prevents keyboard input to standardize touchscreen/mouse input parity across test environments."
+    }
+  }
+}

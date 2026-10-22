@@ -1,0 +1,44 @@
+{
+  "item_id": "5.1",
+  "phase": "PHASE 5: POST-TEST ANALYTICS & SOLUTIONS FUNCTIONALITY",
+  "title": "Overall Scorecard & Rank/Percentile Engine",
+  "captured_at": "2026-10-21T22:03:20+05:30",
+  "source": "https://u1.oliveboard.in / test-engine.js showScorecard() lines 800-936 & data-manager.js",
+  "dom_structure": {
+    "dialog_container": "<div class=\"scorecard-modal-overlay\" id=\"scorecard-modal-overlay\"><div class=\"scorecard-dialog\"><div class=\"scorecard-header\"><h2 id=\"scorecard-test-title\">SBI PO 2026 Prelims - Mock 1</h2></div><div class=\"scorecard-body\"><div class=\"metrics-row\"><div class=\"metric-card highlight\"><div class=\"label\">Total Score</div><div class=\"number\" id=\"metric-score\">62.50 / 100</div></div><div class=\"metric-card\"><div class=\"label\">All India Percentile</div><div class=\"number\" id=\"metric-percentile\">94.2%ile</div></div><div class=\"metric-card\"><div class=\"label\">Accuracy Rate</div><div class=\"number\" id=\"metric-accuracy\">88.5%</div></div><div class=\"metric-card\"><div class=\"label\">Estimated AIR</div><div class=\"number\" id=\"metric-rank\">#134 / 14,680</div></div></div><div class=\"metrics-strip\"><div>Correct: <strong id=\"metric-correct\">68</strong></div><div>Wrong: <strong id=\"metric-wrong\">12</strong></div><div>Unanswered: <strong id=\"metric-unanswered\">20</strong></div><div>Time: <strong id=\"metric-time\">54m 12s</strong></div></div></div></div></div>"
+  },
+  "css_rules": {
+    ".scorecard-modal-overlay": "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 99999;",
+    ".scorecard-modal-overlay.active": "display: flex;",
+    ".scorecard-dialog": "background: #fff; width: 90%; max-width: 900px; max-height: 90vh; border-radius: 14px; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); font-family: verdana, sans-serif;",
+    ".metrics-row": "display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;",
+    ".metric-card": "background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; text-align: center;",
+    ".metric-card.highlight": "background: linear-gradient(135deg, #e0f2fe, #f0fdf4); border-color: #3476BB;",
+    ".metric-card .number": "font-size: 22px; font-weight: 800; color: #1c4b79; margin-top: 6px;"
+  },
+  "underlying_analytics_schema": {
+    "score": {
+      "total": 62.50,
+      "correct": 68,
+      "wrong": 12,
+      "unanswered": 20,
+      "netScore": 62.50,
+      "maxScore": 100.0,
+      "accuracy": 88.5,
+      "percentile": 94.2,
+      "estimatedAIR": 134
+    },
+    "timing": {
+      "startedAt": "2026-10-21T21:00:00.000Z",
+      "completedAt": "2026-10-21T21:54:12.000Z",
+      "totalTimeSeconds": 3252,
+      "timePerQuestion": "32.5"
+    }
+  },
+  "mathematical_engine_rules": {
+    "total_score_formula": "totalScore = (correct * marksPerCorrect) - (wrong * negativeMarks)",
+    "accuracy_rate_formula": "accuracy = (correct / (correct + wrong)) * 100",
+    "percentile_engine": "percentile = Math.min(99.9, Math.max(12.0, ((totalScore / maxScore) * 100 * 1.15))).toFixed(1)",
+    "air_rank_engine": "estimatedAIR = Math.max(1, Math.round(totalPoolSize - (percentile / 100) * totalPoolSize))"
+  }
+}

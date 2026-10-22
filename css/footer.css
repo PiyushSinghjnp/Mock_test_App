@@ -1,0 +1,414 @@
+/* ========================================================
+   EDUCATIONAL CONTENT / WHY OLIVEBOARD SECTION
+   ======================================================== */
+.why-ob-section {
+  padding: 64px 0;
+  background: #ffffff;
+  border-top: 1px solid var(--ob-border-subtle);
+  border-bottom: 1px solid var(--ob-border-subtle);
+}
+
+.why-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 36px;
+}
+
+.why-feature-box {
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  padding: 24px;
+  border: 1px solid var(--ob-border-subtle);
+  transition: all var(--transition-fast);
+}
+
+.why-feature-box:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+.why-feature-box .f-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #e6f4fa;
+  color: var(--ob-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.why-feature-box h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ob-navy);
+  margin-bottom: 8px;
+}
+
+.why-feature-box p {
+  font-size: 13px;
+  color: var(--ob-text-muted);
+  line-height: 1.6;
+}
+
+/* ========================================================
+   FAQ ACCORDION SECTION
+   ======================================================== */
+.faq-section {
+  padding: 64px 0;
+  background: #f6f8fb;
+}
+
+.faq-container {
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.faq-item {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--ob-border-subtle);
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.faq-question-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ob-navy);
+  text-align: left;
+  cursor: pointer;
+  background: #ffffff;
+  transition: background var(--transition-fast);
+}
+
+.faq-question-btn:hover {
+  background: #f8fafc;
+}
+
+.faq-indicator {
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ob-primary);
+  margin-left: 12px;
+  transition: transform var(--transition-fast);
+}
+
+.faq-answer {
+  display: none;
+  padding: 0 24px 20px;
+  font-size: 14px;
+  color: var(--ob-text-muted);
+  line-height: 1.7;
+}
+
+.faq-item.open .faq-answer {
+  display: block;
+}
+
+.faq-item.open .faq-indicator {
+  transform: rotate(45deg);
+}
+
+/* ========================================================
+   COMPREHENSIVE OLIVEBOARD FOOTER
+   ======================================================== */
+.site-footer {
+  background: #0f1e36;
+  color: #94a3b8;
+  padding: 64px 0 32px;
+  font-size: 13px;
+}
+
+.footer-top-grid {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(4, 1fr);
+  gap: 36px;
+  margin-bottom: 48px;
+}
+
+.footer-brand h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 12px;
+}
+
+.footer-brand p {
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.footer-address {
+  font-style: normal;
+  line-height: 1.7;
+  color: #cbd5e1;
+}
+
+.footer-address strong {
+  color: #ffffff;
+}
+
+.footer-col h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.footer-links-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links-list a {
+  color: #94a3b8;
+  transition: color var(--transition-fast);
+}
+
+.footer-links-list a:hover {
+  color: #38bdf8;
+  padding-left: 3px;
+}
+
+/* Footer Bottom Bar */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-copyright {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.footer-social-links {
+  display: flex;
+  gap: 14px;
+}
+
+.social-circle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+.social-circle-btn:hover {
+  background: var(--ob-primary);
+  transform: translateY(-2px);
+}
+
+/* ========================================================
+   LOGIN & SIGNUP MODAL (OLIVEBOARD STYLE)
+   ======================================================== */
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 30, 54, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 3000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-modal-overlay.active {
+  display: flex;
+}
+
+.auth-dialog {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  position: relative;
+  animation: modal-pop 0.25s ease-out;
+}
+
+@keyframes modal-pop {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.btn-close-modal {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--ob-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-close-modal:hover {
+  background: #e2e8f0;
+  color: var(--ob-navy);
+}
+
+.auth-header {
+  padding: 32px 32px 16px;
+  text-align: center;
+}
+
+.auth-header h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ob-navy);
+  margin-bottom: 6px;
+}
+
+.auth-header p {
+  font-size: 13px;
+  color: var(--ob-text-muted);
+}
+
+.auth-body {
+  padding: 0 32px 32px;
+}
+
+.btn-google-onetap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--ob-border-dark);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ob-text-main);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  transition: all var(--transition-fast);
+}
+
+.btn-google-onetap:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--ob-border-subtle);
+}
+
+.auth-divider span {
+  padding: 0 12px;
+  font-size: 12px;
+  color: var(--ob-text-light);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.auth-form-group {
+  margin-bottom: 16px;
+}
+
+.auth-form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ob-text-main);
+  margin-bottom: 6px;
+}
+
+.auth-form-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--ob-border-dark);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.auth-form-group input:focus {
+  border-color: var(--ob-primary);
+  box-shadow: 0 0 0 3px rgba(0, 123, 181, 0.15);
+}
+
+.btn-auth-submit {
+  width: 100%;
+  padding: 13px;
+  background: var(--ob-primary);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 123, 181, 0.25);
+  margin-top: 8px;
+  transition: all var(--transition-fast);
+}
+
+.btn-auth-submit:hover {
+  background: var(--ob-primary-dark);
+  box-shadow: 0 6px 16px rgba(0, 123, 181, 0.35);
+}
+
+.auth-switch-text {
+  text-align: center;
+  font-size: 13px;
+  color: var(--ob-text-muted);
+  margin-top: 16px;
+}
+
+.auth-switch-text a {
+  color: var(--ob-primary);
+  font-weight: 700;
+}
+
+@media (max-width: 992px) {
+  .why-features-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-top-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .why-features-grid { grid-template-columns: 1fr; }
+  .footer-top-grid { grid-template-columns: 1fr; }
+}

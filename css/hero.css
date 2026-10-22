@@ -1,0 +1,493 @@
+/* ========================================================
+   OLIVEBOARD HERO & STATS TICKER
+   ======================================================== */
+.hero-section {
+  position: relative;
+  background: linear-gradient(135deg, #092c48 0%, #004d61 50%, #008479 100%);
+  color: #ffffff;
+  padding: 64px 0 72px;
+  overflow: hidden;
+}
+
+/* Background Abstract Waves */
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(0, 188, 212, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+}
+
+.hero-section::after {
+  content: '';
+  position: absolute;
+  bottom: -40%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 122, 0, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  gap: 40px;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-content {
+  max-width: 620px;
+}
+
+.hero-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #e0f7fa;
+}
+
+.hero-pill-tag .pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #00e676;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7);
+  animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(0, 230, 118, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
+}
+
+.hero-title {
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+}
+
+.hero-title .highlight-yellow {
+  color: #ffeb3b;
+  position: relative;
+  display: inline-block;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #d7eef8;
+  margin-bottom: 32px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.btn-hero-primary {
+  padding: 14px 32px;
+  background: #ffffff;
+  color: #092c48;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-hero-primary:hover {
+  background: #ffeb3b;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+}
+
+.btn-hero-secondary {
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(8px);
+  transition: all var(--transition-fast);
+}
+
+.btn-hero-secondary:hover {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: #ffffff;
+}
+
+/* Stats Pill Strip */
+.hero-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #b2dfdb;
+}
+
+/* Hero Right Visual Banner */
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-feature-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+.card-header-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.live-tag {
+  background: #e53935;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-tag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+.mock-feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.mock-feature-desc {
+  font-size: 13px;
+  color: #b2ebf2;
+  margin-bottom: 20px;
+}
+
+.mock-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.spec-box {
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.spec-box .label {
+  font-size: 11px;
+  color: #80deea;
+  display: block;
+}
+
+.spec-box .val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.btn-card-action {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, #ff7a00, #ff9800);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 15px rgba(255, 122, 0, 0.35);
+  transition: all var(--transition-fast);
+}
+
+.btn-card-action:hover {
+  background: linear-gradient(90deg, #f57c00, #ff7a00);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(255, 122, 0, 0.45);
+}
+
+/* ========================================================
+   RECORD BREAKING RESULTS (AIR TOPPERS CAROUSEL)
+   ======================================================== */
+.toppers-section {
+  padding: 72px 0;
+  background: #ffffff;
+  border-bottom: 1px solid var(--ob-border-subtle);
+}
+
+.section-head-center {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 48px;
+}
+
+.section-badge-pill {
+  display: inline-block;
+  padding: 4px 14px;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-main-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ob-navy);
+  margin-bottom: 12px;
+  line-height: 1.25;
+}
+
+.section-subtext {
+  font-size: 15px;
+  color: var(--ob-text-muted);
+}
+
+/* Toppers Cards Grid matching Oliveboard Slanted Cards */
+.toppers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.rc-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  padding: 24px 20px 0;
+  box-shadow: 0 8px 24px rgba(15, 30, 54, 0.08);
+  border: 1px solid #edf2f7;
+  min-height: 340px;
+  transition: all var(--transition-normal);
+}
+
+.rc-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(15, 30, 54, 0.12);
+}
+
+/* Slanted Background Blocks (Signature Oliveboard Style) */
+.rc-card::before {
+  content: '';
+  position: absolute;
+  top: -46px;
+  left: -48px;
+  width: 90px;
+  height: 100px;
+  background: rgba(224, 242, 254, 0.6);
+  transform: rotate(-22deg);
+  border-radius: 12px;
+  z-index: 1;
+}
+
+.rc-card::after {
+  content: '';
+  position: absolute;
+  top: 24px;
+  right: -90px;
+  width: 240px;
+  height: 320px;
+  background: #f0fdf4;
+  transform: rotate(-24deg);
+  border-radius: 30px;
+  z-index: 1;
+}
+
+.rc-card.topper-red::after { background: #fef2f2; }
+.rc-card.topper-blue::after { background: #eff6ff; }
+.rc-card.topper-orange::after { background: #fff7ed; }
+.rc-card.topper-purple::after { background: #faf5ff; }
+.rc-card.topper-teal::after { background: #f0fdfa; }
+
+/* Left Column - Rank & Laurel Emblem */
+.rc-left-panel {
+  flex: 1;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 24px;
+}
+
+.rc-emblem-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.rc-laurel-medal {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700, #ffb300);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(255, 179, 0, 0.4);
+  border: 3px solid #ffffff;
+}
+
+.rc-rank-num {
+  font-size: 26px;
+  font-weight: 900;
+  color: #5d4037;
+  line-height: 1;
+}
+
+.rc-rank-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #795548;
+}
+
+.rc-exam-tag {
+  background: #ffffff;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ob-navy);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--ob-border-subtle);
+  text-align: center;
+}
+
+/* Right Column - Candidate Profile Photo & Name */
+.rc-right-panel {
+  flex: 1.25;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.rc-person-img {
+  width: 140px;
+  height: 175px;
+  object-fit: cover;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+}
+
+.rc-name-banner {
+  background: var(--ob-navy);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  width: 100%;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rc-watch-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e53935;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+  transition: color var(--transition-fast);
+}
+
+.rc-watch-link:hover {
+  color: #b71c1c;
+  text-decoration: underline;
+}
+
+/* Responsive Rules for Hero and Toppers */
+@media (max-width: 992px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .toppers-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-title { font-size: 38px; }
+}
+
+@media (max-width: 600px) {
+  .toppers-grid { grid-template-columns: 1fr; }
+  .hero-title { font-size: 30px; }
+  .hero-stats-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
