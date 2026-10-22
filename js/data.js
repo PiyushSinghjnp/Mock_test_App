@@ -8,7 +8,7 @@ const OB_TEST_APP = {
   exams: [
     {
       id: "ibps-so",
-      name: "IBPS SO IT Officer",
+      name: "IBPS SO IT Officer 2026",
       category: "Specialist Officer",
       icon: "IT",
       color: "#008479",
@@ -33,17 +33,17 @@ const OB_TEST_APP = {
       freeMocks: 3
     },
     {
-      id: "ssc-cgl",
-      name: "SSC CGL (Tier 1 & 2)",
-      category: "SSC Exams",
-      icon: "SSC",
-      color: "#e53935",
-      totalMocks: 180,
+      id: "sbi-clerk",
+      name: "SBI Clerk (Junior Associates) 2026",
+      category: "Bank & Insurance",
+      icon: "SBC",
+      color: "#0284c7",
+      totalMocks: 140,
       prelimsCount: 30,
       mainsCount: 15,
-      sectionalsCount: 85,
-      topicTestsCount: 50,
-      freeMocks: 4
+      sectionalsCount: 60,
+      topicTestsCount: 35,
+      freeMocks: 3
     },
     {
       id: "ibps-po",
@@ -59,6 +59,32 @@ const OB_TEST_APP = {
       freeMocks: 3
     },
     {
+      id: "ibps-clerk",
+      name: "IBPS Clerk 2026",
+      category: "Bank & Insurance",
+      icon: "IBC",
+      color: "#0d9488",
+      totalMocks: 135,
+      prelimsCount: 25,
+      mainsCount: 15,
+      sectionalsCount: 60,
+      topicTestsCount: 35,
+      freeMocks: 3
+    },
+    {
+      id: "ibps-rrb-po",
+      name: "IBPS RRB PO (Officer Scale-I) 2026",
+      category: "Regional Rural Bank",
+      icon: "RRB",
+      color: "#059669",
+      totalMocks: 120,
+      prelimsCount: 25,
+      mainsCount: 15,
+      sectionalsCount: 50,
+      topicTestsCount: 30,
+      freeMocks: 2
+    },
+    {
       id: "rbi-grade-b",
       name: "RBI Grade B 2026",
       category: "Regulatory Exams",
@@ -72,10 +98,36 @@ const OB_TEST_APP = {
       freeMocks: 2
     },
     {
+      id: "lic-aao",
+      name: "LIC AAO 2026",
+      category: "Insurance Exams",
+      icon: "LIC",
+      color: "#4f46e5",
+      totalMocks: 90,
+      prelimsCount: 20,
+      mainsCount: 10,
+      sectionalsCount: 35,
+      topicTestsCount: 25,
+      freeMocks: 2
+    },
+    {
+      id: "ssc-cgl",
+      name: "SSC CGL 2026 (Tier 1 & 2)",
+      category: "SSC Exams",
+      icon: "SSC",
+      color: "#e53935",
+      totalMocks: 180,
+      prelimsCount: 30,
+      mainsCount: 15,
+      sectionalsCount: 85,
+      topicTestsCount: 50,
+      freeMocks: 4
+    },
+    {
       id: "rrb-ntpc",
-      name: "Railways RRB NTPC",
+      name: "Railways RRB NTPC 2026",
       category: "Railways Exams",
-      icon: "RRB",
+      icon: "NTPC",
       color: "#f57c00",
       totalMocks: 140,
       prelimsCount: 35,

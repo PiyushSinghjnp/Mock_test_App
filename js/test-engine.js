@@ -1,18 +1,18 @@
 /**
  * Oliveboard Test Engine - Authentic 1:1 Live Exam Player
- * Reverse-Engineered from u1.oliveboard.in
- * 
+ * Reverse-Engineered from u1.oliveboard.in (oliveboard_live_player.html & style_pallet.css)
+ *
  * Features:
  * - 2-Sided Test Window (Directions/Passage on Left, Question & Options on Right)
  * - Single Pane View for standalone questions
- * - Official Oliveboard 4-Column Sprite Button Palette (stic-notvisited, stic-answered, stic-notanswered, stic-marked, stic-answered-marked)
- * - Authentic Oliveboard Header (#header-top) with Logo, Test Title, Fullscreen & Exit
- * - Oliveboard Sections Bar (#section-name-container) with .secgen & .currclass
- * - Real-time Countdown Timer with Pause/Resume capability (#calert)
- * - Official Legend with live status counts
- * - Question Paper, Instructions, Profile, and Submit Modals
- * - Permanent SQLite Result Storage via OBTestDataManager & Multi-User Isolation
- * - Post-Test AI Performance Scorecard with HTML solutions
+ * - Authentic clearme() Radio Selection & Click-Again-to-Deselect (draftSelectedIndex vs committed selectedIndex)
+ * - Official Oliveboard 4-Column Sprite Button Palette with auto-scroll (stic-notvisited, stic-answered, stic-notanswered, stic-marked, stic-answered-marked)
+ * - Locked Banking Prelims Section Tabs with live hover breakdown (#hover-con) & Next Section / Timer Expiry transitions
+ * - End-of-Section Save & Next / Mark for Review & Next automatic Next Section / Submit prompt
+ * - Partial Right-Sidebar Collapse (.darr-rightslide / .darr-leftslide) keeping Candidate Info, Timer & Pause visible at top-right
+ * - In-Pane Question Paper (#b1), Instructions (#b2), Profile (#b3), and Submit Summary (#submit-pane & #sure)
+ * - First-scroll Mousewheel Warning Banner (.scrolltooltip) & Opacity-Dimmed Pause Modal (#calert)
+ * - 2026 Official Exam Marking Scheme & Sectional Timing support + SQLite Persistence
  */
 
 class OliveboardTestEngine {
@@ -20,17 +20,22 @@ class OliveboardTestEngine {
     this.testData = testData;
     this.currentSectionIndex = 0;
     this.currentQuestionIndex = 0;
-    this.userResponses = {}; // { questionId: { selectedIndex: number|null, status: string } }
+    // userResponses[qId] = { selectedIndex: number|null, draftSelectedIndex: number|null, status: string, timeSpentSeconds: number, timeEntries: [] }
+    this.userResponses = {};
+    this.pendingSelectedIndex = null;
     this.timerInterval = null;
-    this.completedSections = new Set(); // Track locked/completed section indices
-    this.bookmarkedQuestions = {}; // { [questionId]: boolean }
-    this.isSectionAdvanceConfirm = false; // Next Section modal vs Final submit
-    
-    // Sectional timing: default 1200s (20 mins) per section for Banking mocks
+    this.completedSections = new Set();
+    this.bookmarkedQuestions = {};
+    this.isSectionAdvanceConfirm = false;
+    this.scrollTooltipShown = false;
+    this.isPaletteCollapsed = false;
+
     const firstSec = this.testData.sections && this.testData.sections[0];
-    this.sectionRemainingSeconds = (firstSec && firstSec.durationSeconds) ? firstSec.durationSeconds : (testData.totalDurationSeconds || 1200);
-    this.remainingSeconds = testData.totalDurationSeconds || 7200;
-    
+    this.sectionRemainingSeconds = (firstSec && firstSec.durationSeconds)
+      ? firstSec.durationSeconds
+      : (testData.totalDurationSeconds || 1200);
+    this.remainingSeconds = testData.totalDurationSeconds || 3600;
+
     this.isExamActive = false;
     this.isPaused = false;
     this.startTime = null;
@@ -40,13 +45,61 @@ class OliveboardTestEngine {
 
   initDOM() {
     this.modalOverlay = document.getElementById('test-modal-overlay');
+    this.mainContainer = document.getElementById('main-container');
     this.examTitleEl = document.getElementById('exam-title-display');
     this.sectionTabsContainer = document.getElementById('exam-section-tabs');
     this.timerDisplayEl = document.getElementById('exam-timer-display');
+    this.hourEl = document.getElementById('hour');
+    this.minsEl = document.getElementById('mins');
+    this.secsEl = document.getElementById('secs');
+    this.qnoDispEl = document.getElementById('qno-disp');
     this.qNumLabelEl = document.getElementById('exam-q-num-label');
     this.marksInfoEl = document.getElementById('exam-marks-info');
+    this.secOtherEl = document.getElementById('sec-other');
 
-    // 2-Sided View Elements
+    // Pre-Exam & In-Exam Submit Containers (#left-container & #right-container)
+    this.leftContainerPre = document.getElementById('left-container');
+    this.rightContainerPre = document.getElementById('right-container');
+    this.instructionPane = document.getElementById('instruction-pane-1');
+    this.instrFooterBar = document.getElementById('instr-footer-bar');
+    this.instrTotalQEl = document.getElementById('instr-total-q');
+    this.instrTotalTimeEl = document.getElementById('instr-total-time');
+    this.instrSectionMatrixTbody = document.getElementById('in-tab-body');
+    this.disclaimerCheck = document.getElementById('disclaimer-check');
+    this.disclaimerWarning = document.getElementById('disclaimer-warning');
+    this.btnStartTest = document.getElementById('start-test');
+    this.instrDropdownMenu = document.getElementById('instrDropdownMenu');
+    this.instrLangMenu = document.getElementById('instr-lang-menu');
+
+    // In-Exam Submit Summary Elements (#submit-pane & #sure - Spec 4.2)
+    this.submitPane = document.getElementById('submit-pane');
+    this.submitPaneHeading = document.getElementById('submit-pane-heading');
+    this.fTbody = document.getElementById('f-tbody');
+    this.sureBox = document.getElementById('sure');
+    this.sureWarningText = document.getElementById('sure-warning-text');
+    this.sureSectionLockNote = document.getElementById('sure-section-lock-note');
+    this.btnSBack = document.getElementById('btn-s-back');
+    this.btnSSubmit = document.getElementById('btn-s-submit');
+    this.sSubmitSpan = document.getElementById('s-submit');
+    this.plsWaitBox = document.getElementById('plswait');
+
+    // Active Exam Containers (#left-container-post & #right-container-post)
+    this.leftContainerPost = document.getElementById('left-container-post');
+    this.rightContainerPost = document.getElementById('right-container-post');
+    this.rightLowHalfOuter = document.getElementById('right-low-half-outer');
+    this.questionOuterPane = document.getElementById('question-outer-pane');
+    this.questionNoBar = document.getElementById('question-no-bar');
+    this.questionInnerPane = document.getElementById('question-inner-pane');
+    this.buttonHolder = document.getElementById('button-holder');
+
+    // In-Pane Utility Views (#b1 Question Paper, #b2 Instructions, #b3 Profile, #back - Spec 3.7)
+    this.instructionsOnButton = document.getElementById('instructions-onbutton');
+    this.questionListOnButton = document.getElementById('question-list-onbutton');
+    this.candidateDetailsOnButton = document.getElementById('candidate-details-onbutton');
+    this.mainBackButton = document.getElementById('main-back-button');
+    this.btnGetAllBack = document.getElementById('btn-get-all-back');
+
+    // 2-Sided View Elements (Variant 2 - Spec 3.3)
     this.twoSidedWrapper = document.getElementById('exam-two-sided-wrapper');
     this.leftPane = document.getElementById('exam-leftpane');
     this.passagePanel = document.getElementById('exam-passage-panel');
@@ -54,17 +107,16 @@ class OliveboardTestEngine {
     this.questionText2SidedEl = document.getElementById('exam-question-text-2sided');
     this.optionsTable2Sided = document.getElementById('exam-options-table-2sided');
 
-    // Single Pane Elements
+    // Single Pane Elements (Variant 1 - Spec 3.3)
     this.singleWrapper = document.getElementById('exam-single-wrapper');
     this.questionTextEl = document.getElementById('exam-question-text');
     this.optionsContainer = document.getElementById('exam-options-container');
     this.questionImageEl = document.getElementById('exam-question-image');
 
-    // Action Buttons (#button-holder)
+    // Action Buttons (#button-holder - Spec 3.6)
     this.btnSaveNext = document.getElementById('btn-save-next');
     this.btnMarkReview = document.getElementById('btn-mark-review');
     this.btnClearResponse = document.getElementById('btn-clear-response');
-    this.btnPrev = document.getElementById('btn-prev-question');
     this.btnSubmitExam = document.getElementById('btn-submit-exam');
     this.btnExitExam = document.getElementById('btn-exit-exam');
     this.btnScreenToggle = document.getElementById('btn-screen-toggle');
@@ -73,78 +125,50 @@ class OliveboardTestEngine {
     this.btnBookmarkToggle = document.getElementById('btn-toggle-bookmark');
 
     // Palette & Legend
+    this.paletteMainScrollEl = document.getElementById('question-main-pallette');
     this.paletteGridEl = document.getElementById('palette-numbers-grid');
 
-    // Pause Dialog (#calert)
+    // Pause Dialog (#calert & #dummy-black - Spec 4.1)
     this.btnPauseTest = document.getElementById('btn-pause-test');
+    this.btnPauseOk = document.getElementById('pauseok');
     this.btnResumeTest = document.getElementById('btn-resume-test');
     this.pauseModal = document.getElementById('calert');
     this.dummyBlack = document.getElementById('dummy-black');
 
-    // Bottom Navigation Modals
+    // Bottom Navigation Buttons (#b1, #b2, #b3, #b4)
     this.btnBottomPaper = document.getElementById('btn-bottom-paper');
-    this.paperModal = document.getElementById('paper-modal-overlay');
-    this.paperModalContent = document.getElementById('paper-modal-content');
-    this.btnClosePaperModal = document.getElementById('btn-close-paper-modal');
-    this.btnClosePaperFooter = document.getElementById('btn-close-paper-modal-footer');
-
     this.btnBottomInstructions = document.getElementById('btn-bottom-instructions');
-    this.instructionsModal = document.getElementById('instructions-modal-overlay');
-    this.btnCloseInstructions = document.getElementById('btn-close-instructions-modal');
-    this.btnCloseInstructionsFooter = document.getElementById('btn-close-instructions-footer');
-
     this.btnBottomProfile = document.getElementById('btn-bottom-profile');
-    this.profileModal = document.getElementById('profile-modal-overlay');
-    this.btnCloseProfileModal = document.getElementById('btn-close-profile-modal');
-    this.btnCloseProfileFooter = document.getElementById('btn-close-profile-footer');
-
-    // Submit / Next Section Confirmation Modal
-    this.submitConfirmModal = document.getElementById('submit-confirm-overlay');
-    this.submitSummaryTbody = document.getElementById('submit-summary-tbody');
-    this.submitConfirmTitle = document.getElementById('submit-confirm-modal-title');
-    this.submitConfirmLead = document.getElementById('submit-confirm-lead-text');
-    this.submitConfirmWarning = document.getElementById('submit-confirm-warning');
-    this.btnSubmitCancel = document.getElementById('btn-submit-cancel');
-    this.btnSubmitFinal = document.getElementById('btn-submit-final');
-    this.btnCloseSubmitConfirm = document.getElementById('btn-close-submit-confirm');
+    this.b1El = document.getElementById('b1');
+    this.b2El = document.getElementById('b2');
+    this.b3El = document.getElementById('b3');
+    this.b4El = document.getElementById('b4');
 
     // Scorecard Overlay
     this.scorecardOverlay = document.getElementById('scorecard-modal-overlay');
     this.btnCloseScorecard = document.getElementById('btn-close-scorecard');
 
-    // Pre-Exam Instructions Pane (Specs 2.2 & 2.3)
-    this.instructionPane = document.getElementById('instruction-pane-1');
-    this.mainContainer = document.getElementById('main-container');
-    this.disclaimerCheck = document.getElementById('disclaimer-check');
-    this.disclaimerWarning = document.getElementById('disclaimer-warning');
-    this.btnStartTest = document.getElementById('start-test');
-    this.instrSectionMatrixTbody = document.getElementById('in-tab-body');
-    this.instrDropdownMenu = document.getElementById('instrDropdownMenu');
-    this.instrLangMenu = document.getElementById('instr-lang-menu');
-
     this.bindEvents();
   }
 
   bindEvents() {
-    // Pre-Exam Instructions "I am ready to begin" Button
+    // Pre-Exam "Start Test" Button (#start-test - Spec 2.3)
     if (this.btnStartTest) {
       this.btnStartTest.onclick = (e) => {
         e.preventDefault();
         if (this.disclaimerCheck && !this.disclaimerCheck.checked) {
           if (this.disclaimerWarning) {
             this.disclaimerWarning.style.display = 'block';
-            this.disclaimerWarning.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
           return;
         }
         if (this.disclaimerWarning) {
           this.disclaimerWarning.style.display = 'none';
         }
-        this.startActiveExam();
+        this.startActiveExam(false);
       };
     }
 
-    // Disclaimer Checkbox Change Listener
     if (this.disclaimerCheck) {
       this.disclaimerCheck.onchange = () => {
         if (this.disclaimerCheck.checked && this.disclaimerWarning) {
@@ -170,32 +194,60 @@ class OliveboardTestEngine {
           this.setLanguage(lang);
         };
       });
-      document.addEventListener('click', () => {
-        if (this.instrLangMenu) this.instrLangMenu.style.display = 'none';
-      });
     }
 
-    // Action buttons
+    // Primary Question Action Buttons (#mark, #clear, #next - Spec 3.6)
     if (this.btnSaveNext) {
-      this.btnSaveNext.onclick = (e) => { e.preventDefault(); this.handleSaveAndNext(); };
+      this.btnSaveNext.onclick = (e) => { e.preventDefault(); this.displayQuestionsSave(); };
     }
     if (this.btnMarkReview) {
-      this.btnMarkReview.onclick = (e) => { e.preventDefault(); this.handleMarkForReview(); };
+      this.btnMarkReview.onclick = (e) => { e.preventDefault(); this.displayQuestionsMark(); };
     }
     if (this.btnClearResponse) {
-      this.btnClearResponse.onclick = (e) => { e.preventDefault(); this.handleClearResponse(); };
+      this.btnClearResponse.onclick = (e) => { e.preventDefault(); this.clearOption(); };
     }
-    if (this.btnPrev) {
-      this.btnPrev.onclick = (e) => { e.preventDefault(); this.handlePrevQuestion(); };
+
+    // Bottom 2x2 Utility Grid (#b1 Question Paper, #b2 Instructions, #b3 Profile, #b4 Next Section / Submit - Spec 3.7 & 4.2)
+    const handleB1 = (e) => { e.preventDefault(); this.getQuestionPaper(); };
+    if (this.btnBottomPaper) this.btnBottomPaper.onclick = handleB1;
+    if (this.b1El) this.b1El.onclick = handleB1;
+
+    const handleB2 = (e) => { e.preventDefault(); this.getInstructions(); };
+    if (this.btnBottomInstructions) this.btnBottomInstructions.onclick = handleB2;
+    if (this.b2El) this.b2El.onclick = handleB2;
+
+    const handleB3 = (e) => { e.preventDefault(); this.getCandProfile(); };
+    if (this.btnBottomProfile) this.btnBottomProfile.onclick = handleB3;
+    if (this.b3El) this.b3El.onclick = handleB3;
+
+    const handleB4 = (e) => {
+      e.preventDefault();
+      const isLastSection = this.currentSectionIndex >= this.testData.sections.length - 1;
+      if (!isLastSection) {
+        this.targetSectionIndexForAdvance = this.currentSectionIndex + 1;
+        this.finalSubmit(true);
+      } else {
+        this.finalSubmit(false);
+      }
+    };
+    if (this.btnSubmitExam) this.btnSubmitExam.onclick = handleB4;
+    if (this.b4El) this.b4El.onclick = handleB4;
+
+    if (this.btnGetAllBack) {
+      this.btnGetAllBack.onclick = (e) => { e.preventDefault(); this.getAllBack(); };
     }
-    const handleSubmit = (e) => { e.preventDefault(); this.handleNextSectionOrSubmit(); };
-    if (this.btnSubmitExam) {
-      this.btnSubmitExam.onclick = handleSubmit;
+
+    // In-Pane Submit Confirmation (#s-back & #s-submit - Spec 4.2)
+    if (this.btnSBack) {
+      this.btnSBack.onclick = (e) => { e.preventDefault(); this.sBack(); };
     }
-    const b4 = document.getElementById('b4');
-    if (b4) b4.onclick = handleSubmit;
+    if (this.btnSSubmit) {
+      this.btnSSubmit.onclick = (e) => { e.preventDefault(); this.sendData(); };
+    }
+
+    // Header Exit & Fullscreen
     if (this.btnExitExam) {
-      this.btnExitExam.onclick = (e) => { e.preventDefault(); this.confirmExit(); };
+      this.btnExitExam.onclick = (e) => { e.preventDefault(); this.pauseTest(); };
     }
     if (this.btnScreenToggle) {
       this.btnScreenToggle.onclick = (e) => { e.preventDefault(); this.toggleFullscreen(); };
@@ -209,91 +261,59 @@ class OliveboardTestEngine {
       };
     }
 
-    // Pause / Resume
+    // Pause / Resume (#calert - Spec 4.1)
     if (this.btnPauseTest) {
       this.btnPauseTest.onclick = (e) => { e.preventDefault(); this.pauseTest(); };
+    }
+    if (this.btnPauseOk) {
+      this.btnPauseOk.onclick = async (e) => {
+        e.preventDefault();
+        await this.savePausedStateAndExit();
+      };
     }
     if (this.btnResumeTest) {
       this.btnResumeTest.onclick = (e) => { e.preventDefault(); this.resumeTest(); };
     }
 
-    // Question Paper Modal
-    // Question Paper Modal
-    const handlePaper = (e) => { e.preventDefault(); this.openQuestionPaperModal(); };
-    if (this.btnBottomPaper) this.btnBottomPaper.onclick = handlePaper;
-    const b1 = document.getElementById('b1');
-    if (b1) b1.onclick = handlePaper;
-    if (this.btnClosePaperModal) {
-      this.btnClosePaperModal.onclick = () => { this.paperModal.classList.remove('active'); };
-    }
-    if (this.btnClosePaperFooter) {
-      this.btnClosePaperFooter.onclick = () => { this.paperModal.classList.remove('active'); };
-    }
-
-    // Instructions Modal
-    const handleInstructions = (e) => { e.preventDefault(); this.openInstructionsModal(); };
-    if (this.btnBottomInstructions) this.btnBottomInstructions.onclick = handleInstructions;
-    const b2 = document.getElementById('b2');
-    if (b2) b2.onclick = handleInstructions;
-    if (this.btnCloseInstructions) {
-      this.btnCloseInstructions.onclick = () => { this.instructionsModal.classList.remove('active'); };
-    }
-    if (this.btnCloseInstructionsFooter) {
-      this.btnCloseInstructionsFooter.onclick = () => { this.instructionsModal.classList.remove('active'); };
-    }
-
-    // Profile Modal
-    const handleProfile = (e) => { e.preventDefault(); this.openProfileModal(); };
-    if (this.btnBottomProfile) this.btnBottomProfile.onclick = handleProfile;
-    const b3 = document.getElementById('b3');
-    if (b3) b3.onclick = handleProfile;
-    if (this.btnCloseProfileModal) {
-      this.btnCloseProfileModal.onclick = () => { if (this.profileModal) this.profileModal.classList.remove('active'); };
-    }
-    if (this.btnCloseProfileFooter) {
-      this.btnCloseProfileFooter.onclick = () => { if (this.profileModal) this.profileModal.classList.remove('active'); };
-    }
-
-    // Submit / Next Section Confirmation Modal
-    if (this.btnSubmitCancel) {
-      this.btnSubmitCancel.onclick = () => { this.submitConfirmModal.classList.remove('active'); };
-    }
-    if (this.btnCloseSubmitConfirm) {
-      this.btnCloseSubmitConfirm.onclick = () => { this.submitConfirmModal.classList.remove('active'); };
-    }
-    if (this.btnSubmitFinal) {
-      this.btnSubmitFinal.onclick = () => {
-        this.submitConfirmModal.classList.remove('active');
-        if (this.isSectionAdvanceConfirm) {
-          this.advanceToNextSection();
-        } else {
-          this.submitTest();
-        }
-      };
-    }
-
-    // Drawer Slide Collapse / Expand
+    // Authentic Partial Right-Sidebar Collapse / Expand (.darr-rightslide & .darr-leftslide - oliveboard_live_player.html lines 1361-1374)
+    // Hides ONLY #right-low-half-outer while keeping #cand-time-outer (Candidate Photo, Timer, Pause button) visible at top-right!
     const btnCollapse = document.getElementById('btn-collapse-sidebar');
     const btnExpand = document.getElementById('btn-expand-sidebar');
-    const leftContainer = document.getElementById('left-container-post');
-    const rightContainer = document.getElementById('right-container-post');
-
     if (btnCollapse) {
       btnCollapse.onclick = () => {
-        if (leftContainer) leftContainer.style.width = '100%';
-        if (rightContainer) rightContainer.style.display = 'none';
-        if (btnExpand) btnExpand.style.display = 'block';
+        this.collapsePaletteSidebar();
       };
     }
     if (btnExpand) {
       btnExpand.onclick = () => {
-        if (leftContainer) leftContainer.style.width = '78%';
-        if (rightContainer) rightContainer.style.display = 'block';
-        if (btnExpand) btnExpand.style.display = 'none';
+        this.expandPaletteSidebar();
       };
     }
 
-    // Language Dropdown Toggle
+    // Scrollbar tooltip close (#tclose) & first-mousewheel trigger (oliveboard_live_player.html lines 1376-1394)
+    const tClose = document.getElementById('tclose');
+    const scrollTooltip = document.getElementById('ob-scrolltooltip');
+    if (tClose && scrollTooltip) {
+      tClose.onclick = () => { scrollTooltip.style.display = 'none'; };
+    }
+
+    const triggerWheelTooltip = () => {
+      if (!this.isExamActive || this.scrollTooltipShown) return;
+      this.scrollTooltipShown = true;
+      if (scrollTooltip) {
+        scrollTooltip.style.display = 'block';
+        setTimeout(() => {
+          scrollTooltip.style.display = 'none';
+        }, 5000);
+      }
+    };
+    [this.questionInnerPane, this.leftPane, this.rightPane, this.singleWrapper].forEach(pane => {
+      if (pane) {
+        pane.addEventListener('wheel', triggerWheelTooltip, { passive: true });
+      }
+    });
+
+    // Question Bar Language Dropdown Toggle
     const btnLangDrop = document.getElementById('dropdownMenu2');
     const langMenu = document.getElementById('lang-dropdown-menu');
     if (btnLangDrop && langMenu) {
@@ -314,6 +334,7 @@ class OliveboardTestEngine {
       });
       document.addEventListener('click', () => {
         if (langMenu) langMenu.style.display = 'none';
+        if (this.instrLangMenu) this.instrLangMenu.style.display = 'none';
       });
     }
 
@@ -321,7 +342,9 @@ class OliveboardTestEngine {
     if (this.btnCloseScorecard) {
       this.btnCloseScorecard.onclick = () => {
         this.scorecardOverlay.classList.remove('active');
-        this.exitTest();
+        if (!window.obSolutionEngine || !window.obSolutionEngine.isOpen) {
+          this.exitTest();
+        }
       };
     }
 
@@ -333,9 +356,58 @@ class OliveboardTestEngine {
     });
   }
 
-  startTest() {
+  /**
+   * Collapse ONLY #right-low-half-outer while keeping #cand-time-outer visible at top-right
+   * Exact 1:1 with oliveboard_live_player.html lines 1361-1374
+   */
+  collapsePaletteSidebar() {
+    this.isPaletteCollapsed = true;
+    if (this.rightLowHalfOuter) this.rightLowHalfOuter.style.display = 'none';
+    if (this.rightContainerPost) this.rightContainerPost.classList.add('palette-collapsed');
+    if (this.questionOuterPane) this.questionOuterPane.classList.add('expanded-full-lower');
+    const btnExpand = document.getElementById('btn-expand-sidebar');
+    if (btnExpand) btnExpand.style.display = 'flex';
+  }
+
+  /**
+   * Expand #right-low-half-outer and restore #question-outer-pane width
+   */
+  expandPaletteSidebar() {
+    this.isPaletteCollapsed = false;
+    if (this.rightLowHalfOuter) this.rightLowHalfOuter.style.display = 'block';
+    if (this.rightContainerPost) this.rightContainerPost.classList.remove('palette-collapsed');
+    if (this.questionOuterPane) this.questionOuterPane.classList.remove('expanded-full-lower');
+    const btnExpand = document.getElementById('btn-expand-sidebar');
+    if (btnExpand) btnExpand.style.display = 'none';
+  }
+
+  /**
+   * Normalize correctIndex for any question object (supports 0..4, 1..5, or 'A'..'E')
+   */
+  _getNormalizedCorrectIndex(q) {
+    if (window.OB_EXAM_PATTERNS_2026 && typeof window.OB_EXAM_PATTERNS_2026.normalizeCorrectIndex === 'function') {
+      return window.OB_EXAM_PATTERNS_2026.normalizeCorrectIndex(q, q.options || []);
+    }
+    if (typeof q.correctIndex === 'number' && q.correctIndex >= 0) return q.correctIndex;
+    const raw = q.correct_answer ?? q.correctAnswer ?? q.answer;
+    if (raw !== undefined && raw !== null) {
+      const map = { A: 0, B: 1, C: 2, D: 3, E: 4 };
+      const str = String(raw).trim().toUpperCase();
+      if (map[str] !== undefined) return map[str];
+      const n = parseInt(str, 10);
+      if (!isNaN(n) && n >= 1) return n - 1;
+    }
+    return 0;
+  }
+
+  /**
+   * Launch Test Console (Spec 2.2 & 2.3):
+   * - Fresh Start: Shows Pre-Exam Instructions (#left-container + #right-container) first; clicking #start-test enters the active exam.
+   * - Resume Test: If pausedState is provided, restores all state and immediately opens #left-container-post + #right-container-post.
+   */
+  startTest(pausedState = null) {
     this.initDOM();
-    this.isExamActive = false; // Exam is not active until "I am ready to begin" is clicked
+    this.isExamActive = false;
     this.isPaused = false;
     this.completedSections = new Set();
     this.bookmarkedQuestions = {};
@@ -343,17 +415,22 @@ class OliveboardTestEngine {
     this.currentSectionIndex = 0;
     this.currentQuestionIndex = 0;
     this.userResponses = {};
+    this.pendingSelectedIndex = null;
+    this.scrollTooltipShown = false;
 
-    // Sectional timer setup (default 1200s / 20 mins per section)
     const firstSec = this.testData.sections && this.testData.sections[0];
-    this.sectionRemainingSeconds = (firstSec && firstSec.durationSeconds) ? firstSec.durationSeconds : 1200;
-    this.remainingSeconds = this.testData.totalDurationSeconds || 7200;
+    this.sectionRemainingSeconds = (firstSec && firstSec.durationSeconds)
+      ? firstSec.durationSeconds
+      : (this.testData.totalDurationSeconds || 1200);
+    this.remainingSeconds = this.testData.totalDurationSeconds || 3600;
 
-    // Initialize all questions as not-visited with time tracking
+    // Initialize all questions as stic-notvisited
     this.testData.sections.forEach(sec => {
       sec.questions.forEach(q => {
+        q.correctIndex = this._getNormalizedCorrectIndex(q);
         this.userResponses[q.id] = {
           selectedIndex: null,
+          draftSelectedIndex: null,
           status: 'stic-notvisited',
           timeSpentSeconds: 0,
           timeEntries: []
@@ -361,74 +438,128 @@ class OliveboardTestEngine {
       });
     });
 
-    // Update Header Test Title
+    // Update Header Test Title & Candidate info
     if (this.examTitleEl) {
       this.examTitleEl.textContent = this.testData.title;
     }
+    const activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+    const preNameEl = document.getElementById('pre-cand-name');
+    const preRollEl = document.getElementById('pre-cand-roll');
+    if (preNameEl && activeUser) preNameEl.textContent = activeUser.name;
+    if (preRollEl && activeUser) preRollEl.textContent = activeUser.roll_no || 'OB-2026-9041';
 
-    // Populate Section Matrix Table in Instructions Pane (Spec 2.2)
+    // Populate Section Matrix Table (#in-tab) in Instructions Pane (Spec 2.2)
+    let totalQCount = 0;
+    let totalTimeMins = 0;
+    this.testData.sections.forEach(sec => {
+      totalQCount += (sec.questions ? sec.questions.length : (sec.questionCount || 0));
+      totalTimeMins += (sec.durationMinutes || Math.round((sec.durationSeconds || 1200) / 60));
+    });
+    if (!this.testData.hasSectionalTiming && this.testData.durationMinutes) {
+      totalTimeMins = this.testData.durationMinutes;
+    }
+
+    if (this.instrTotalQEl) this.instrTotalQEl.textContent = totalQCount || this.testData.questionsCount || 100;
+    if (this.instrTotalTimeEl) this.instrTotalTimeEl.textContent = `${totalTimeMins || this.testData.durationMinutes || 60} minutes`;
+
     if (this.instrSectionMatrixTbody) {
       this.instrSectionMatrixTbody.innerHTML = this.testData.sections.map((sec, i) => `
         <tr>
           <td>${i + 1}</td>
-          <td style="text-align: left; font-weight: 600; color: #1c4b79;">${sec.title}</td>
+          <td style="text-align: left; font-weight: bold;">${sec.title}</td>
           <td>${sec.questions ? sec.questions.length : (sec.questionCount || 30)}</td>
-          <td style="color: #2b8a3e; font-weight: bold;">${sec.maxMarks || (sec.questions ? sec.questions.length : 30)}</td>
-          <td style="color: #D9534F; font-weight: bold;">${sec.durationMinutes || Math.round((sec.durationSeconds || 1200) / 60)}</td>
-          <td>${sec.language || 'English & Hindi'}</td>
+          <td>${sec.maxMarks || (sec.questions ? sec.questions.length : 30)}</td>
+          <td>${this.testData.hasSectionalTiming === false ? `${this.testData.durationMinutes || 60} (Composite)` : (sec.durationMinutes || Math.round((sec.durationSeconds || 1200) / 60))}</td>
+          <td>${sec.language || 'English and Hindi'}</td>
         </tr>
       `).join('');
     }
 
-    // Reset declaration checkbox and warning
-    if (this.disclaimerCheck) this.disclaimerCheck.checked = false;
-    if (this.disclaimerWarning) this.disclaimerWarning.style.display = 'none';
+    // Ensure opacity is reset
+    if (this.questionInnerPane) this.questionInnerPane.style.opacity = '1';
+    if (this.mainContainer) this.mainContainer.style.opacity = '1';
 
-    // Show Test Console Modal Fullscreen
+    // Show Test Console Overlay
     if (this.modalOverlay) {
       this.modalOverlay.classList.add('active');
     }
     document.body.style.overflow = 'hidden';
 
-    // Directly start active exam so Question Palette, Countdown Timer,
-    // Two-sided Duplex panes, and Action Buttons are 100% visible immediately!
-    this.startActiveExam();
+    // Check if resuming from a paused state
+    if (pausedState) {
+      this.currentSectionIndex = pausedState.currentSectionIndex ?? pausedState.current_section_index ?? 0;
+      this.currentQuestionIndex = pausedState.currentQuestionIndex ?? pausedState.current_question_index ?? 0;
+      this.sectionRemainingSeconds = pausedState.sectionRemainingSeconds ?? pausedState.section_remaining_seconds ?? this.sectionRemainingSeconds;
+      this.remainingSeconds = pausedState.remainingSeconds ?? pausedState.remaining_seconds ?? this.remainingSeconds;
+      const savedCompleted = pausedState.completedSections || pausedState.completed_sections || [];
+      if (Array.isArray(savedCompleted)) {
+        this.completedSections = new Set(savedCompleted);
+      }
+      if (pausedState.responses && typeof pausedState.responses === 'object') {
+        Object.keys(pausedState.responses).forEach(qId => {
+          const savedR = pausedState.responses[qId];
+          this.userResponses[qId] = {
+            ...this.userResponses[qId],
+            ...savedR,
+            draftSelectedIndex: savedR.draftSelectedIndex !== undefined ? savedR.draftSelectedIndex : savedR.selectedIndex
+          };
+        });
+      }
+      if (pausedState.bookmarkedQuestions || pausedState.bookmarked_questions) {
+        this.bookmarkedQuestions = pausedState.bookmarkedQuestions || pausedState.bookmarked_questions || {};
+      }
+      this.startActiveExam(true);
+      return;
+    }
+
+    // Show Pre-Exam Instructions Screen (#left-container + #right-container) first
+    if (this.leftContainerPre) this.leftContainerPre.style.display = 'block';
+    if (this.rightContainerPre) this.rightContainerPre.style.display = 'block';
+    if (this.instructionPane) this.instructionPane.style.display = 'block';
+    if (this.instrFooterBar) this.instrFooterBar.style.display = 'block';
+    if (this.submitPane) this.submitPane.style.display = 'none';
+    if (this.sureBox) this.sureBox.style.display = 'none';
+    if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
+    if (this.leftContainerPost) this.leftContainerPost.style.display = 'none';
+    if (this.rightContainerPost) this.rightContainerPost.style.display = 'none';
+    if (this.disclaimerCheck) this.disclaimerCheck.checked = true;
+    if (this.disclaimerWarning) this.disclaimerWarning.style.display = 'none';
   }
 
   /**
-   * Start Active Exam - Ensures Question Palette is 100% visible and interactive
+   * Transition from #left-container/#right-container to #left-container-post/#right-container-post
+   * Exact 1:1 with $('#start-test').click() in oliveboard_live_player.html lines 560-582
    */
-  startActiveExam() {
+  startActiveExam(isResume = false) {
     this.isExamActive = true;
     this.startTime = Date.now();
     this.currentQuestionEntryTime = Date.now();
 
-    // Transition DOM: Hide instructions pane, ensure main exam container is visible
-    if (this.instructionPane) this.instructionPane.style.display = 'none';
-    if (this.mainContainer) this.mainContainer.style.display = 'block';
+    if (this.leftContainerPre) this.leftContainerPre.style.display = 'none';
+    if (this.rightContainerPre) this.rightContainerPre.style.display = 'none';
+    if (this.submitPane) this.submitPane.style.display = 'none';
+    if (this.sureBox) this.sureBox.style.display = 'none';
+    if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
 
-    // Ensure left & right containers are explicitly visible with proper 78% / 22% widths
-    const leftContainer = document.getElementById('left-container-post');
-    const rightContainer = document.getElementById('right-container-post');
-    const btnExpand = document.getElementById('btn-expand-sidebar');
-    if (leftContainer) {
-      leftContainer.style.width = '78%';
-      leftContainer.style.display = 'block';
+    if (this.leftContainerPost) {
+      this.leftContainerPost.style.setProperty('width', '80%', 'important');
+      this.leftContainerPost.style.display = 'block';
     }
-    if (rightContainer) {
-      rightContainer.style.display = 'block';
-      rightContainer.style.visibility = 'visible';
+    if (this.rightContainerPost) {
+      this.rightContainerPost.style.display = 'block';
+      this.rightContainerPost.style.visibility = 'visible';
     }
-    if (btnExpand) btnExpand.style.display = 'none';
+    this.expandPaletteSidebar();
+
+    // Ensure question view is restored (not utility views)
+    this.getAllBack();
 
     // Start Realtime Countdown Timer
     this.startTimer();
 
-    // Render Section Tabs and First Question
+    // Render Section Tabs and Load Current Question
     this.renderSectionTabs();
-    this.loadQuestion(0, 0);
-
-    // Guarantee Question Palette grid is rendered immediately
+    this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex);
     this.renderPalette();
   }
 
@@ -475,54 +606,56 @@ class OliveboardTestEngine {
   }
 
   updateTimerDisplay() {
-    if (!this.timerDisplayEl) return;
-
-    const hours = Math.floor(this.sectionRemainingSeconds / 3600);
-    const mins = Math.floor((this.sectionRemainingSeconds % 3600) / 60);
-    const secs = this.sectionRemainingSeconds % 60;
+    const totalSecs = Math.max(0, this.sectionRemainingSeconds);
+    const hours = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
 
     const hStr = String(hours).padStart(2, '0');
-    const mStr = String(mins).padStart(2, '0');
+    const mStr = String(totalSecs >= 3600 ? mins : Math.floor(totalSecs / 60)).padStart(2, '0');
     const sStr = String(secs).padStart(2, '0');
 
-    this.timerDisplayEl.textContent = `${hStr}:${mStr}:${sStr}`;
-
-    // Highlight critical time (< 2 mins)
-    if (this.sectionRemainingSeconds <= 120) {
-      this.timerDisplayEl.style.color = '#e03131';
-    } else {
-      this.timerDisplayEl.style.color = '#D9534F';
+    if (this.hourEl) {
+      if (hours > 0) {
+        this.hourEl.style.display = 'inline';
+        this.hourEl.textContent = `${hStr}:`;
+      } else {
+        this.hourEl.style.display = 'none';
+      }
+    }
+    if (this.minsEl) this.minsEl.textContent = hours > 0 ? String(mins).padStart(2, '0') : mStr;
+    if (this.secsEl) this.secsEl.textContent = sStr;
+    if (this.timerDisplayEl) {
+      this.timerDisplayEl.textContent = `${hStr}:${String(mins).padStart(2, '0')}:${sStr}`;
     }
 
-    // Section title & allotted timing indicator
-    const secLabelEl = document.getElementById('exam-sectional-label');
     const secNameEl = document.getElementById('exam-sec-timer-name');
     const curSec = this.testData.sections && this.testData.sections[this.currentSectionIndex];
     if (secNameEl && curSec) {
-      const allottedMins = curSec.durationMinutes || Math.round((curSec.durationSeconds || 1200) / 60);
-      secNameEl.textContent = `${curSec.title} (${allottedMins}m)`;
-    }
-    if (secLabelEl) {
-      secLabelEl.textContent = this.testData.hasSectionalTiming !== false ? 'Section Time Left' : 'Time Left';
+      secNameEl.textContent = this.testData.hasSectionalTiming === false
+        ? `${curSec.title} (Composite)`
+        : curSec.title;
     }
   }
 
   handleSectionTimeout() {
     const isLastSection = this.currentSectionIndex >= this.testData.sections.length - 1;
-    if (!isLastSection) {
-      const curSec = this.testData.sections[this.currentSectionIndex];
-      alert(`⏰ Section Time is up! ${curSec ? curSec.title : 'Current Section'} has ended and is now locked.\nMoving directly to the next section.`);
+    if (!isLastSection && this.testData.hasSectionalTiming !== false) {
       this.completedSections.add(this.currentSectionIndex);
       this.switchSection(this.currentSectionIndex + 1);
     } else {
-      alert('⏰ Total Exam Time is up! Your exam has been automatically submitted.');
       this.submitTest();
     }
   }
 
+  /**
+   * Pause Test (#calert & #dummy-black - Spec 4.1 & oliveboard_live_player.html lines 1231-1288)
+   */
   pauseTest() {
     this._recordCurrentQuestionTime();
     this.isPaused = true;
+    if (this.questionInnerPane) this.questionInnerPane.style.opacity = '0.1';
+    if (this.mainContainer) this.mainContainer.style.opacity = '0.3';
     if (this.pauseModal) this.pauseModal.style.display = 'block';
     if (this.dummyBlack) this.dummyBlack.style.display = 'block';
   }
@@ -530,8 +663,32 @@ class OliveboardTestEngine {
   resumeTest() {
     this.isPaused = false;
     this.currentQuestionEntryTime = Date.now();
+    if (this.questionInnerPane) this.questionInnerPane.style.opacity = '1';
+    if (this.mainContainer) this.mainContainer.style.opacity = '1';
     if (this.pauseModal) this.pauseModal.style.display = 'none';
     if (this.dummyBlack) this.dummyBlack.style.display = 'none';
+  }
+
+  async savePausedStateAndExit() {
+    if (this.questionInnerPane) this.questionInnerPane.style.opacity = '1';
+    if (this.mainContainer) this.mainContainer.style.opacity = '1';
+    if (this.pauseModal) this.pauseModal.style.display = 'none';
+    if (this.dummyBlack) this.dummyBlack.style.display = 'none';
+
+    if (window.obDataManager) {
+      await window.obDataManager.savePausedAttempt({
+        testId: this.testData.id,
+        currentSectionIndex: this.currentSectionIndex,
+        currentQuestionIndex: this.currentQuestionIndex,
+        sectionRemainingSeconds: this.sectionRemainingSeconds,
+        remainingSeconds: this.remainingSeconds,
+        completedSections: Array.from(this.completedSections),
+        responses: this.userResponses,
+        bookmarkedQuestions: this.bookmarkedQuestions
+      });
+    }
+
+    this.exitTest();
   }
 
   toggleFullscreen() {
@@ -555,17 +712,28 @@ class OliveboardTestEngine {
     }
   }
 
+  /**
+   * Render Section Tabs (#section-name-container)
+   * - In Banking Prelims/Mains style (isSectionalLocked !== false), other section tabs are locked (cursor: default) and advancing happens ONLY via Next Section (#b4), end-of-section Save & Next, or timer expiry.
+   * - In Composite Timer exams (e.g. SSC CGL Tier-1, isSectionalLocked === false), clicking a section tab switches freely without resetting the composite timer.
+   * - Hovering over any section tab displays #hover-con with live status counts for that section.
+   */
   renderSectionTabs() {
     if (!this.sectionTabsContainer) return;
 
+    const isStrictSectionLock = this.testData.isSectionalLocked !== false && this.testData.hasSectionalTiming !== false;
+
     this.sectionTabsContainer.innerHTML = this.testData.sections.map((sec, idx) => {
-      const isLocked = this.completedSections.has(idx);
+      const isCompletedLocked = this.completedSections.has(idx);
       const isCurrent = idx === this.currentSectionIndex;
+      const cursorStyle = (!isStrictSectionLock && !isCompletedLocked) ? 'cursor: pointer;' : 'cursor: default;';
       return `
         <td>
-          <span class="secgen ${isCurrent ? 'currclass' : ''} ${isLocked ? 'locked-section' : ''}" 
+          <span class="secgen ${isCurrent ? 'currclass' : ''} ${isCompletedLocked ? 'locked-section' : ''}" 
+                id="sec-${idx + 1}"
                 data-sec-idx="${idx}"
-                title="${sec.title} (${sec.questions.length} Questions)${isLocked ? ' - Completed & Locked' : ''}">
+                style="${cursorStyle}"
+                title="${sec.title} (${sec.questions.length} Questions • ${sec.durationMinutes || 20} Mins)">
             ${sec.title}
           </span>
         </td>
@@ -581,22 +749,20 @@ class OliveboardTestEngine {
     const notVisitedEl = document.getElementById('notvisited');
 
     this.sectionTabsContainer.querySelectorAll('.secgen').forEach(tab => {
-      const secIdx = parseInt(tab.dataset.secIdx);
+      const secIdx = parseInt(tab.dataset.secIdx, 10);
       const sec = this.testData.sections[secIdx];
 
       tab.addEventListener('click', () => {
+        // In strict sectional-timed exams (Banking Prelims/Mains), section tabs are locked;
+        // candidate advances only via Next Section (#b4) or timer expiry.
+        if (isStrictSectionLock) {
+          return;
+        }
         if (this.completedSections.has(secIdx)) {
-          alert(`Section "${sec.title}" is already completed and locked.\nIn banking exams, candidate responses cannot be modified once a section is submitted.`);
           return;
         }
         if (secIdx !== this.currentSectionIndex) {
-          if (secIdx > this.currentSectionIndex) {
-            if (confirm(`You are currently on "${this.testData.sections[this.currentSectionIndex].title}".\nDo you want to submit this section and advance to "${sec.title}"?`)) {
-              this.handleNextSectionOrSubmit();
-            }
-            return;
-          }
-          this.switchSection(secIdx);
+          this.switchSection(secIdx, false);
         }
       });
 
@@ -612,9 +778,7 @@ class OliveboardTestEngine {
           else notVisitedCount++;
         });
 
-        const durationMin = sec.durationMinutes || Math.round((sec.durationSeconds || 1200) / 60);
-        const marksCount = sec.maxMarks || (sec.questions ? sec.questions.length : 30);
-        if (hoverChild) hoverChild.textContent = `${sec.title} (${durationMin}m | ${marksCount}M)`;
+        if (hoverChild) hoverChild.textContent = sec.title;
         if (ansEl) ansEl.textContent = ansCount;
         if (unansEl) unansEl.textContent = notAnsCount;
         if (markedEl) markedEl.textContent = markedCount;
@@ -622,8 +786,8 @@ class OliveboardTestEngine {
         if (notVisitedEl) notVisitedEl.textContent = notVisitedCount;
 
         const rect = tab.getBoundingClientRect();
-        hoverCon.style.left = Math.max(10, rect.left + (rect.width / 2) - 85) + 'px';
-        hoverCon.style.top = (rect.bottom + 6) + 'px';
+        hoverCon.style.left = Math.max(10, rect.left - 10) + 'px';
+        hoverCon.style.top = '48px';
         hoverCon.style.display = 'block';
       });
 
@@ -633,26 +797,36 @@ class OliveboardTestEngine {
     });
   }
 
-  switchSection(sectionIndex) {
-    if (this.completedSections.has(sectionIndex)) {
-      alert(`Section "${this.testData.sections[sectionIndex].title}" has already been submitted and locked.`);
-      return;
-    }
+  switchSection(sectionIndex, resetSectionTimer = true) {
+    if (this.completedSections.has(sectionIndex)) return;
     this.currentSectionIndex = sectionIndex;
     this.currentQuestionIndex = 0;
-    
-    // Update sectional countdown timer
+
     const sec = this.testData.sections[sectionIndex];
-    this.sectionRemainingSeconds = (sec && sec.durationSeconds) ? sec.durationSeconds : 1200;
-    this.startTimer();
+    if (resetSectionTimer && this.testData.hasSectionalTiming !== false) {
+      this.sectionRemainingSeconds = (sec && sec.durationSeconds) ? sec.durationSeconds : 1200;
+      this.startTimer();
+    } else {
+      this.updateTimerDisplay();
+    }
 
     this.renderSectionTabs();
     this.loadQuestion(sectionIndex, 0);
   }
 
+  /**
+   * Load Question (displayQuestions(ko) in oliveboard_live_player.html lines 621-704)
+   * - Restores question view if any utility pane (#b1/#b2/#b3) was open
+   * - Restores draftSelectedIndex (DOM radio state) for this question without changing committed selectedIndex
+   * - Updates #qno-disp, #sec-other, #b4 ('Next Section' vs 'Submit')
+   * - Renders Variant 2 (.two-sided-wrapper) when question has passage/directions, or Variant 1 (.question-outer-div) when standalone
+   */
   loadQuestion(sectionIndex, questionIndex) {
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = Date.now();
+
+    // Ensure main question pane is visible if user clicked palette from Question Paper / Instructions / Profile view
+    this.getAllBack();
 
     const section = this.testData.sections[sectionIndex];
     if (!section) return;
@@ -662,48 +836,50 @@ class OliveboardTestEngine {
     this.currentSectionIndex = sectionIndex;
     this.currentQuestionIndex = questionIndex;
 
-    // Mark as visited (if not-visited)
     const response = this.userResponses[question.id];
     if (response && response.status === 'stic-notvisited') {
       response.status = 'stic-notanswered';
     }
 
-    // Update Question Number Label
-    if (this.qNumLabelEl) {
-      this.qNumLabelEl.textContent = question.questionNumber || (question.globalIndex || (questionIndex + 1));
-    }
+    // Restore DOM radio selection (draftSelectedIndex if touched, else committed selectedIndex)
+    this.pendingSelectedIndex = response
+      ? (response.draftSelectedIndex !== undefined && response.draftSelectedIndex !== null
+          ? response.draftSelectedIndex
+          : response.selectedIndex)
+      : null;
 
-    // Dynamic Oliveboard #b4 Button Label (Next Section vs Submit)
-    const b4El = document.getElementById('b4');
-    if (b4El) {
+    // Update Question Number (#qno-disp) & Palette Section Header (#sec-other)
+    const displayNum = question.localIndex || (questionIndex + 1);
+    if (this.qnoDispEl) this.qnoDispEl.textContent = displayNum;
+    if (this.qNumLabelEl) this.qNumLabelEl.textContent = displayNum;
+    if (this.secOtherEl) this.secOtherEl.textContent = section.title;
+
+    // Dynamic Oliveboard #b4 Button Label ('Next Section' vs 'Submit')
+    if (this.b4El) {
       if (this.currentSectionIndex < this.testData.sections.length - 1) {
-        b4El.textContent = 'Next Section';
+        this.b4El.textContent = 'Next Section';
       } else {
-        b4El.textContent = 'Submit';
+        this.b4El.textContent = 'Submit';
       }
     }
 
     // Update Bookmark Button State
     this.updateBookmarkButtonState(question.id);
 
-    // Update Marks Strip
+    // Update Marks Strip from 2026 official marking scheme
     if (this.marksInfoEl) {
-      const posMarks = question.marksForCorrect !== undefined ? question.marksForCorrect : 1;
-      const negMarks = question.negativeMarks !== undefined ? question.negativeMarks : 0.25;
+      const posMarks = question.marksForCorrect !== undefined
+        ? question.marksForCorrect
+        : (section.positiveMarks !== undefined ? section.positiveMarks : 1);
+      const negMarks = question.negativeMarks !== undefined
+        ? question.negativeMarks
+        : (section.negativeMarks !== undefined ? section.negativeMarks : 0.25);
       this.marksInfoEl.innerHTML = `Marks for correct answer: <strong class="pos">+${posMarks}</strong> | Negative mark: <strong class="neg">-${negMarks}</strong>`;
     }
 
-    const selectedIdx = response ? response.selectedIndex : null;
-
-    // Retrieve passage & question HTML from JSON
     const rawPassage = question.passageHTML || question.passage_text || '';
     const rawQuestion = question.questionHTML || question.question_text || '';
 
-    // DUPLEX UI ENGINE:
-    // Follow authentic 2-sided Duplex UI universally:
-    // Left Pane: Problem stimulus, passage, directions, alphanumeric series, charts, or question statement.
-    // Right Pane: Question prompt (for passage questions) + Options radio choices table.
-    // Question & options are NEVER crammed together on one page.
     const hasPassage = Boolean(
       (question.hasPassage && rawPassage && rawPassage.trim().length > 10) ||
       (rawPassage && rawPassage.trim().length > 25)
@@ -712,7 +888,6 @@ class OliveboardTestEngine {
     const formattedPassage = this._formatContentHTML(rawPassage);
     const formattedQuestion = this._formatContentHTML(rawQuestion);
 
-    // Format any images associated with question
     const imgs = question.imageUrls || question.image_urls || [];
     let imageHtml = '';
     if (imgs.length > 0 && !rawQuestion.includes('<img')) {
@@ -722,61 +897,61 @@ class OliveboardTestEngine {
       }).join('');
     }
 
-    // Always ensure Duplex 2-Sided Wrapper is active
-    if (this.twoSidedWrapper) this.twoSidedWrapper.style.display = 'block';
-    if (this.singleWrapper) this.singleWrapper.style.display = 'none';
-
     if (hasPassage) {
-      // Left Pane: Directions / Reading Passage / Comprehension
+      // Variant 2: 2-Sided Split-Pane Window (.two-sided-wrapper - Spec 3.3)
+      if (this.twoSidedWrapper) this.twoSidedWrapper.style.display = 'block';
+      if (this.singleWrapper) this.singleWrapper.style.display = 'none';
+
       if (this.passagePanel) {
         this.passagePanel.innerHTML = formattedPassage;
       }
-      // Right Pane: Question prompt above options
       if (this.questionText2SidedEl) {
         this.questionText2SidedEl.style.display = 'block';
         this.questionText2SidedEl.innerHTML = (imageHtml ? imageHtml : '') + formattedQuestion;
-        const parentTr = this.questionText2SidedEl.closest('tr');
-        if (parentTr) parentTr.style.display = '';
+      }
+      if (this.optionsTable2Sided) {
+        this.optionsTable2Sided.innerHTML = this._generateOptionsHTML(question, this.pendingSelectedIndex);
+        this._bindOptionEvents(this.optionsTable2Sided, question.id);
       }
     } else {
-      // Left Pane: Full Question statement, series, formulas, code or tables
-      if (this.passagePanel) {
-        this.passagePanel.innerHTML = (imageHtml ? imageHtml : '') + formattedQuestion;
+      // Variant 1: Single-Column Layout (.question-outer-div - Spec 3.3)
+      if (this.twoSidedWrapper) this.twoSidedWrapper.style.display = 'none';
+      if (this.singleWrapper) this.singleWrapper.style.display = 'block';
+
+      if (this.questionImageEl) {
+        if (imageHtml) {
+          this.questionImageEl.style.display = 'block';
+          this.questionImageEl.innerHTML = imageHtml;
+        } else {
+          this.questionImageEl.style.display = 'none';
+          this.questionImageEl.innerHTML = '';
+        }
       }
-      // Right Pane: No duplicate question text, hide prompt row so options sit at top
-      if (this.questionText2SidedEl) {
-        this.questionText2SidedEl.style.display = 'none';
-        this.questionText2SidedEl.innerHTML = '';
-        const parentTr = this.questionText2SidedEl.closest('tr');
-        if (parentTr) parentTr.style.display = 'none';
+      if (this.questionTextEl) {
+        this.questionTextEl.innerHTML = formattedQuestion;
+      }
+      if (this.optionsContainer) {
+        this.optionsContainer.innerHTML = this._generateOptionsHTML(question, this.pendingSelectedIndex);
+        this._bindOptionEvents(this.optionsContainer, question.id);
       }
     }
 
-    // Right Pane: Options Table
-    if (this.optionsTable2Sided) {
-      this.optionsTable2Sided.innerHTML = this._generateOptionsHTML(question, selectedIdx);
-      this._bindOptionEvents(this.optionsTable2Sided, question.id);
-    }
-
-    // Fallback sync for singleWrapper if ever inspected
-    if (this.questionTextEl) this.questionTextEl.innerHTML = formattedQuestion;
-    if (this.optionsContainer) {
-      this.optionsContainer.innerHTML = this._generateOptionsHTML(question, selectedIdx);
-      this._bindOptionEvents(this.optionsContainer, question.id);
-    }
-
-    // Reset independent scroll positions on each question load
     if (this.leftPane) this.leftPane.scrollTop = 0;
     if (this.rightPane) this.rightPane.scrollTop = 0;
+    if (this.singleWrapper) this.singleWrapper.scrollTop = 0;
 
-    // Safety fallback: if any image in the question pane fails to load, gracefully hide it to avoid broken icon outline
     if (this.modalOverlay) {
       this.modalOverlay.querySelectorAll('#question-inner-pane img').forEach(img => {
         img.onerror = () => { img.style.display = 'none'; };
       });
     }
 
-    // Re-render Palette & Legend Summary
+    // Apply current language filter if Hindi is active
+    if (this.currentLang) {
+      this.setLanguage(this.currentLang);
+    }
+
+    // Re-render Palette & Legend Summary and auto-scroll active question into view
     this.renderPalette();
     this.renderSectionTabs();
   }
@@ -784,23 +959,17 @@ class OliveboardTestEngine {
   _formatContentHTML(html) {
     if (!html) return '';
     let formatted = String(html).trim();
-
-    // Map any relative oliveimg path so it loads from local server static folder
     formatted = formatted.replace(/src=["']oliveimg\/([^"']+)["']/g, 'src="/oliveimg/$1"');
     formatted = formatted.replace(/src=["'](?:\.\/)?images\/([^"']+)["']/g, 'src="/images/$1"');
-
-    // If content does not have block-level tags like <p>, <table>, <div>, wrap in <p>
     if (!/<(?:p|table|div|ol|ul|h[1-6]|tbody|blockquote)/i.test(formatted)) {
       formatted = `<p>${formatted}</p>`;
     }
-
     return formatted;
   }
 
   _generateOptionsHTML(question, selectedIndex) {
     if (!question.options) return '';
 
-    // Normalize options (support both Array of objects and Map/Object of letters)
     let optionsList = [];
     if (Array.isArray(question.options)) {
       optionsList = question.options;
@@ -844,35 +1013,56 @@ class OliveboardTestEngine {
     `;
   }
 
+  /**
+   * Bind option click events WITHOUT e.preventDefault() so native radio inputs and label spans
+   * trigger clearme(optionNo) cleanly on the first click and deselect on the second click.
+   */
   _bindOptionEvents(container, questionId) {
-    container.querySelectorAll('tr').forEach(row => {
-      row.addEventListener('click', (e) => {
-        const optIdx = parseInt(row.dataset.optIdx);
-        this.selectOption(questionId, optIdx);
+    container.querySelectorAll('tr.vtop').forEach(row => {
+      row.addEventListener('click', () => {
+        const optIdx = parseInt(row.dataset.optIdx, 10);
+        this.toggleOrSelectOption(questionId, optIdx);
       });
-      const radio = row.querySelector('input[type="radio"]');
-      if (radio) {
-        radio.addEventListener('change', (e) => {
-          e.stopPropagation();
-          const optIdx = parseInt(row.dataset.optIdx);
-          this.selectOption(questionId, optIdx);
-        });
-      }
     });
   }
 
-  selectOption(questionId, optionIndex) {
+  /**
+   * Authentic Oliveboard Radio Option Click & Deselect (clearme(optionNo) in oliveboard_live_player.html lines 1099-1125):
+   * - Clicking an unselected option sets pendingSelectedIndex = optionIndex and draftSelectedIndex = optionIndex
+   *   (does NOT mark question Answered until Save & Next or Mark for Review & Next is clicked).
+   * - Clicking an ALREADY-SELECTED option deselects the radio (pendingSelectedIndex = null, draftSelectedIndex = null),
+   *   and if the question was previously Answered, Marked, or Answered & Marked, immediately reverts status to stic-notanswered
+   *   and updates the palette and legend counters!
+   */
+  toggleOrSelectOption(questionId, optionIndex) {
     const response = this.userResponses[questionId];
     if (!response) return;
 
-    response.selectedIndex = optionIndex;
+    if (this.pendingSelectedIndex === optionIndex) {
+      // Deselect already-chosen option (clearme behavior in oliveboard_live_player.html lines 1106-1118)
+      this.pendingSelectedIndex = null;
+      response.draftSelectedIndex = null;
+      response.selectedIndex = null;
+      if (
+        response.status === 'stic-answered' ||
+        response.status === 'stic-marked' ||
+        response.status === 'stic-answered-marked'
+      ) {
+        response.status = 'stic-notanswered';
+      }
+      this.renderPalette();
+      this.renderSectionTabs();
+    } else {
+      this.pendingSelectedIndex = optionIndex;
+      response.draftSelectedIndex = optionIndex;
+    }
 
-    // Update active radio buttons visually across both tables
+    // Synchronize radio buttons & row highlight in DOM
     [this.optionsContainer, this.optionsTable2Sided].forEach(container => {
       if (!container) return;
-      container.querySelectorAll('tr').forEach((row, idx) => {
+      container.querySelectorAll('tr.vtop').forEach((row, idx) => {
         const radio = row.querySelector('input[type="radio"]');
-        if (idx === optionIndex) {
+        if (idx === this.pendingSelectedIndex) {
           row.classList.add('selected');
           if (radio) radio.checked = true;
         } else {
@@ -883,73 +1073,231 @@ class OliveboardTestEngine {
     });
   }
 
-  handleSaveAndNext() {
+  /**
+   * Save & Next (displayQuestionsSave in oliveboard_live_player.html lines 799-879):
+   * - Commits pendingSelectedIndex to response.selectedIndex
+   * - Sets stic-answered if option selected, else stic-notanswered
+   * - Advances to next question in current section; on the last question of a section, automatically opens Next Section / Submit prompt
+   */
+  displayQuestionsSave() {
     const section = this.testData.sections[this.currentSectionIndex];
     const question = section.questions[this.currentQuestionIndex];
     const response = this.userResponses[question.id];
 
-    if (response.selectedIndex !== null) {
-      if (response.status === 'stic-marked' || response.status === 'stic-answered-marked') {
-        response.status = 'stic-answered-marked';
-      } else {
-        response.status = 'stic-answered';
-      }
+    response.selectedIndex = this.pendingSelectedIndex;
+    response.draftSelectedIndex = this.pendingSelectedIndex;
+    if (response.selectedIndex !== null && response.selectedIndex !== undefined) {
+      response.status = 'stic-answered';
     } else {
-      if (response.status !== 'stic-marked') {
-        response.status = 'stic-notanswered';
-      }
+      response.status = 'stic-notanswered';
     }
 
-    this.moveToNextQuestion();
+    this.renderPalette();
+    this.renderSectionTabs();
+
+    if (this.currentQuestionIndex + 1 < section.questions.length) {
+      this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex + 1);
+    } else {
+      // Last question of the current section: advance or prompt Next Section / Submit
+      this._handleEndOfSectionNavigation();
+    }
   }
 
-  handleMarkForReview() {
+  /**
+   * Mark for Review & Next (displayQuestionsMark in oliveboard_live_player.html lines 705-797):
+   * - Commits pendingSelectedIndex to response.selectedIndex
+   * - Sets stic-answered-marked if option selected, else stic-marked
+   * - Advances to next question in current section; on the last question of a section, automatically opens Next Section / Submit prompt
+   */
+  displayQuestionsMark() {
     const section = this.testData.sections[this.currentSectionIndex];
     const question = section.questions[this.currentQuestionIndex];
     const response = this.userResponses[question.id];
 
-    if (response.selectedIndex !== null) {
+    response.selectedIndex = this.pendingSelectedIndex;
+    response.draftSelectedIndex = this.pendingSelectedIndex;
+    if (response.selectedIndex !== null && response.selectedIndex !== undefined) {
       response.status = 'stic-answered-marked';
     } else {
       response.status = 'stic-marked';
     }
 
-    this.moveToNextQuestion();
+    this.renderPalette();
+    this.renderSectionTabs();
+
+    if (this.currentQuestionIndex + 1 < section.questions.length) {
+      this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex + 1);
+    } else {
+      // Last question of the current section: advance or prompt Next Section / Submit
+      this._handleEndOfSectionNavigation();
+    }
   }
 
-  handleClearResponse() {
+  /**
+   * Handle navigation when clicking Save & Next or Mark for Review & Next on the last question of a section
+   */
+  _handleEndOfSectionNavigation() {
+    const isLastSection = this.currentSectionIndex >= this.testData.sections.length - 1;
+    if (!isLastSection) {
+      if (this.testData.hasSectionalTiming === false && this.testData.isSectionalLocked === false) {
+        // Composite timer: smoothly advance directly to Question 1 of the next section
+        this.switchSection(this.currentSectionIndex + 1, false);
+      } else {
+        // Sectional-locked exam: open Next Section confirmation summary
+        this.targetSectionIndexForAdvance = this.currentSectionIndex + 1;
+        this.finalSubmit(true);
+      }
+    } else {
+      // Last question of the final section: open Exam Submit confirmation summary
+      this.finalSubmit(false);
+    }
+  }
+
+  /**
+   * Clear Response (clearOption in oliveboard_live_player.html lines 1127-1150)
+   */
+  clearOption() {
     const section = this.testData.sections[this.currentSectionIndex];
     const question = section.questions[this.currentQuestionIndex];
     const response = this.userResponses[question.id];
 
+    this.pendingSelectedIndex = null;
+    response.draftSelectedIndex = null;
     response.selectedIndex = null;
     response.status = 'stic-notanswered';
 
-    // Reload question to clear visual state
-    this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex);
+    [this.optionsContainer, this.optionsTable2Sided].forEach(container => {
+      if (!container) return;
+      container.querySelectorAll('tr.vtop').forEach(row => {
+        row.classList.remove('selected');
+        const radio = row.querySelector('input[type="radio"]');
+        if (radio) radio.checked = false;
+      });
+    });
+
+    this.renderPalette();
+    this.renderSectionTabs();
   }
 
-  handlePrevQuestion() {
-    if (this.currentQuestionIndex > 0) {
-      this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex - 1);
+  /**
+   * In-Pane Utility View #b1: getQuestionPaper() (oliveboard_live_player.html lines 281-320 & 900-917)
+   */
+  getQuestionPaper() {
+    if (this.b1El) { this.b1El.style.backgroundColor = '#2F72B7'; this.b1El.style.color = '#FFF'; }
+    if (this.b2El) { this.b2El.style.backgroundColor = '#C7DCF0'; this.b2El.style.color = '#000'; }
+    if (this.b3El) { this.b3El.style.backgroundColor = '#C7DCF0'; this.b3El.style.color = '#000'; }
+
+    if (this.questionInnerPane) this.questionInnerPane.style.display = 'none';
+    if (this.buttonHolder) this.buttonHolder.style.display = 'none';
+    if (this.questionNoBar) this.questionNoBar.style.display = 'none';
+    if (this.instructionsOnButton) this.instructionsOnButton.style.display = 'none';
+    if (this.candidateDetailsOnButton) this.candidateDetailsOnButton.style.display = 'none';
+
+    const curSec = this.testData.sections[this.currentSectionIndex];
+    if (this.questionListOnButton && curSec) {
+      let lastPassageSnippet = '';
+      const itemsHtml = curSec.questions.map((q, idx) => {
+        const qNum = q.localIndex || (idx + 1);
+        const qText = this._formatContentHTML(q.questionHTML || q.question_text || '');
+        const rawPass = (q.passageHTML || q.passage_text || '').trim();
+        let passageHeader = '';
+        if (rawPass.length > 25) {
+          const snippetKey = rawPass.slice(0, 120);
+          if (snippetKey !== lastPassageSnippet) {
+            lastPassageSnippet = snippetKey;
+            passageHeader = `<div style="background: #f8fafc; border-left: 3px solid #3476BB; padding: 8px 12px; margin: 10px 0 6px 0; font-size: 13px;">${this._formatContentHTML(rawPass)}</div>`;
+          }
+        } else {
+          lastPassageSnippet = '';
+        }
+
+        return `
+          ${passageHeader}
+          <div class="qlist-item" data-q-idx="${idx}" style="cursor: pointer; padding: 6px 4px;" title="Click to jump to Question ${qNum}">
+            Qno ${qNum}) <span class="qlistl">${qText}</span>
+          </div>
+          <hr>
+        `;
+      }).join('');
+      this.questionListOnButton.innerHTML = `<center><b><h4>${curSec.title} — Question Paper</h4></b></center><br><hr>${itemsHtml}`;
+      this.questionListOnButton.querySelectorAll('.qlist-item').forEach(item => {
+        item.onclick = () => {
+          const qIdx = parseInt(item.dataset.qIdx, 10);
+          this.getAllBack();
+          this.loadQuestion(this.currentSectionIndex, qIdx);
+        };
+      });
+      this.questionListOnButton.style.display = 'block';
     }
+    if (this.mainBackButton) this.mainBackButton.style.display = 'flex';
   }
 
-  moveToNextQuestion() {
-    const section = this.testData.sections[this.currentSectionIndex];
+  /**
+   * In-Pane Utility View #b2: getInstructions() (oliveboard_live_player.html lines 881-898)
+   */
+  getInstructions() {
+    if (this.b2El) { this.b2El.style.backgroundColor = '#2F72B7'; this.b2El.style.color = '#FFF'; }
+    if (this.b1El) { this.b1El.style.backgroundColor = '#C7DCF0'; this.b1El.style.color = '#000'; }
+    if (this.b3El) { this.b3El.style.backgroundColor = '#C7DCF0'; this.b3El.style.color = '#000'; }
 
-    if (this.currentQuestionIndex < section.questions.length - 1) {
-      this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex + 1);
-    } else {
-      // Last question of current section
-      if (this.currentSectionIndex < this.testData.sections.length - 1) {
-        // Prompt to advance to next section
-        this.handleNextSectionOrSubmit();
-      } else {
-        // Last question of last section - refresh palette
-        this.renderPalette();
-      }
+    if (this.questionInnerPane) this.questionInnerPane.style.display = 'none';
+    if (this.buttonHolder) this.buttonHolder.style.display = 'none';
+    if (this.questionNoBar) this.questionNoBar.style.display = 'none';
+    if (this.questionListOnButton) this.questionListOnButton.style.display = 'none';
+    if (this.candidateDetailsOnButton) this.candidateDetailsOnButton.style.display = 'none';
+
+    const innerInstr = document.getElementById('instructions-inner-content');
+    if (this.instructionsOnButton && innerInstr) {
+      this.instructionsOnButton.innerHTML = innerInstr.innerHTML;
+      this.instructionsOnButton.style.display = 'block';
     }
+    if (this.mainBackButton) this.mainBackButton.style.display = 'flex';
+  }
+
+  /**
+   * In-Pane Utility View #b3: getCandProfile() (oliveboard_live_player.html lines 919-936)
+   */
+  getCandProfile() {
+    if (this.b3El) { this.b3El.style.backgroundColor = '#2F72B7'; this.b3El.style.color = '#FFF'; }
+    if (this.b1El) { this.b1El.style.backgroundColor = '#C7DCF0'; this.b1El.style.color = '#000'; }
+    if (this.b2El) { this.b2El.style.backgroundColor = '#C7DCF0'; this.b2El.style.color = '#000'; }
+
+    if (this.questionInnerPane) this.questionInnerPane.style.display = 'none';
+    if (this.buttonHolder) this.buttonHolder.style.display = 'none';
+    if (this.questionNoBar) this.questionNoBar.style.display = 'none';
+    if (this.instructionsOnButton) this.instructionsOnButton.style.display = 'none';
+    if (this.questionListOnButton) this.questionListOnButton.style.display = 'none';
+
+    const user = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+    const uidEl = document.getElementById('giant-cand-userid');
+    const nameEl = document.getElementById('giant-cand-name');
+    const rollEl = document.getElementById('giant-cand-roll');
+    const examEl = document.getElementById('giant-cand-exam');
+    if (uidEl) uidEl.textContent = `: ${user ? user.id : 'OB-USER-01'}`;
+    if (nameEl) nameEl.textContent = `: ${user ? user.name : 'Aspirant Rahul Sharma'}`;
+    if (rollEl) rollEl.textContent = `: ${user ? (user.roll_no || 'OB-2026-9041') : 'OB-2026-9041'}`;
+    if (examEl) examEl.textContent = `: ${this.testData.title}`;
+
+    if (this.candidateDetailsOnButton) this.candidateDetailsOnButton.style.display = 'block';
+    if (this.mainBackButton) this.mainBackButton.style.display = 'flex';
+  }
+
+  /**
+   * In-Pane Back Button: getAllBack() (oliveboard_live_player.html lines 938-956)
+   */
+  getAllBack() {
+    if (this.b1El) { this.b1El.style.backgroundColor = '#C7DCF0'; this.b1El.style.color = '#000'; }
+    if (this.b2El) { this.b2El.style.backgroundColor = '#C7DCF0'; this.b2El.style.color = '#000'; }
+    if (this.b3El) { this.b3El.style.backgroundColor = '#C7DCF0'; this.b3El.style.color = '#000'; }
+
+    if (this.instructionsOnButton) this.instructionsOnButton.style.display = 'none';
+    if (this.questionListOnButton) this.questionListOnButton.style.display = 'none';
+    if (this.candidateDetailsOnButton) this.candidateDetailsOnButton.style.display = 'none';
+    if (this.mainBackButton) this.mainBackButton.style.display = 'none';
+
+    if (this.questionInnerPane) this.questionInnerPane.style.display = 'block';
+    if (this.buttonHolder) this.buttonHolder.style.display = 'flex';
+    if (this.questionNoBar) this.questionNoBar.style.display = 'flex';
   }
 
   /**
@@ -984,26 +1332,8 @@ class OliveboardTestEngine {
   }
 
   /**
-   * Candidate Profile Modal (#b3)
-   */
-  openProfileModal() {
-    if (!this.profileModal) return;
-    const user = window.obDataManager ? window.obDataManager.getCurrentUser() : null;
-    const nameEl = document.getElementById('profile-modal-name');
-    const rollEl = document.getElementById('profile-modal-roll');
-    const examEl = document.getElementById('profile-modal-exam');
-    const sysEl = document.getElementById('profile-modal-sysid');
-
-    if (nameEl) nameEl.textContent = user ? user.name : 'Piyush Singh';
-    if (rollEl) rollEl.textContent = user && user.rollNumber ? user.rollNumber : 'OB-2026-98412';
-    if (examEl) examEl.textContent = this.testData.title || 'SBI PO 2026 Prelims';
-    if (sysEl) sysEl.textContent = 'C23-LAB-NODE-04';
-
-    this.profileModal.classList.add('active');
-  }
-
-  /**
-   * Render Oliveboard's signature 4-column palette of sprite buttons
+   * Render Oliveboard's signature 4-column palette of sprite buttons (Spec 3.5)
+   * Includes auto-scrolling so the active question is always visible in #question-main-pallette
    */
   renderPalette() {
     if (!this.paletteGridEl) {
@@ -1015,7 +1345,6 @@ class OliveboardTestEngine {
     if (!section || !section.questions) return;
     const questions = section.questions;
 
-    // Build 4-column table rows
     let tableHTML = '<tbody>';
     for (let i = 0; i < questions.length; i += 4) {
       tableHTML += '<tr>';
@@ -1032,6 +1361,7 @@ class OliveboardTestEngine {
           tableHTML += `
             <td>
               <a class="sprite-butts ${statusClass} ${isCurrent ? 'current' : ''} ${isBookmarked ? 'bookmarked' : ''}" 
+                 id="pal-${q.id}"
                  data-q-idx="${qIdx}" 
                  title="Question ${displayNum}${isBookmarked ? ' (Bookmarked)' : ''}">
                 <br>${displayNum}
@@ -1048,19 +1378,27 @@ class OliveboardTestEngine {
 
     this.paletteGridEl.innerHTML = tableHTML;
 
-    // Attach click handlers
+    // Attach click handlers (displayQuestions(ko) - does NOT commit draftSelectedIndex)
     this.paletteGridEl.querySelectorAll('.sprite-butts').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        const qIdx = parseInt(btn.dataset.qIdx);
+        const qIdx = parseInt(btn.dataset.qIdx, 10);
         this.loadQuestion(this.currentSectionIndex, qIdx);
       });
     });
 
-    // Update Legend Summary Counts
+    // Auto-scroll active question sprite button into view inside #question-main-pallette
+    const activeBtn = this.paletteGridEl.querySelector('.sprite-butts.current');
+    if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
+      activeBtn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+
     this._updateLegendCounts();
   }
 
+  /**
+   * Update Legend Summary Counts for the current section (#stic-answered, #stic-notanswered, #stic-marked, #stic-notvisited, #stic-answered-marked - Spec 3.5)
+   */
   _updateLegendCounts() {
     const counts = {
       answered: 0,
@@ -1070,8 +1408,10 @@ class OliveboardTestEngine {
       answeredMarked: 0
     };
 
-    // Calculate across all sections
-    this.testData.sections.forEach(sec => {
+    const currentSec = this.testData.sections && this.testData.sections[this.currentSectionIndex];
+    const targetSections = currentSec ? [currentSec] : this.testData.sections;
+
+    targetSections.forEach(sec => {
       sec.questions.forEach(q => {
         const r = this.userResponses[q.id];
         if (!r) return;
@@ -1086,226 +1426,38 @@ class OliveboardTestEngine {
     });
 
     const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    setVal('count-answered', counts.answered);
-    setVal('count-not-answered', counts.notAnswered);
-    setVal('count-not-visited', counts.notVisited);
-    setVal('count-review', counts.marked);
-    setVal('count-review-answered', counts.answeredMarked);
+    setVal('stic-answered', counts.answered);
+    setVal('stic-notanswered', counts.notAnswered);
+    setVal('stic-notvisited', counts.notVisited);
+    setVal('stic-marked', counts.marked);
+    setVal('stic-answered-marked', counts.answeredMarked);
   }
 
   /**
-   * Question Paper Modal: Displays all questions with Direct Jump support
+   * In-Exam Submit / Next Section Summary Screen (finalSubmit() in oliveboard_live_player.html lines 958-1002 & Spec 4.2)
+   * Hides #left-container-post & #right-container-post, shows #left-container (with #submit-pane & #sure) + #right-container
    */
-  openQuestionPaperModal() {
-    if (!this.paperModal || !this.paperModalContent) return;
-
-    let paperHTML = `<div style="max-width: 100%;">`;
-    this.testData.sections.forEach((sec, sIdx) => {
-      const isLocked = this.completedSections.has(sIdx);
-      const isCurrent = sIdx === this.currentSectionIndex;
-      paperHTML += `
-        <div style="background: ${isLocked ? '#94a3b8' : '#3476BB'}; color: #FFF; padding: 8px 12px; margin-top: 16px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 700; font-size: 14px;">${sec.title}</span>
-          <span style="font-size: 11px;">${isLocked ? '🔒 Completed & Locked' : (isCurrent ? '▶ Current Active Section' : '')}</span>
-        </div>
-      `;
-      sec.questions.forEach((q, qIdx) => {
-        const isBookmarked = !!this.bookmarkedQuestions[q.id];
-        paperHTML += `
-          <div class="qp-question-item" data-sec-idx="${sIdx}" data-q-idx="${qIdx}" style="border-bottom: 1px solid #e2e8f0; padding: 12px 10px; ${isLocked ? 'opacity: 0.65; background: #f8fafc;' : 'cursor: pointer; transition: background 0.15s;'}" onmouseover="if(!${isLocked}) this.style.background='#f0f7ff';" onmouseout="if(!${isLocked}) this.style.background='transparent';">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span style="font-weight: bold; color: #1c4b79;">
-                Question Q${q.questionNumber || (qIdx + 1)} ${isBookmarked ? '<span style="color: #f59e0b;">★</span>' : ''}
-              </span>
-              ${!isLocked ? `<button class="qp-jump-btn" data-sec-idx="${sIdx}" data-q-idx="${qIdx}" style="padding: 3px 10px; font-size: 11px; background: #3476BB; color: #fff; border: none; border-radius: 3px; cursor: pointer; font-weight: 600;">Jump to Q${q.questionNumber || (qIdx + 1)} &rarr;</button>` : `<span style="font-size: 11px; color: #64748b; font-weight: 600;">Locked</span>`}
-            </div>
-            ${q.hasPassage && q.passageHTML ? `<div style="background: #f7f9fb; padding: 10px; border-left: 3px solid #3476BB; margin-bottom: 8px; font-size: 12px;">${q.passageHTML}</div>` : ''}
-            <div style="font-size: 13px;">${q.questionHTML || q.question_text || q.text || ''}</div>
-            <div style="margin-top: 8px; padding-left: 12px; font-size: 12px;">
-              ${(q.options || []).map((opt, oIdx) => `<div><strong>${opt.letter || String.fromCharCode(65 + oIdx)}.</strong> ${typeof opt === 'object' ? (opt.html || opt.text) : opt}</div>`).join('')}
-            </div>
-          </div>
-        `;
-      });
-    });
-    paperHTML += `</div>`;
-
-    this.paperModalContent.innerHTML = paperHTML;
-
-    // Attach click listeners to jump directly to questions
-    this.paperModalContent.querySelectorAll('.qp-question-item, .qp-jump-btn').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const sIdx = parseInt(el.dataset.secIdx);
-        const qIdx = parseInt(el.dataset.qIdx);
-        if (this.completedSections.has(sIdx)) {
-          alert(`This section has already been completed and locked.`);
-          return;
-        }
-        this.paperModal.classList.remove('active');
-        if (sIdx !== this.currentSectionIndex) {
-          this.switchSection(sIdx);
-        }
-        this.loadQuestion(sIdx, qIdx);
-      });
-    });
-
-    this.paperModal.classList.add('active');
-  }
-
-  /**
-   * Instructions Modal: Displays official section matrix, marking scheme, and sectional timing
-   */
-  openInstructionsModal() {
-    if (!this.instructionsModal) return;
-    const contentEl = document.getElementById('instructions-modal-content');
-    if (contentEl && this.testData && this.testData.sections) {
-      const marking = this.testData.markingScheme || { positive: 1.0, negative: 0.25 };
-      const totalQ = this.testData.questionsCount || 100;
-      const totalTimeMin = this.testData.durationMinutes || 60;
-
-      contentEl.innerHTML = `
-        <div style="font-family: verdana, helvetica, sans-serif; font-size: 14px; line-height: 22px; color: #222;">
-          <center><b style="font-size: 15px; color: #1e3a8a;">Please read the following instructions carefully</b></center>
-          <br>
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-            <span><b>Total Number of Questions:</b> <span style="color: #0284c7; font-weight: bold;">${totalQ}</span></span>
-            <span><b>Total Time Available:</b> <span style="color: #dc2626; font-weight: bold;">${totalTimeMin} minutes</span></span>
-            <span><b>Negative Marking:</b> <span style="color: #dc2626; font-weight: bold;">-${marking.negative || 0.25}</span></span>
-          </div>
-
-          <h4 style="margin: 12px 0 6px 0; color: #334155; font-size: 14px;">Section-wise Structure & Sectional Timing:</h4>
-          <table class="tab-in" style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px;">
-            <thead>
-              <tr style="background: #3476BB; color: #fff;">
-                <th style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center;">Section #</th>
-                <th style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: left;">Section Name</th>
-                <th style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center;">Total Questions</th>
-                <th style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center;">Max Score</th>
-                <th style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center;">Time (minutes)</th>
-                <th style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center;">Language</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${this.testData.sections.map((sec, i) => `
-                <tr style="background: ${i % 2 === 0 ? '#fff' : '#f8fafc'}; text-align: center;">
-                  <td style="padding: 8px 10px; border: 1px solid #cbd5e1; font-weight: bold;">${i + 1}</td>
-                  <td style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: left; font-weight: 600; color: #1e40af;">${sec.title}</td>
-                  <td style="padding: 8px 10px; border: 1px solid #cbd5e1;">${sec.questions ? sec.questions.length : sec.questionCount}</td>
-                  <td style="padding: 8px 10px; border: 1px solid #cbd5e1; font-weight: bold; color: #15803d;">${sec.maxMarks || (sec.questions ? sec.questions.length : 30)}</td>
-                  <td style="padding: 8px 10px; border: 1px solid #cbd5e1; font-weight: bold; color: #dc2626;">${sec.durationMinutes || Math.round((sec.durationSeconds || 1200) / 60)}</td>
-                  <td style="padding: 8px 10px; border: 1px solid #cbd5e1;">${sec.language || 'English & Hindi'}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-
-          <h4 style="margin: 12px 0 6px 0; color: #334155; font-size: 14px;">General Exam Rules:</h4>
-          <ol style="margin-left: 20px; padding: 0;">
-            <li>The clock has been set at the server and the <strong>sectional countdown timer</strong> at the top right corner displays the remaining time for the active section.</li>
-            <li>In banking examinations (SBI PO, IBPS SO, IBPS PO), <strong>sectional timing is strictly enforced</strong>. Once a section's time expires or is submitted, it is locked and you cannot return to it.</li>
-            <li><strong>Marking Scheme:</strong> Each correct response awards <strong>+${marking.positive || 1.0} mark</strong>. Each incorrect response incurs a penalty of <strong>-${marking.negative || 0.25} mark</strong> (1/4th negative marking). Unattempted questions carry 0.0 marks.</li>
-            <li>The Question Palette uses official TCS / Oliveboard color-coded symbol badges for Not Visited (gray), Not Answered (orange), Answered (green), Marked for Review (purple), and Answered & Marked (purple with green tick - evaluated for marks).</li>
-          </ol>
-        </div>
-      `;
-    }
-    this.instructionsModal.classList.add('active');
-  }
-
-  /**
-   * Handle Next Section vs Submit on #b4
-   */
-  handleNextSectionOrSubmit() {
+  finalSubmit(forceSectionAdvance = false) {
+    this._recordCurrentQuestionTime();
     const isLastSection = this.currentSectionIndex >= this.testData.sections.length - 1;
-    if (!isLastSection) {
-      this.showNextSectionConfirmation();
-    } else {
-      this.showSubmitConfirmation();
-    }
-  }
+    this.isSectionAdvanceConfirm = forceSectionAdvance && !isLastSection;
 
-  /**
-   * Section Summary Confirmation before locking section and advancing
-   */
-  showNextSectionConfirmation() {
-    if (!this.submitConfirmModal || !this.submitSummaryTbody) return;
-    this.isSectionAdvanceConfirm = true;
+    if (this.leftContainerPost) this.leftContainerPost.style.display = 'none';
+    if (this.rightContainerPost) this.rightContainerPost.style.display = 'none';
+    const btnExpand = document.getElementById('btn-expand-sidebar');
+    if (btnExpand) btnExpand.style.display = 'none';
 
-    const currentSec = this.testData.sections[this.currentSectionIndex];
-    if (this.submitConfirmTitle) {
-      this.submitConfirmTitle.textContent = `Section Summary - ${currentSec.title}`;
-    }
-    if (this.submitConfirmLead) {
-      this.submitConfirmLead.textContent = `Please review your attempt summary for "${currentSec.title}" before proceeding to the next section:`;
-    }
+    if (this.leftContainerPre) this.leftContainerPre.style.display = 'block';
+    if (this.rightContainerPre) this.rightContainerPre.style.display = 'block';
+    if (this.instructionPane) this.instructionPane.style.display = 'none';
+    if (this.instrFooterBar) this.instrFooterBar.style.display = 'none';
+    if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
 
-    let secAns = 0, secNotAns = 0, secMarked = 0, secNotVis = 0;
-    currentSec.questions.forEach(q => {
-      const r = this.userResponses[q.id];
-      if (!r) return;
-      if (r.status === 'stic-answered' || r.status === 'stic-answered-marked') secAns++;
-      else if (r.status === 'stic-notanswered') secNotAns++;
-      else if (r.status === 'stic-marked') secMarked++;
-      else secNotVis++;
-    });
-
-    this.submitSummaryTbody.innerHTML = `
-      <tr style="background: #eef6ff;">
-        <td style="text-align: left; font-weight: 700; padding: 8px 12px; color: #1c4b79;">${currentSec.title}</td>
-        <td style="font-weight: 700;">${currentSec.questions.length}</td>
-        <td style="color: #2b8a3e; font-weight: bold;">${secAns}</td>
-        <td style="color: #e03131; font-weight: bold;">${secNotAns}</td>
-        <td style="color: #6a1b9a; font-weight: bold;">${secMarked}</td>
-        <td style="color: #4D4D4D;">${secNotVis}</td>
-      </tr>
-    `;
-
-    if (this.submitConfirmWarning) {
-      this.submitConfirmWarning.innerHTML = `⚠️ <strong>Section Locking Notice:</strong> Once you proceed to the next section, <strong>${currentSec.title}</strong> will be permanently locked and you will NOT be able to return or change your answers.`;
-      this.submitConfirmWarning.style.color = '#c2410c';
-    }
-
-    if (this.btnSubmitFinal) {
-      this.btnSubmitFinal.textContent = 'Proceed to Next Section';
-      this.btnSubmitFinal.style.background = '#2563eb';
-      this.btnSubmitFinal.style.borderColor = '#1d4ed8';
-    }
-
-    this.submitConfirmModal.classList.add('active');
-  }
-
-  /**
-   * Lock current section and advance to the next
-   */
-  advanceToNextSection() {
-    this.completedSections.add(this.currentSectionIndex);
-    const nextSecIdx = this.currentSectionIndex + 1;
-    if (nextSecIdx < this.testData.sections.length) {
-      this.switchSection(nextSecIdx);
-    } else {
-      this.submitTest();
-    }
-  }
-
-  /**
-   * Final Exam Submission Confirmation with cumulative totals
-   */
-  showSubmitConfirmation() {
-    if (!this.submitConfirmModal || !this.submitSummaryTbody) return;
-    this.isSectionAdvanceConfirm = false;
-
-    if (this.submitConfirmTitle) {
-      this.submitConfirmTitle.textContent = 'Final Exam Submission Summary';
-    }
-    if (this.submitConfirmLead) {
-      this.submitConfirmLead.textContent = 'Please review your complete test summary across all sections before final submission:';
-    }
-
+    // Populate #f-tbody summary rows
     let tbodyHTML = '';
     let totQs = 0, totAns = 0, totNotAns = 0, totMarked = 0, totNotVis = 0;
 
-    this.testData.sections.forEach(sec => {
+    this.testData.sections.forEach((sec, idx) => {
       let secAns = 0, secNotAns = 0, secMarked = 0, secNotVis = 0;
       sec.questions.forEach(q => {
         const r = this.userResponses[q.id];
@@ -1322,73 +1474,127 @@ class OliveboardTestEngine {
       totMarked += secMarked;
       totNotVis += secNotVis;
 
+      const isCurrentSec = idx === this.currentSectionIndex;
       tbodyHTML += `
-        <tr>
-          <td style="text-align: left; font-weight: 600; padding: 6px 12px;">${sec.title}</td>
+        <tr style="${isCurrentSec ? 'background: #f0f7ff; font-weight: bold;' : ''}">
+          <td>${sec.title}</td>
           <td>${sec.questions.length}</td>
-          <td style="color: #2b8a3e; font-weight: bold;">${secAns}</td>
-          <td style="color: #e03131; font-weight: bold;">${secNotAns}</td>
-          <td style="color: #6a1b9a; font-weight: bold;">${secMarked}</td>
-          <td style="color: #4D4D4D;">${secNotVis}</td>
+          <td>${secAns}</td>
+          <td>${secNotAns}</td>
+          <td>${secMarked}</td>
+          <td>${secNotVis}</td>
         </tr>
       `;
     });
 
-    // Total summary row
     tbodyHTML += `
-      <tr style="background: #f1f5f9; font-weight: bold; border-top: 2px solid #cbd5e1;">
-        <td style="text-align: left; padding: 8px 12px; color: #0f172a;">Total</td>
+      <tr style="background: #E4EDF7; font-weight: bold;">
+        <td>Total</td>
         <td>${totQs}</td>
-        <td style="color: #2b8a3e;">${totAns}</td>
-        <td style="color: #e03131;">${totNotAns}</td>
-        <td style="color: #6a1b9a;">${totMarked}</td>
-        <td style="color: #4D4D4D;">${totNotVis}</td>
+        <td>${totAns}</td>
+        <td>${totNotAns}</td>
+        <td>${totMarked}</td>
+        <td>${totNotVis}</td>
       </tr>
     `;
 
-    this.submitSummaryTbody.innerHTML = tbodyHTML;
+    if (this.fTbody) this.fTbody.innerHTML = tbodyHTML;
 
-    if (this.submitConfirmWarning) {
-      this.submitConfirmWarning.textContent = 'Are you sure you want to submit the test?';
-      this.submitConfirmWarning.style.color = '#d32f2f';
+    if (this.isSectionAdvanceConfirm) {
+      const curSec = this.testData.sections[this.currentSectionIndex];
+      const nextSec = this.testData.sections[this.targetSectionIndexForAdvance !== undefined ? this.targetSectionIndexForAdvance : (this.currentSectionIndex + 1)];
+      if (this.submitPaneHeading) this.submitPaneHeading.textContent = `Section Summary — ${curSec ? curSec.title : 'Current Section'}`;
+      if (this.sureWarningText) this.sureWarningText.textContent = `Are you sure you want to submit "${curSec ? curSec.title : 'this section'}" and move to "${nextSec ? nextSec.title : 'Next Section'}"?`;
+      if (this.sureSectionLockNote) {
+        this.sureSectionLockNote.style.display = 'block';
+        this.sureSectionLockNote.textContent = `Note: Once you proceed to the next section, you cannot return to "${curSec ? curSec.title : 'this section'}".`;
+      }
+      if (this.sSubmitSpan) this.sSubmitSpan.textContent = 'Submit Section';
+    } else {
+      if (this.submitPaneHeading) this.submitPaneHeading.textContent = 'Exam Summary';
+      if (this.sureWarningText) this.sureWarningText.textContent = 'Are you sure you want to submit the exam?';
+      if (this.sureSectionLockNote) this.sureSectionLockNote.style.display = 'none';
+      if (this.sSubmitSpan) this.sSubmitSpan.textContent = 'Submit';
     }
 
-    if (this.btnSubmitFinal) {
-      this.btnSubmitFinal.textContent = 'Yes, Submit Test';
-      this.btnSubmitFinal.style.background = '#2e7d32';
-      this.btnSubmitFinal.style.borderColor = '#1b5e20';
+    if (this.submitPane) this.submitPane.style.display = 'block';
+    if (this.sureBox) this.sureBox.style.display = 'block';
+  }
+
+  /**
+   * Return from Submit Summary to Active Question Pane (sBack() in oliveboard_live_player.html lines 1004-1012)
+   */
+  sBack() {
+    this.targetSectionIndexForAdvance = undefined;
+    if (this.leftContainerPre) this.leftContainerPre.style.display = 'none';
+    if (this.rightContainerPre) this.rightContainerPre.style.display = 'none';
+    if (this.submitPane) this.submitPane.style.display = 'none';
+    if (this.sureBox) this.sureBox.style.display = 'none';
+    if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
+
+    if (this.leftContainerPost) this.leftContainerPost.style.display = 'block';
+    if (this.rightContainerPost) this.rightContainerPost.style.display = 'block';
+    if (this.isPaletteCollapsed) {
+      const btnExpand = document.getElementById('btn-expand-sidebar');
+      if (btnExpand) btnExpand.style.display = 'flex';
     }
-
-    this.submitConfirmModal.classList.add('active');
   }
 
-  autoSubmit() {
-    alert('⏰ Time is up! Your exam has been automatically submitted.');
-    this.submitTest();
+  /**
+   * Confirm Section Advance or Final Exam Submit (sendData() in oliveboard_live_player.html lines 1014-1097)
+   */
+  sendData() {
+    if (this.sureBox) this.sureBox.style.display = 'none';
+    if (this.plsWaitBox) this.plsWaitBox.style.display = 'block';
+
+    setTimeout(() => {
+      if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
+      if (this.isSectionAdvanceConfirm) {
+        if (this.testData.isSectionalLocked !== false) {
+          this.completedSections.add(this.currentSectionIndex);
+        }
+        const nextSecIdx = this.targetSectionIndexForAdvance !== undefined
+          ? this.targetSectionIndexForAdvance
+          : (this.currentSectionIndex + 1);
+        this.targetSectionIndexForAdvance = undefined;
+        this.sBack();
+        if (nextSecIdx < this.testData.sections.length) {
+          this.switchSection(nextSecIdx, true);
+        } else {
+          this.submitTest();
+        }
+      } else {
+        this.submitTest();
+      }
+    }, 250);
   }
 
-  confirmExit() {
-    if (confirm('Are you sure you want to exit the exam? Your current progress and attempted answers will be retained.')) {
-      this.exitTest();
-    }
-  }
-
-  submitTest() {
+  async submitTest() {
     this._recordCurrentQuestionTime();
     clearInterval(this.timerInterval);
     this.isExamActive = false;
 
     const endTime = Date.now();
-    const totalTimeSeconds = Math.round((endTime - this.startTime) / 1000);
+    const totalTimeSeconds = Math.max(1, Math.round((endTime - this.startTime) / 1000));
 
-    // Compute detailed scoring
+    // Compute detailed scoring using 2026 official per-question / per-section marking scheme
     const allQuestions = [];
     this.testData.sections.forEach(sec => {
-      sec.questions.forEach(q => allQuestions.push(q));
+      sec.questions.forEach(q => {
+        q.correctIndex = this._getNormalizedCorrectIndex(q);
+        if (q.marksForCorrect === undefined && sec.positiveMarks !== undefined) {
+          q.marksForCorrect = sec.positiveMarks;
+        }
+        if (q.negativeMarks === undefined && sec.negativeMarks !== undefined) {
+          q.negativeMarks = sec.negativeMarks;
+        }
+        allQuestions.push(q);
+      });
     });
 
     let correct = 0, wrong = 0, unanswered = 0;
     let totalScore = 0;
+    let computedMaxScore = 0;
     const solutionsHTML = [];
     const sectionBreakdown = {};
 
@@ -1398,33 +1604,34 @@ class OliveboardTestEngine {
       const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
       const isCorrect = isAttempted && selectedIdx === q.correctIndex;
 
-      const marksPos = q.marksForCorrect !== undefined ? q.marksForCorrect : 1;
-      const marksNeg = q.negativeMarks !== undefined ? q.negativeMarks : 0.25;
+      const marksPos = q.marksForCorrect !== undefined ? q.marksForCorrect : (this.testData.marksPerCorrect || 1);
+      const marksNeg = q.negativeMarks !== undefined ? q.negativeMarks : (this.testData.negativeMarks ?? 0.25);
+      computedMaxScore += marksPos;
 
-      // Section tracking
-      if (!sectionBreakdown[q.section]) {
-        sectionBreakdown[q.section] = { correct: 0, wrong: 0, unanswered: 0, score: 0, total: 0 };
+      const secName = q.section || 'General';
+      if (!sectionBreakdown[secName]) {
+        sectionBreakdown[secName] = { correct: 0, wrong: 0, unanswered: 0, score: 0, total: 0, timeSpentSeconds: 0 };
       }
-      sectionBreakdown[q.section].total++;
+      sectionBreakdown[secName].total++;
+      sectionBreakdown[secName].timeSpentSeconds += (response && response.timeSpentSeconds ? response.timeSpentSeconds : 0);
 
       if (isAttempted) {
         if (isCorrect) {
           correct++;
           totalScore += marksPos;
-          sectionBreakdown[q.section].correct++;
-          sectionBreakdown[q.section].score += marksPos;
+          sectionBreakdown[secName].correct++;
+          sectionBreakdown[secName].score += marksPos;
         } else {
           wrong++;
           totalScore -= marksNeg;
-          sectionBreakdown[q.section].wrong++;
-          sectionBreakdown[q.section].score -= marksNeg;
+          sectionBreakdown[secName].wrong++;
+          sectionBreakdown[secName].score -= marksNeg;
         }
       } else {
         unanswered++;
-        sectionBreakdown[q.section].unanswered++;
+        sectionBreakdown[secName].unanswered++;
       }
 
-      // Format solutions HTML
       const selectedLetter = isAttempted ? (q.options[selectedIdx]?.letter || String.fromCharCode(65 + selectedIdx)) : 'Not Attempted';
       const correctLetter = q.options[q.correctIndex]?.letter || String.fromCharCode(65 + (q.correctIndex || 0));
       const statusClass = isAttempted ? (isCorrect ? 'correct' : 'wrong') : 'skipped';
@@ -1435,7 +1642,7 @@ class OliveboardTestEngine {
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px;">
             <div style="font-weight: bold; color: #1c4b79;">
               <span>${statusIcon}</span> Question ${q.questionNumber || (idx + 1)}
-              <span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">${q.section}</span>
+              <span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">${secName}</span>
             </div>
             <div style="font-weight: bold;">
               ${isAttempted ? (isCorrect ? `<span style="color: #2e7d32;">+${marksPos.toFixed(2)}</span>` : `<span style="color: #e03131;">-${marksNeg.toFixed(2)}</span>`) : '<span style="color: #64748b;">0.00</span>'}
@@ -1457,9 +1664,9 @@ class OliveboardTestEngine {
       `);
     });
 
-    const maxScore = allQuestions.length * (this.testData.marksPerCorrect || 1);
-    const accuracy = correct + wrong > 0 ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0;
-    const percentile = Math.min(99.9, Math.max(12.0, (totalScore / maxScore) * 100 * 1.15)).toFixed(1);
+    const maxScore = this.testData.marks || Math.round(computedMaxScore) || 100;
+    const accuracy = correct + wrong > 0 ? ((correct / (correct + wrong)) * 100).toFixed(1) : '0.0';
+    const percentile = Math.min(99.9, Math.max(12.0, (Math.max(0, totalScore) / Math.max(1, maxScore)) * 100 * 1.15)).toFixed(1);
     const estimatedAIR = Math.max(1, Math.round(1500 - (parseFloat(percentile) * 14.5)));
 
     const sectionBreakdownArr = Object.entries(sectionBreakdown).map(([name, data]) => ({
@@ -1468,7 +1675,6 @@ class OliveboardTestEngine {
       accuracy: data.correct + data.wrong > 0 ? ((data.correct / (data.correct + data.wrong)) * 100).toFixed(1) : '0'
     }));
 
-    // Build Attempt Object for Persistence in SQLite DB
     const resultObj = {
       testId: this.testData.id,
       testTitle: this.testData.title,
@@ -1489,17 +1695,15 @@ class OliveboardTestEngine {
         startedAt: new Date(this.startTime).toISOString(),
         completedAt: new Date(endTime).toISOString(),
         totalTimeSeconds,
-        timePerQuestion: (totalTimeSeconds / allQuestions.length).toFixed(1)
+        timePerQuestion: (totalTimeSeconds / Math.max(1, allQuestions.length)).toFixed(1)
       },
       sectionBreakdown: sectionBreakdownArr
     };
 
-    // Save to Permanent SQLite Database (Multi-User Isolation)
     if (window.obDataManager) {
-      window.obDataManager.saveResult(resultObj);
+      await window.obDataManager.saveResult(resultObj);
     }
 
-    // Populate AI Scorecard Modal
     const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
     setEl('scorecard-test-title', this.testData.title);
     setEl('metric-score', `${totalScore.toFixed(2)} / ${maxScore}`);
@@ -1511,7 +1715,6 @@ class OliveboardTestEngine {
     setEl('metric-unanswered', unanswered);
     setEl('metric-time', this._formatTime(totalTimeSeconds));
 
-    // Render Section Breakdown in Scorecard
     this._renderScorecardSectionalTable(sectionBreakdownArr, totalTimeSeconds);
     this._renderScorecardTopicBreakdown(sectionBreakdownArr, allQuestions);
     this._renderTopperComparisonModule(totalScore, maxScore, parseFloat(accuracy), totalTimeSeconds, allQuestions.length, sectionBreakdownArr);
@@ -1528,21 +1731,15 @@ class OliveboardTestEngine {
       `).join('');
     }
 
-    // Render Detailed Solutions
     const solutionsContainer = document.getElementById('scorecard-solutions-list');
     if (solutionsContainer) {
       solutionsContainer.innerHTML = solutionsHTML.join('');
     }
 
-    // Hide Test Overlay and Show Scorecard
     if (this.modalOverlay) {
       this.modalOverlay.classList.remove('active');
     }
-    if (this.scorecardOverlay) {
-      this.scorecardOverlay.classList.add('active');
-    }
 
-    // Connect Launch Oliveboard Solutions Button
     const btnLaunchSol = document.getElementById('btn-scorecard-launch-solutions');
     if (btnLaunchSol) {
       btnLaunchSol.onclick = () => {
@@ -1552,27 +1749,33 @@ class OliveboardTestEngine {
         }
       };
     }
+
+    // Directly open the authentic Oliveboard Solution Window (index3.php) upon submitting the mock test
+    if (window.openOliveboardSolutions) {
+      window.openOliveboardSolutions(resultObj, this.testData);
+    } else if (this.scorecardOverlay) {
+      this.scorecardOverlay.classList.add('active');
+    }
   }
 
   showScorecardForAttempt(attempt, testData) {
     const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-    setEl('scorecard-test-title', attempt.test_title || attempt.testTitle || 'Mock Test');
-    setEl('metric-score', `${(attempt.score || 0).toFixed(2)} / ${attempt.max_score || 100}`);
-    setEl('metric-percentile', `${(attempt.percentile || 0).toFixed(1)}%ile`);
-    setEl('metric-accuracy', `${(attempt.accuracy || 0).toFixed(1)}%`);
-    setEl('metric-rank', `#${attempt.estimated_air || 1000} / 14,680`);
-    setEl('metric-correct', attempt.correct_count ?? 0);
-    setEl('metric-wrong', attempt.wrong_count ?? 0);
-    setEl('metric-unanswered', attempt.unanswered_count ?? 0);
-    setEl('metric-time', this._formatTime(attempt.time_spent_seconds || 0));
-
-    // Render section breakdown
-    const breakdown = attempt.section_breakdown || [];
     const netScore = attempt.score !== undefined ? (typeof attempt.score === 'number' ? attempt.score : (attempt.score.total ?? 0)) : 0;
     const maxScore = attempt.max_score || (testData && testData.marks) || 100;
     const accuracy = attempt.accuracy !== undefined ? attempt.accuracy : 0;
     const timeSpent = attempt.time_spent_seconds || 0;
 
+    setEl('scorecard-test-title', attempt.test_title || attempt.testTitle || 'Mock Test');
+    setEl('metric-score', `${Number(netScore).toFixed(2)} / ${maxScore}`);
+    setEl('metric-percentile', `${Number(attempt.percentile || 0).toFixed(1)}%ile`);
+    setEl('metric-accuracy', `${Number(accuracy).toFixed(1)}%`);
+    setEl('metric-rank', `#${attempt.estimated_air || 1000} / 14,680`);
+    setEl('metric-correct', attempt.correct_count ?? 0);
+    setEl('metric-wrong', attempt.wrong_count ?? 0);
+    setEl('metric-unanswered', attempt.unanswered_count ?? 0);
+    setEl('metric-time', this._formatTime(timeSpent));
+
+    const breakdown = attempt.section_breakdown || [];
     this._renderScorecardSectionalTable(breakdown, timeSpent);
 
     const breakdownEl = document.getElementById('scorecard-section-breakdown');
@@ -1587,11 +1790,13 @@ class OliveboardTestEngine {
       `).join('');
     }
 
-    // Render solutions if questions available
     const solutionsContainer = document.getElementById('scorecard-solutions-list');
     if (solutionsContainer && testData && testData.sections) {
       const allQuestions = [];
-      testData.sections.forEach(sec => sec.questions.forEach(q => allQuestions.push(q)));
+      testData.sections.forEach(sec => sec.questions.forEach(q => {
+        q.correctIndex = this._getNormalizedCorrectIndex(q);
+        allQuestions.push(q);
+      }));
 
       this._renderScorecardTopicBreakdown(breakdown, allQuestions);
       this._renderTopperComparisonModule(netScore, maxScore, parseFloat(accuracy), timeSpent, allQuestions.length, breakdown);
@@ -1652,9 +1857,6 @@ class OliveboardTestEngine {
     }
   }
 
-  /**
-   * Render Authentic Sectional Analysis Table with Cutoff & Status (Spec 5.2)
-   */
   _renderScorecardSectionalTable(sectionBreakdownArr, totalTimeSeconds) {
     const rowsEl = document.getElementById('scorecard-section-rows');
     if (!rowsEl || !sectionBreakdownArr || !sectionBreakdownArr.length) return;
@@ -1689,9 +1891,6 @@ class OliveboardTestEngine {
     }).join('');
   }
 
-  /**
-   * Render Topic-wise Mastery Breakdown Grid (Spec 5.2)
-   */
   _renderScorecardTopicBreakdown(sectionBreakdownArr, allQuestions) {
     const topicContainer = document.getElementById('scorecard-topic-breakdown');
     if (!topicContainer) return;
@@ -1711,7 +1910,7 @@ class OliveboardTestEngine {
     `).join('');
   }
 
-  _generateTopicStats(sectionArr, allQuestions) {
+  _generateTopicStats(sectionArr) {
     const topics = [];
     const topicKeywords = {
       'English Language': ['Reading Comprehension', 'Error Detection', 'Sentence Rearrangement', 'Cloze Test', 'Vocabulary'],
@@ -1742,14 +1941,10 @@ class OliveboardTestEngine {
     return topics;
   }
 
-  /**
-   * Render Topper vs You Comparative Module with Interactive Tabs (Spec 5.3)
-   */
   _renderTopperComparisonModule(userScore, maxScore, userAcc, userTimeSec, totalQ, sectionArr) {
     const container = document.getElementById('comp-cards-container');
     if (!container) return;
 
-    // Benchmark stats
     const avgScore = Math.max(10, (maxScore * 0.442)).toFixed(2);
     const topperScore = (maxScore * 0.898).toFixed(2);
     const avgAcc = 68.2;
@@ -1767,17 +1962,17 @@ class OliveboardTestEngine {
           </div>
           <div class="bar-row">
             <span class="lbl">You:</span>
-            <div class="bar-bg"><div class="bar-fill you" style="width: ${Math.min(100, Math.max(5, (userScore / maxScore) * 100))}%;"></div></div>
+            <div class="bar-bg"><div class="bar-fill you" style="width: ${Math.min(100, Math.max(5, (userScore / Math.max(1, maxScore)) * 100))}%;"></div></div>
             <span class="val">${Number(userScore).toFixed(2)}</span>
           </div>
           <div class="bar-row">
             <span class="lbl">Avg:</span>
-            <div class="bar-bg"><div class="bar-fill avg" style="width: ${Math.min(100, (parseFloat(avgScore) / maxScore) * 100)}%;"></div></div>
+            <div class="bar-bg"><div class="bar-fill avg" style="width: ${Math.min(100, (parseFloat(avgScore) / Math.max(1, maxScore)) * 100)}%;"></div></div>
             <span class="val">${avgScore}</span>
           </div>
           <div class="bar-row">
             <span class="lbl">Topper:</span>
-            <div class="bar-bg"><div class="bar-fill topper" style="width: ${Math.min(100, (parseFloat(topperScore) / maxScore) * 100)}%;"></div></div>
+            <div class="bar-bg"><div class="bar-fill topper" style="width: ${Math.min(100, (parseFloat(topperScore) / Math.max(1, maxScore)) * 100)}%;"></div></div>
             <span class="val">${topperScore}</span>
           </div>
         </div>
@@ -1885,10 +2080,8 @@ class OliveboardTestEngine {
       }).join('');
     };
 
-    // Default to score tab
     renderScoreTab();
 
-    // Bind tab clicks
     const tabsBar = document.getElementById('comp-tabs-bar');
     if (tabsBar) {
       tabsBar.querySelectorAll('.comp-tab').forEach(tab => {
@@ -1916,6 +2109,8 @@ class OliveboardTestEngine {
     clearInterval(this.timerInterval);
     this.isExamActive = false;
     this.isPaused = false;
+    if (this.questionInnerPane) this.questionInnerPane.style.opacity = '1';
+    if (this.mainContainer) this.mainContainer.style.opacity = '1';
     if (this.modalOverlay) {
       this.modalOverlay.classList.remove('active');
     }
@@ -1928,6 +2123,6 @@ class OliveboardTestEngine {
 }
 
 // Global initialization
-window.initTestEngine = function(testData) {
+window.initTestEngine = function (testData) {
   return new OliveboardTestEngine(testData);
 };

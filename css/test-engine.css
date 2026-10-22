@@ -209,16 +209,21 @@ html * {
 /* Outer Question Pane */
 #question-outer-pane {
   position: absolute;
-  height: calc(100% - 54px);
+  height: calc(100% - 58px);
   width: calc(100% - 20px);
   font-size: 13px;
   font-family: verdana, helvetica, sans-serif;
-  margin: 0 10px 8px 10px;
-  top: 48px;
+  margin: 0 10px 6px 10px;
+  top: 52px;
   border: 1px solid #999;
   background: #fff;
   box-sizing: border-box;
   overflow: hidden;
+  transition: width 0.12s ease;
+}
+
+#question-outer-pane.expanded-full-lower {
+  width: calc(125% - 42px) !important;
 }
 
 /* Question Number & Marks Bar */
@@ -608,62 +613,70 @@ html * {
 }
 
 /* ========================================================
-   RIGHT CONTAINER (#right-container-post) - 22%
+   RIGHT CONTAINER (#right-container-post) - 20%
    Candidate, Timer, Legend, Palette, and Bottom Navigation
    ======================================================== */
 #right-container-post {
   position: absolute;
   height: 100%;
-  width: 22%;
-  left: 78%;
+  width: 20%;
+  left: 80%;
   top: 0;
   border-left: 1px solid #999;
   background: #ffffff;
   box-sizing: border-box;
+  z-index: 80;
+}
+
+#right-container-post.palette-collapsed {
+  height: 74px !important;
+  border-bottom: 1px solid #999;
 }
 
 /* Candidate Profile & Countdown Timer (#cand-time-outer) */
 #cand-time-outer {
   position: absolute;
   width: 100%;
-  height: 70px;
+  height: 74px;
   top: 0%;
   left: 0%;
   padding: 6px 10px;
   box-sizing: border-box;
   border-bottom: 1px solid #ccc;
-  background: #fafafa;
+  background: #ffffff;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 10px;
 }
 
 #cand-image img {
-  width: 44px;
-  height: 50px;
-  border: 1px solid #ccc;
+  width: 74px;
+  height: 60px;
+  border: none;
   display: block;
+  object-fit: contain;
 }
 
 #timer {
-  font-size: 13px;
+  font-size: 12px;
   font-family: verdana, helvetica, sans-serif;
-  color: #222;
-  text-align: right;
-  line-height: 1.25;
+  color: #000000;
+  text-align: left;
+  line-height: 1.35;
+  flex: 1;
 }
 
 #timer b {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
-  color: #D9534F;
+  color: #000000;
 }
 
 #timer #exam-timer-display {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: bold;
-  color: #D9534F;
-  letter-spacing: 0.5px;
+  color: #000000;
 }
 
 .sectional-timer-badge {
@@ -687,16 +700,24 @@ html * {
   text-decoration: none;
   font-family: Arial, helvetica, sans-serif;
   font-weight: bold;
-  font-size: 12px;
-  display: flex;
+  font-size: 13px;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   cursor: pointer;
+  white-space: nowrap;
+  padding: 2px 0;
+  border: none;
+  background: transparent;
+}
+
+.apausebut:hover {
+  color: #1c4b79;
 }
 
 .apausebut img {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 .pausebut {
@@ -705,10 +726,10 @@ html * {
 
 /* Right Lower Half (#right-low-half-outer) */
 #right-low-half-outer {
-  height: calc(100% - 70px);
+  height: calc(100% - 74px);
   width: 100%;
   position: absolute;
-  top: 70px;
+  top: 74px;
   left: 0;
   background-color: #E4EDF7;
   padding: 8px 10px;
@@ -1402,48 +1423,66 @@ html * {
 
 /* ========================================================
    AUTHENTIC OLIVEBOARD DRAWER COLLAPSE ARROWS & HOVERBOX
+   Exact 1:1 with /scraped/style_pallet.css lines 1123-1158
    ======================================================== */
 .darr-rightslide {
   position: absolute;
-  left: -14px;
-  top: 48%;
+  left: -15px;
+  top: 46%;
   z-index: 100;
   cursor: pointer;
-  background: #3476BB;
-  color: #ffffff;
-  padding: 8px 3px;
+  background: #C7DCF0;
+  color: #1c4b79;
+  border: 1px solid #999;
+  border-right: none;
+  padding: 10px 3px;
   border-radius: 4px 0 0 4px;
-  box-shadow: -2px 0 6px rgba(0,0,0,0.25);
+  box-shadow: -1px 0 4px rgba(0,0,0,0.15);
   font-size: 11px;
+  font-weight: bold;
   line-height: 1;
   transition: all 0.15s ease;
 }
 
 .darr-rightslide:hover {
-  background: #245b95;
-  transform: scale(1.1);
+  background: #3476BB;
+  color: #ffffff;
 }
 
 .darr-leftslide {
-  position: fixed;
+  position: absolute;
   right: 0px;
-  top: 50%;
-  z-index: 2100;
+  top: 74px;
+  width: 22px;
+  height: calc(100% - 74px);
+  z-index: 999;
   cursor: pointer;
-  background: #3476BB;
-  color: #ffffff;
-  padding: 8px 4px;
-  border-radius: 4px 0 0 4px;
-  box-shadow: -2px 0 6px rgba(0,0,0,0.25);
-  font-size: 11px;
-  line-height: 1;
+  background-color: #C7DCF0;
+  border-left: 1px solid #999;
+  color: #1c4b79;
+  font-size: 14px;
+  font-weight: bold;
   display: none;
-  transition: all 0.15s ease;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease;
+}
+
+.darr-leftslide .darrleft-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 28px;
+  background: #3476BB;
+  color: #fff;
+  border-radius: 3px;
+  font-size: 10px;
 }
 
 .darr-leftslide:hover {
-  background: #245b95;
-  transform: scale(1.1);
+  background-color: #b2d3f3;
 }
 
 /* Section Hoverbox Tooltip (#hover-con) */
@@ -1644,219 +1683,462 @@ html * {
 }
 
 /* ========================================================
-   PRE-EXAM INSTRUCTIONS PANE (Spec 2.2 & 2.3)
+   PRE-EXAM INSTRUCTIONS & IN-EXAM SUBMIT CONTAINERS
+   Exact 1:1 from /scraped/style_pallet.css (Specs 2.2, 2.3, 3.7, 4.2)
    ======================================================== */
-.instruction-pane-1 {
+#left-container {
   position: absolute;
-  top: 52px;
-  bottom: 0;
+  height: 100%;
+  width: 80%;
   left: 0;
-  right: 0;
+  top: 0;
   background: #ffffff;
-  z-index: 90;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  font-family: verdana, helvetica, sans-serif;
 }
 
-.instruction-content-container {
-  display: flex;
-  flex-direction: column;
+#right-container {
+  position: absolute;
   height: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 16px 24px;
+  width: 20%;
+  left: 80%;
+  top: 0;
+  border-left: 1px solid #888;
+  background: #ffffff;
   box-sizing: border-box;
 }
 
-.instruction-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 2px solid #3476BB;
-  padding-bottom: 10px;
-  margin-bottom: 12px;
+#candidate-img-con {
+  position: relative;
+  top: 5%;
+  text-align: center;
+  width: 100%;
+  font-family: verdana, helvetica, sans-serif;
 }
 
-.instruction-main-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #1c4b79;
+#left-container-post {
+  width: 80% !important;
+  transition: width 0.1s linear;
 }
 
-.instr-lang-select-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
+#right-container-post {
+  width: 20% !important;
+  left: 80% !important;
 }
 
-.instruction-scrollable-body {
-  flex: 1;
+/* Pre-Exam Instructions Scrollable Pane (.instruction-pane-1) */
+#left-container > .instruction-pane-1 {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: calc(100% - 115px);
   overflow-y: auto;
-  padding-right: 12px;
+  overflow-x: hidden;
+  padding: 14px 20px;
   font-size: 13px;
   line-height: 22px;
-  color: #222;
+  font-family: verdana, helvetica, sans-serif;
+  box-sizing: border-box;
+  background: #ffffff;
+  display: block;
 }
 
-.instr-lead-text {
-  font-weight: 600;
-  color: #1e3a8a;
-  margin-bottom: 14px;
+.number-list {
+  margin-left: 2%;
+  padding-right: 1%;
+  font-weight: bold;
 }
 
-.instr-subheading {
-  margin: 18px 0 8px 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #1c4b79;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 4px;
+.alphalist {
+  margin-left: 4%;
+  padding-right: 1%;
+  font-weight: bold;
 }
 
-.instr-numbered-list {
-  padding-left: 20px;
-  margin: 6px 0 14px 0;
-}
-
-.instr-numbered-list li {
-  margin-bottom: 6px;
-}
-
-/* Section Matrix Table (.tab-in) */
-.tab-in {
+/* Pre-Exam Declaration & Start Test Footer (#instr-footer-bar) */
+#instr-footer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
   width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0 16px 0;
+  height: 115px;
+  border-top: 1px solid #999;
+  background: #ffffff;
+  padding: 8px 20px;
+  box-sizing: border-box;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 12px;
+  z-index: 95;
+}
+
+#start-test {
+  height: 28px;
+  line-height: 24px;
+  width: 130px;
+  background-color: #C7DCF0;
+  display: inline-block;
+  padding: 2px 12px;
+  color: #000000;
   font-size: 13px;
-  border: 1px solid #cbd5e1;
+  font-family: verdana, helvetica, sans-serif;
+  font-weight: bold;
+  border: 1px solid #A9D0F5;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+#start-test:hover {
+  background-color: #3476BB;
+  color: #FFFFFF;
+}
+
+/* In-Exam Submit / Section Summary Table (#submit-pane & #sure - Spec 4.2) */
+#submit-pane {
+  position: absolute;
+  left: 2%;
+  top: 12%;
+  width: 96%;
+  font-size: 14px;
+  font-family: verdana, helvetica, sans-serif;
+  display: none;
+}
+
+#f-table {
+  border: 1px solid #000;
+  border-collapse: collapse;
+  text-align: center;
+  width: 95%;
+  margin: 0 auto;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+#f-table td,
+#f-table th {
+  border: 1px solid #000;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+#f-table th {
+  background-color: #E4EDF7;
+  color: #000;
+  font-weight: bold;
+}
+
+#sure {
+  position: absolute;
+  bottom: 22%;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  font-family: verdana, helvetica, sans-serif;
+  display: none;
+}
+
+#sure a {
+  text-decoration: none;
+}
+
+#s-back,
+#s-submit {
+  height: 28px;
+  line-height: 24px;
+  min-width: 95px;
+  background-color: #C7DCF0;
+  display: inline-block;
+  padding: 2px 14px;
+  color: #000;
+  font-size: 13px;
+  font-family: verdana, helvetica, sans-serif;
+  border: 2px solid #A9D0F5;
+  text-decoration: none;
+  text-align: center;
+  margin: 0 6px;
+  cursor: pointer;
+}
+
+#s-back:hover,
+#s-submit:hover {
+  background-color: #3476BB;
+  color: #FFFFFF;
+}
+
+#plswait {
+  position: absolute;
+  bottom: 22%;
+  width: 100%;
+  text-align: center;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: verdana, helvetica, sans-serif;
+  display: none;
+}
+
+/* ========================================================
+   IN-PANE UTILITY VIEWS (#b1 Question Paper, #b2 Instructions, #b3 Profile)
+   Exact 1:1 from /scraped/style_pallet.css (Spec 3.7)
+   ======================================================== */
+#instructions-onbutton {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  bottom: 46px;
+  padding: 14px 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 13px;
+  line-height: 22px;
+  font-family: verdana, helvetica, sans-serif;
+  background: #ffffff;
+  box-sizing: border-box;
+  display: none;
+  z-index: 60;
+}
+
+#question-list-onbutton {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  bottom: 46px;
+  padding: 14px 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 14px;
+  line-height: 23px;
+  font-family: verdana, helvetica, sans-serif;
+  background: #ffffff;
+  box-sizing: border-box;
+  display: none;
+  z-index: 60;
+}
+
+#question-list-onbutton hr {
+  border: 0;
+  border-top: 1px solid #ccc;
+  margin: 12px 0;
+}
+
+#candidate-details-onbutton {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  bottom: 46px;
+  padding: 20px;
+  overflow-y: auto;
+  font-size: 14px;
+  font-family: verdana, helvetica, sans-serif;
+  background: #ffffff;
+  box-sizing: border-box;
+  display: none;
+  z-index: 60;
+}
+
+#giant-candidate {
+  border-collapse: collapse;
+  width: 55%;
+  min-width: 340px;
+  margin-top: 14px;
+}
+
+#giant-candidate td {
+  padding: 8px 12px;
+  border: 1px solid #666;
+  font-size: 13px;
+}
+
+#main-back-button {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 46px;
+  border-top: 1px solid #999;
+  background: #ffffff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 65;
+}
+
+#main-back-button a {
+  text-decoration: none;
+}
+
+#back {
+  height: 28px;
+  line-height: 24px;
+  width: 100px;
+  text-align: center;
+  background-color: #3778BD;
+  display: inline-block;
+  padding: 2px 10px;
+  color: #FFF;
+  font-size: 13px;
+  font-weight: bold;
+  border: 2px solid #A9D0F5;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+#back:hover {
+  background-color: #285f99;
+}
+
+/* ========================================================
+   SECTION HOVERBOX WITH SPRITE COUNTERS (#hover-con)
+   Exact 1:1 from /scraped/style_pallet.css
+   ======================================================== */
+#hover-con {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #999;
+  box-shadow: 0px 2px 10px #666;
+  font-size: 11px;
+  font-family: verdana, helvetica, sans-serif;
+  padding: 6px 10px;
+  z-index: 2500;
+  display: none;
+  min-width: 195px;
+}
+
+#hover-con table td {
+  padding: 2px 4px;
+  vertical-align: middle;
+}
+
+#answ,
+#unansw,
+#marked,
+#notvisited,
+#ansmarked {
+  display: block;
+  background-image: url('../images/oliveboard/button-sprite.png');
+  text-decoration: none;
+  height: 39px;
+  width: 35px;
+  text-align: center;
+  font-size: 11px;
+  font-family: verdana, helvetica, sans-serif;
+  font-weight: bold;
+  line-height: 39px;
+  overflow: visible;
+}
+
+#answ {
+  background-position: 0px -264px;
+  color: #FFF;
+}
+
+#unansw {
+  background-position: 0px -136px;
+  color: #FFF;
+}
+
+#marked {
+  background-position: 0px -180px;
+  color: #FFF;
+}
+
+#notvisited {
+  background-position: 0px -223px;
+  color: #4D4D4D;
+}
+
+#ansmarked {
+  background-position: 0px -353px;
+  color: #FFF;
+}
+
+/* Section Name & Palette Header (#first-outer-pallette) */
+#first-outer-pallette {
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+/* Authentic Oliveboard Scrollbar Tooltip (.scrolltooltip) */
+.scrolltooltip {
+  background-color: #323232;
+  border-radius: 3px;
+  bottom: 58px;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+  color: #FFF;
+  font-size: 12px;
+  font-family: verdana, helvetica, sans-serif;
+  left: 24px;
+  max-width: 520px;
+  padding: 10px 16px;
+  position: fixed;
+  z-index: 2200;
+}
+
+.scrolltooltip .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scrolltooltip p {
+  margin: 0;
+  line-height: 18px;
+}
+
+/* SectionMatrix & Symbol Tables in Pre-Exam Instructions */
+.tab-in {
+  width: 95%;
+  border-collapse: collapse;
+  margin: 8px auto;
+  font-size: 13px;
+  border: 1px solid #000;
+}
+
+.tab-in th,
+.tab-in td {
+  border: 1px solid #000;
+  padding: 6px 10px;
+  text-align: center;
 }
 
 .tab-in th {
-  background: #3476BB;
-  color: #ffffff;
-  padding: 8px 10px;
-  border: 1px solid #2B629B;
-  text-align: center;
-  font-weight: 600;
+  background: #E4EDF7;
+  color: #000;
+  font-weight: bold;
 }
 
-.tab-in td {
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  text-align: center;
-}
-
-.tab-in tbody tr:nth-child(even) {
-  background: #f8fafc;
-}
-
-/* Symbol Explanation Table (.explain-butts) */
 .explain-butts {
-  width: 100%;
   border-collapse: collapse;
-  margin: 10px 0 16px 0;
+  margin-left: 4%;
   font-size: 13px;
 }
 
 .explain-butts td {
-  padding: 8px 12px;
+  padding: 4px 10px;
   vertical-align: middle;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.explain-butts .symbol-col {
-  width: 50px;
-  text-align: center;
-}
-
-.explain-butts .desc-col {
-  color: #334155;
-  line-height: 20px;
-}
-
-.explain-butts .highlight-rule {
-  color: #008479;
-  font-weight: 700;
-}
-
-/* Instruction Footer Declaration & Ready Button */
-.instruction-footer-action-panel {
-  border-top: 2px solid #e2e8f0;
-  padding-top: 14px;
-  margin-top: 10px;
-  background: #ffffff;
 }
 
 .disclaimer-box {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   font-size: 12px;
-  line-height: 18px;
-  color: #1e293b;
-  user-select: none;
-}
-
-.disclaimer-box input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
-  cursor: pointer;
-  accent-color: #3476BB;
+  line-height: 16px;
+  color: #000;
 }
 
 .disclaimer-warning {
-  margin-top: 8px;
-  padding: 6px 12px;
+  padding: 4px 10px;
   background: #fee2e2;
   color: #b91c1c;
   border: 1px solid #f87171;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  animation: shake 0.3s ease;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
-}
-
-.start-btn-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 12px;
-}
-
-.btn-start-test {
-  background: #3476BB;
-  color: #ffffff;
-  border: 1px solid #23588f;
-  padding: 10px 32px;
-  font-size: 15px;
-  font-weight: 700;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(52, 118, 187, 0.3);
-}
-
-.btn-start-test:hover {
-  background: #285f99;
-  box-shadow: 0 4px 10px rgba(52, 118, 187, 0.4);
-}
-
-.btn-start-test:active {
-  transform: translateY(1px);
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: bold;
 }
 
 /* ========================================================
@@ -2079,36 +2361,401 @@ html * {
 }
 
 /* ========================================================
-   SUBMIT SUMMARY TABLE & MODAL (Spec 4.2)
+   SOLUTION CONSOLE UNIQUE ID LAYOUT PARITY (#soln-*)
+   Ensures zero DOM ID collisions with #test-modal-overlay while
+   maintaining 100% pixel-identical Oliveboard TCS iON layout
    ======================================================== */
-.submit-summary-table {
+#soln-header-top {
+  background-color: #3476BB;
+  height: 52px;
   width: 100%;
-  border-collapse: collapse;
-  margin: 16px 0;
-  font-family: verdana, sans-serif;
-  font-size: 13px;
-  border: 1px solid #cbd5e1;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  margin: 0px;
+  border-bottom: 1px solid #1c4b79;
+  font-family: verdana, helvetica, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-sizing: border-box;
+  z-index: 100;
 }
 
-.submit-summary-table th {
-  background-color: #3476BB !important;
-  color: #ffffff !important;
-  padding: 10px 8px !important;
-  border: 1px solid #2B629B !important;
-  font-weight: 600 !important;
-  text-align: center !important;
+#soln-header-top > .main-title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.submit-summary-table td {
-  padding: 8px 10px;
-  border: 1px solid #ddd;
+#soln-header-top > .main-title-container > h2 {
+  color: #FFF;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+}
+
+#soln-header-top > .logo-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
 }
 
-/* Sidebar Collapse Transition (Spec 3.6) */
-#left-container-post {
+#soln-header-top > .logo-container img {
+  height: 28px;
+  display: block;
+}
+
+#soln-main-container {
+  background: #fff;
+  position: absolute;
+  top: 52px;
+  bottom: 0px;
+  width: 100%;
+  left: 0px;
+  right: 0px;
+  overflow: hidden;
+}
+
+#soln-left-container-post {
+  position: absolute;
+  height: 100%;
+  width: 80% !important;
+  left: 0;
+  top: 0;
+  background: #fff;
   transition: width 0.1s linear;
 }
+
+#soln-section-name-container {
+  border: 1px solid #999;
+  height: 38px;
+  position: absolute;
+  font-size: 13px;
+  font-family: verdana, helvetica, sans-serif;
+  padding: 2px 8px;
+  margin: 6px 10px 0 10px;
+  width: calc(100% - 20px);
+  box-sizing: border-box;
+  background: #fff;
+  display: flex;
+  align-items: center;
+}
+
+#soln-section-name-container .title-box {
+  float: left;
+  padding: 0 5px;
+  margin: -24px 0 0 2px;
+  background: #FFF;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+#soln-question-outer-pane {
+  position: absolute;
+  height: calc(100% - 58px);
+  width: calc(100% - 20px);
+  font-size: 13px;
+  font-family: verdana, helvetica, sans-serif;
+  margin: 0 10px 6px 10px;
+  top: 52px;
+  border: 1px solid #999;
+  background: #fff;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: width 0.12s ease;
+}
+
+#soln-question-outer-pane.expanded-full-lower {
+  width: calc(125% - 42px) !important;
+}
+
+#soln-question-no-bar {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  height: 34px;
+  line-height: 34px;
+  width: 100%;
+  padding: 0 12px;
+  font-family: verdana, helvetica, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  background: #f7f9fb;
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#soln-question-inner-pane {
+  position: absolute;
+  left: 0%;
+  width: 100%;
+  top: 35px;
+  bottom: 46px;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 24px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+#soln-button-holder {
+  position: absolute;
+  bottom: 0%;
+  left: 0%;
+  right: 0%;
+  height: 46px;
+  width: 100%;
+  border-top: 1px solid #999;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  box-sizing: border-box;
+  z-index: 70;
+}
+
+#soln-button-holder a {
+  text-decoration: none;
+}
+
+#soln-mark {
+  height: 28px;
+  line-height: 28px;
+  min-width: 140px;
+  background-color: #C7DCF0;
+  display: inline-block;
+  padding: 0 12px;
+  color: #000;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 13px;
+  border: 2px solid #A9D0F5;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+#soln-mark:hover {
+  background-color: #b3d3f1;
+}
+
+#soln-next {
+  height: 28px;
+  line-height: 28px;
+  min-width: 140px;
+  text-align: center;
+  background-color: #3778BD;
+  display: inline-block;
+  padding: 0 16px;
+  color: #FFF;
+  font-family: verdana, helvetica, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  border: 2px solid #A9D0F5;
+  cursor: pointer;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+#soln-next:hover {
+  background-color: #2d65a1;
+}
+
+#soln-right-container-post {
+  position: absolute;
+  height: 100%;
+  width: 20% !important;
+  left: 80% !important;
+  top: 0;
+  border-left: 1px solid #999;
+  background: #ffffff;
+  box-sizing: border-box;
+  z-index: 80;
+}
+
+#soln-right-container-post.palette-collapsed {
+  height: 74px !important;
+  border-bottom: 1px solid #999;
+}
+
+#soln-cand-time-outer {
+  position: absolute;
+  width: 100%;
+  height: 74px;
+  top: 0%;
+  left: 0%;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ccc;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+#soln-cand-image img {
+  width: 74px;
+  height: 60px;
+  border: none;
+  display: block;
+  object-fit: contain;
+}
+
+#soln-right-low-half-outer {
+  height: calc(100% - 74px);
+  width: 100%;
+  position: absolute;
+  top: 74px;
+  left: 0;
+  background-color: #E4EDF7;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+#soln-legend {
+  width: 100%;
+  font-size: 11px;
+  font-family: verdana, helvetica, sans-serif;
+  margin-bottom: 6px;
+}
+
+#soln-legend b {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+#soln-legend table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#soln-legend table td {
+  padding: 2px 4px;
+  vertical-align: middle;
+}
+
+#soln-first-outer-pallette {
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-family: verdana, helvetica, sans-serif;
+}
+
+#soln-question-main-pallette {
+  width: 100%;
+  height: calc(100% - 195px);
+  background-color: #E4EDF7;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px;
+  box-sizing: border-box;
+  border: 1px solid #c0d4e8;
+}
+
+#soln-question-main-pallette table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 4px 6px;
+}
+
+#soln-question-main-pallette table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#soln-button-bottom {
+  position: absolute;
+  height: 70px;
+  width: calc(100% - 20px);
+  bottom: 8px;
+  left: 10px;
+}
+
+#soln-button-bottom table {
+  width: 100%;
+  height: 100%;
+  border-collapse: separate;
+  border-spacing: 4px;
+}
+
+#soln-button-bottom a {
+  text-decoration: none;
+  color: #000;
+  display: block;
+}
+
+#soln-b1, #soln-b2, #soln-b3, #soln-b4 {
+  background-color: #C7DCF0;
+  height: 28px;
+  line-height: 28px;
+  border: 1px solid #A9D0F5;
+  text-decoration: none;
+  text-align: center;
+  font-size: 13px;
+  font-family: verdana, helvetica, sans-serif;
+  vertical-align: middle;
+  border-radius: 2px;
+  cursor: pointer;
+  color: #000;
+  font-weight: normal;
+  display: block;
+  transition: background-color 0.15s ease;
+}
+
+#soln-b1:hover, #soln-b2:hover, #soln-b3:hover, #soln-b4:hover {
+  background-color: #b2d3f3;
+}
+
+#soln-hover-con {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #999;
+  box-shadow: 0px 2px 10px #666;
+  font-size: 11px;
+  font-family: verdana, helvetica, sans-serif;
+  padding: 6px 10px;
+  z-index: 2500;
+  display: none;
+  min-width: 195px;
+  border-radius: 4px;
+}
+
+#soln-hover-con-child {
+  font-weight: bold;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+  color: #1c4b79;
+  text-align: center;
+}
+
+#soln-hover-con table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#soln-hover-con table td {
+  padding: 3px 6px;
+  font-size: 11px;
+}
+
+
 
 
 

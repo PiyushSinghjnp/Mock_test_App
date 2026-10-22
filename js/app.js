@@ -1,13 +1,14 @@
 /**
- * Oliveboard Mock Test App - Controller v2
- * Full-Stack SQLite Backend & Multi-User Isolation Engine
+ * Oliveboard Mock Test App - Controller v2.6
+ * Full-Stack SQLite Backend, Multi-User Isolation & 2026 Official Exam Auto-Pattern Upload Engine
  */
 
 class OliveboardAppController {
   constructor() {
     this.currentExamId = "ibps-so"; // default to the full 150-Q IBPS SO IT exam
     this.currentFilterTab = "all";
-    this.currentViewTab = "tests"; // 'tests' | 'analytics' | 'leaderboard'
+    this.currentStatusFilter = "all"; // 'all' | 'unattempted' | 'attempted' | 'free' (Spec 1.2)
+    this.currentViewTab = "tests"; // 'tests' | 'analytics' | 'leaderboard' | 'mcp'
     this.testsCache = [];
 
     this.init();
@@ -24,12 +25,30 @@ class OliveboardAppController {
     this.renderHeader();
     this.renderExamHero();
     this.renderFilterTabs();
+    this.renderStatusFilterPills();
     await this.loadAndRenderMockCards();
     this.renderLeaderboard();
     await this.renderAnalytics();
 
     // 3. Bind UI events
     this.bindEvents();
+  }
+
+  showToast(message, type = 'info') {
+    let toast = document.getElementById('ob-global-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'ob-global-toast';
+      toast.style.cssText = 'position: fixed; bottom: 68px; right: 20px; z-index: 99999; padding: 11px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.22); transition: opacity 0.25s ease; pointer-events: none;';
+      document.body.appendChild(toast);
+    }
+    toast.style.background = type === 'error' ? '#dc2626' : (type === 'success' ? '#15803d' : '#0f172a');
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => {
+      if (toast) toast.style.opacity = '0';
+    }, 3600);
   }
 
   getCurrentExam() {
@@ -53,7 +72,7 @@ class OliveboardAppController {
     if (avatarEl) avatarEl.textContent = user.avatar || user.name.charAt(0).toUpperCase();
 
     const tagEl = document.getElementById('analytics-user-tag');
-    if (tagEl) tagEl.textContent = `Showing isolated attempts for: ${user.name} (${user.roll_no})`;
+    if (tagEl) tagEl.textContent = `Showing performance analytics for: ${user.name} (${user.roll_no})`;
   }
 
   renderUserProfileModal() {
@@ -110,6 +129,7 @@ class OliveboardAppController {
     this.renderUserProfileHeader();
     await this.loadAndRenderMockCards();
     await this.renderAnalytics();
+    this.showToast('Switched active candidate profile', 'success');
   }
 
   async handleCreateCandidate(name, targetExam, rollNo) {
@@ -125,8 +145,9 @@ class OliveboardAppController {
       this.renderUserProfileHeader();
       await this.loadAndRenderMockCards();
       await this.renderAnalytics();
+      this.showToast(`Created candidate profile for ${name}`, 'success');
     } catch (e) {
-      alert('Failed to create candidate profile: ' + e.message);
+      this.showToast('Failed to create candidate profile: ' + e.message, 'error');
     }
   }
 
@@ -157,7 +178,7 @@ class OliveboardAppController {
     banner.innerHTML = `
       <div class="exam-summary-info">
         <h2>${exam.name} Mock Test Series</h2>
-        <p>Comprehensive Online Test Series formulated by All India Rankers & Subject Specialists.</p>
+        <p>Comprehensive Online Test Series with Official 2026 Sectional Timings & Marking Schemes.</p>
         <div class="exam-metrics-pills">
           <span class="metric-pill">📝 ${exam.prelimsCount} Prelims Mocks</span>
           <span class="metric-pill">⚡ ${exam.mainsCount} Mains Mocks</span>
@@ -166,7 +187,7 @@ class OliveboardAppController {
           <span class="metric-pill" style="background: rgba(46, 125, 50, 0.4); border: 1px solid #81c784;">🎁 ${exam.freeMocks} Free Tests Available</span>
         </div>
       </div>
-      <div>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
         <button class="btn-attempt-live-hero" onclick="window.appController.startMockTest('${mainTestId}')">
           ${mainBtnText}
         </button>
@@ -182,7 +203,9 @@ class OliveboardAppController {
       { id: "all", label: "All Tests" },
       { id: "prelims", label: "Prelims Full Tests" },
       { id: "mains", label: "Mains Full Tests" },
-      { id: "sectional", label: "Sectional Speed Tests" }
+      { id: "sectional", label: "Sectional Speed Tests" },
+      { id: "topic", label: "Topic Tests" },
+      { id: "pyq", label: "Previous Year Papers" }
     ];
 
     tabsContainer.innerHTML = tabs.map(tab => `
@@ -200,15 +223,38 @@ class OliveboardAppController {
     });
   }
 
+  renderStatusFilterPills() {
+    const statusContainer = document.getElementById('status-filter-bar');
+    if (!statusContainer) return;
+
+    const pills = [
+      { id: "all", label: "All" },
+      { id: "unattempted", label: "Unattempted" },
+      { id: "attempted", label: "Attempted" },
+      { id: "free", label: "Free Tests" }
+    ];
+
+    statusContainer.innerHTML = pills.map(p => `
+      <button class="status-pill ${p.id === this.currentStatusFilter ? 'active' : ''}" data-status="${p.id}">
+        ${p.label}
+      </button>
+    `).join('');
+
+    statusContainer.querySelectorAll('.status-pill').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        this.currentStatusFilter = btn.dataset.status;
+        this.renderStatusFilterPills();
+        await this.loadAndRenderMockCards();
+      });
+    });
+  }
+
   async loadAndRenderMockCards() {
     const cardsContainer = document.getElementById('mock-cards-container');
     const countLabel = document.getElementById('active-tab-tests-count');
     if (!cardsContainer) return;
 
-    // Fetch tests list from backend SQLite API for current user
     let tests = await window.obDataManager.getTestsList(this.currentExamId);
-
-    // If no backend tests found for currentExamId, fallback to OB_TEST_APP data
     if (!tests || tests.length === 0) {
       tests = window.OB_TEST_APP.testPacks.filter(p => p.examId === this.currentExamId);
     }
@@ -220,6 +266,14 @@ class OliveboardAppController {
       displayPacks = displayPacks.filter(p => p.type === this.currentFilterTab);
     }
 
+    if (this.currentStatusFilter === "unattempted") {
+      displayPacks = displayPacks.filter(p => !p.isAttempted && !p.isPaused);
+    } else if (this.currentStatusFilter === "attempted") {
+      displayPacks = displayPacks.filter(p => !!p.isAttempted || !!p.isPaused);
+    } else if (this.currentStatusFilter === "free") {
+      displayPacks = displayPacks.filter(p => !!(p.is_free || p.isFree));
+    }
+
     if (countLabel) {
       countLabel.textContent = `${displayPacks.length} Tests Available`;
     }
@@ -228,8 +282,8 @@ class OliveboardAppController {
       cardsContainer.innerHTML = `
         <div style="grid-column: span 2; text-align: center; padding: 48px; background: #ffffff; border-radius: 12px; border: 1px solid var(--ob-app-border);">
           <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
-          <h4 style="font-size: 16px; font-weight: 700; color: #1e293b;">No tests found for this category</h4>
-          <p style="font-size: 13px; color: #64748b;">Select 'All Tests' or switch exams using the top exam selector.</p>
+          <h4 style="font-size: 16px; font-weight: 700; color: #1e293b;">No tests found for this filter</h4>
+          <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Select 'All Tests' or switch status filters above to view available mock tests.</p>
         </div>
       `;
       return;
@@ -237,22 +291,53 @@ class OliveboardAppController {
 
     cardsContainer.innerHTML = displayPacks.map(pack => {
       const isAttempted = !!pack.isAttempted && !!pack.userAttempt;
+      const isPaused = !!pack.isPaused && !!pack.pausedAttempt;
       const att = pack.userAttempt;
+      const paused = pack.pausedAttempt;
+      const isFree = !!(pack.is_free || pack.isFree);
+      const totalQs = pack.questions_count || pack.questionsCount || 100;
+
+      // Determine Top-Right Badge (Spec 1.3: 4 card state variants)
+      let topBadgeHTML = '';
+      if (isAttempted) {
+        topBadgeHTML = '<span class="badge-tag-completed">COMPLETED</span>';
+      } else if (isPaused) {
+        topBadgeHTML = '<span class="badge-tag-paused">IN PROGRESS</span>';
+      } else if (isFree) {
+        topBadgeHTML = '<span class="badge-tag-free">FREE</span>';
+      } else {
+        topBadgeHTML = '<span class="badge-tag-locked">🔒 PRO</span>';
+      }
+
+      // Compute 3-color progress bar percentages for completed_attempted
+      let correctPct = 0, wrongPct = 0, unattPct = 100;
+      if (isAttempted && att) {
+        const cCount = att.correct_count ?? 0;
+        const wCount = att.wrong_count ?? 0;
+        correctPct = Math.min(100, Math.round((cCount / Math.max(1, totalQs)) * 100));
+        wrongPct = Math.min(100 - correctPct, Math.round((wCount / Math.max(1, totalQs)) * 100));
+        unattPct = Math.max(0, 100 - correctPct - wrongPct);
+      }
+
+      // Compute remaining mins for paused_in_progress
+      let pausedMinsLeft = 20;
+      if (isPaused && paused) {
+        const remSec = paused.section_remaining_seconds || paused.remaining_seconds || 1200;
+        pausedMinsLeft = Math.max(1, Math.ceil(remSec / 60));
+      }
 
       return `
-        <div class="mock-test-card ${isAttempted ? 'card-attempted' : ''}">
+        <div class="mock-test-card ${isAttempted ? 'card-attempted' : (isPaused ? 'card-paused' : '')}">
           <div>
             <div class="card-top-row">
               <h4 class="mock-title">${pack.title}</h4>
-              ${pack.is_free || pack.isFree 
-                ? '<span class="badge-tag-free">Free Mock</span>' 
-                : '<span class="badge-tag-locked">PRO Mock</span>'}
+              ${topBadgeHTML}
             </div>
             <p class="mock-desc">${pack.subtitle || 'TCS iON authentic exam simulation'}</p>
 
             <div class="mock-specs-row">
+              <div class="spec-entry"><span class="spec-icon">❓</span> ${totalQs} Qs</div>
               <div class="spec-entry"><span class="spec-icon">✓</span> ${pack.marks} Marks</div>
-              <div class="spec-entry"><span class="spec-icon">❓</span> ${pack.questions_count || pack.questionsCount} Qs</div>
               <div class="spec-entry"><span class="spec-icon">⏱</span> ${pack.duration_minutes || pack.durationMinutes} Mins</div>
             </div>
 
@@ -263,36 +348,66 @@ class OliveboardAppController {
               `).join('')}
             </div>
 
-            <!-- Multi-User Isolated Attempt Status Banner -->
-            ${isAttempted ? `
-              <div class="card-attempt-banner">
+            <!-- Variant 3: Paused In-Progress Banner (Spec 1.3) -->
+            ${isPaused ? `
+              <div class="card-paused-banner">
                 <div>
-                  <span style="font-weight: 700; color: #15803d;">✅ Attempted by Active Candidate</span>
-                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
-                    Score: <span class="attempt-score-val">${att.score.toFixed(2)} / ${pack.marks}</span> | Acc: <strong>${att.accuracy}%</strong> | AIR: <strong>#${att.estimated_air}</strong>
+                  <span style="font-weight: 700; color: #0284c7;">⏸ Paused at Section ${(paused.current_section_index ?? 0) + 1}, Q${(paused.current_question_index ?? 0) + 1}</span>
+                  <div style="font-size: 11px; color: #475569; margin-top: 2px;">
+                    Time Remaining: <strong>${pausedMinsLeft} mins left</strong>
                   </div>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Variant 4: Oliveboard Completed Attempted Banner with 3-Color Progress Bar & Legend Dots (course.js renderCompletedTest) -->
+            ${isAttempted ? `
+              <div class="card-attempt-banner" style="display: block;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <div>
+                    <span style="font-weight: 800; color: #15803d; font-size: 13px;">${Number(att.score).toFixed(2)}/${pack.marks} <span style="font-weight: 600; color: #475569; font-size: 11px;">Score</span></span>
+                    <span style="margin-left: 10px; font-weight: 700; color: #0f172a; font-size: 12px;">${att.accuracy ?? 0}% <span style="font-weight: 600; color: #475569; font-size: 11px;">Accuracy</span></span>
+                  </div>
+                  <span style="font-size: 11px; color: #334155; font-weight: 600;">Rank: <strong>#${att.estimated_air}</strong> (${att.percentile}%ile)</span>
+                </div>
+                <div class="attempt-3color-bar" title="Green: Correct (${att.correct_count ?? 0}) | Red: Wrong (${att.wrong_count ?? 0}) | Grey: Skipped (${att.unanswered_count ?? 0})">
+                  <div class="seg-correct" style="width: ${correctPct}%;"></div>
+                  <div class="seg-wrong" style="width: ${wrongPct}%;"></div>
+                  <div class="seg-unattempted" style="width: ${unattPct}%;"></div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 14px; margin-top: 6px; font-size: 11px; font-weight: 600; color: #334155;">
+                  <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #16a34a; display: inline-block;"></span> ${att.correct_count ?? 0} Correct</span>
+                  <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #dc2626; display: inline-block;"></span> ${att.wrong_count ?? 0} Wrong</span>
+                  <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block;"></span> ${att.unanswered_count ?? 0} Skipped</span>
                 </div>
               </div>
             ` : ''}
           </div>
 
           <div class="mock-card-footer">
-            <span class="active-takers">👥 ${(pack.activeUsers || 24800).toLocaleString()} Aspirants</span>
+            <span class="active-takers">🌐 English, Hindi • 👥 ${(pack.activeUsers || 24800).toLocaleString()}</span>
             
             <div class="mock-card-actions">
-              ${isAttempted ? `
+              ${isPaused ? `
+                <button class="btn-attempt-card" style="background: #0284c7; color: #ffffff;" onclick="window.appController.resumeMockTest('${pack.id}')">
+                  Resume Test ▶
+                </button>
+                <button class="btn-view-scorecard" onclick="window.appController.startMockTest('${pack.id}', true)">
+                  Start Fresh
+                </button>
+              ` : isAttempted ? `
                 <button class="btn-attempt-card" style="background: #3476BB; color: #ffffff;" onclick="window.appController.viewSolutions('${att.attempt_id}', '${pack.id}')">
-                  View Solutions 📘
+                  Solutions
                 </button>
                 <button class="btn-view-scorecard" onclick="window.appController.viewAttemptScorecard('${att.attempt_id}', '${pack.id}')">
-                  Scorecard 📊
+                  Analytics
                 </button>
-                <button class="btn-attempt-card" style="background: #007bb5;" onclick="window.appController.startMockTest('${pack.id}')">
-                  Re-take ↺
+                <button class="btn-view-scorecard" onclick="window.appController.startMockTest('${pack.id}', true)">
+                  Re-attempt
                 </button>
               ` : `
                 <button class="btn-attempt-card" onclick="window.appController.startMockTest('${pack.id}')">
-                  Attempt Now 🚀
+                  Take Test
                 </button>
               `}
             </div>
@@ -303,7 +418,7 @@ class OliveboardAppController {
   }
 
   // ==========================================
-  // USER ISOLATED ANALYTICS TAB
+  // CANDIDATE ANALYTICS TAB
   // ==========================================
 
   async renderAnalytics() {
@@ -317,7 +432,7 @@ class OliveboardAppController {
       <div class="analytics-top-grid">
         <div class="analytics-stat-card">
           <div class="val">${stats.testsAttempted}</div>
-          <div class="desc">Tests Attempted (Persistent in DB)</div>
+          <div class="desc">Tests Attempted</div>
         </div>
         <div class="analytics-stat-card">
           <div class="val" style="color: #008479;">${stats.overallPercentile}</div>
@@ -450,6 +565,279 @@ class OliveboardAppController {
         if (userModal) userModal.classList.remove('active');
       }
     });
+
+    // Bind Interactive Oliveboard Live Browser & RE Engine
+    this.bindOliveboardLiveBrowserEvents();
+  }
+
+  // ==========================================
+  // INTERACTIVE OLIVEBOARD LIVE BROWSER & RE
+  // ==========================================
+
+  bindOliveboardLiveBrowserEvents() {
+    const btnOpen = document.getElementById('btn-open-ob-live-browser');
+    const btnClose = document.getElementById('btn-close-ob-live-browser');
+    const modal = document.getElementById('ob-live-browser-modal');
+    const screenImg = document.getElementById('ob-live-screen-img');
+    const viewportWrapper = document.getElementById('ob-live-viewport-wrapper');
+    const urlInput = document.getElementById('ob-live-url-input');
+    const btnNavGo = document.getElementById('btn-ob-nav-go');
+    const btnNavBack = document.getElementById('btn-ob-nav-back');
+    const btnNavReload = document.getElementById('btn-ob-nav-reload');
+    const textInput = document.getElementById('ob-live-text-input');
+    const btnSendText = document.getElementById('btn-ob-send-text');
+    const btnPressEnter = document.getElementById('btn-ob-press-enter');
+    const btnPressBackspace = document.getElementById('btn-ob-press-backspace');
+    const btnPressTab = document.getElementById('btn-ob-press-tab');
+    const btnScrapeNow = document.getElementById('btn-ob-scrape-now');
+
+    if (btnOpen && modal) {
+      btnOpen.addEventListener('click', () => this.openOliveboardLiveBrowser());
+    }
+
+    if (btnClose && modal) {
+      btnClose.addEventListener('click', () => this.closeOliveboardLiveBrowser());
+    }
+
+    if (btnNavGo && urlInput) {
+      btnNavGo.addEventListener('click', () => {
+        const target = urlInput.value.trim();
+        if (target) this.sendObBrowserInput({ type: 'navigate', url: target });
+      });
+      urlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const target = urlInput.value.trim();
+          if (target) this.sendObBrowserInput({ type: 'navigate', url: target });
+        }
+      });
+    }
+
+    if (btnNavBack) {
+      btnNavBack.addEventListener('click', () => this.sendObBrowserInput({ type: 'goBack' }));
+    }
+
+    if (btnNavReload) {
+      btnNavReload.addEventListener('click', () => this.sendObBrowserInput({ type: 'reload' }));
+    }
+
+    if (btnSendText && textInput) {
+      const sendTyped = async () => {
+        const val = textInput.value;
+        if (!val) return;
+        textInput.value = '';
+        await this.sendObBrowserInput({ type: 'type', text: val });
+      };
+      btnSendText.addEventListener('click', sendTyped);
+      textInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendTyped();
+        }
+      });
+    }
+
+    if (btnPressEnter) {
+      btnPressEnter.addEventListener('click', () => this.sendObBrowserInput({ type: 'keydown', key: 'Enter' }));
+    }
+    if (btnPressBackspace) {
+      btnPressBackspace.addEventListener('click', () => this.sendObBrowserInput({ type: 'keydown', key: 'Backspace' }));
+    }
+    if (btnPressTab) {
+      btnPressTab.addEventListener('click', () => this.sendObBrowserInput({ type: 'keydown', key: 'Tab' }));
+    }
+
+    if (screenImg) {
+      const getScaledCoords = (e) => {
+        const rect = screenImg.getBoundingClientRect();
+        const scaleX = 1280 / Math.max(1, rect.width);
+        const scaleY = 760 / Math.max(1, rect.height);
+        return {
+          x: Math.round((e.clientX - rect.left) * scaleX),
+          y: Math.round((e.clientY - rect.top) * scaleY),
+          rawX: e.clientX - rect.left,
+          rawY: e.clientY - rect.top
+        };
+      };
+
+      screenImg.addEventListener('click', (e) => {
+        const coords = getScaledCoords(e);
+        const dot = document.getElementById('ob-live-click-dot');
+        if (dot) {
+          dot.style.left = `${e.clientX - viewportWrapper.getBoundingClientRect().left}px`;
+          dot.style.top = `${e.clientY - viewportWrapper.getBoundingClientRect().top}px`;
+          dot.style.display = 'block';
+          setTimeout(() => { dot.style.display = 'none'; }, 350);
+        }
+        if (viewportWrapper) viewportWrapper.focus();
+        this.sendObBrowserInput({ type: 'click', x: coords.x, y: coords.y });
+      });
+
+      screenImg.addEventListener('dblclick', (e) => {
+        const coords = getScaledCoords(e);
+        this.sendObBrowserInput({ type: 'dblclick', x: coords.x, y: coords.y });
+      });
+
+      screenImg.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        this.sendObBrowserInput({ type: 'wheel', deltaX: e.deltaX, deltaY: e.deltaY });
+      }, { passive: false });
+    }
+
+    if (viewportWrapper) {
+      viewportWrapper.addEventListener('keydown', (e) => {
+        // Don't hijack typing if user is focused on the URL bar or text box
+        if (document.activeElement === urlInput || document.activeElement === textInput) return;
+        e.preventDefault();
+        this.sendObBrowserInput({ type: 'keydown', key: e.key });
+      });
+    }
+
+    if (btnScrapeNow) {
+      btnScrapeNow.addEventListener('click', () => this.scrapeOliveboardLivePage());
+    }
+  }
+
+  async openOliveboardLiveBrowser() {
+    const modal = document.getElementById('ob-live-browser-modal');
+    const statusBanner = document.getElementById('ob-live-status-banner');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    this._obBrowserActive = true;
+
+    if (statusBanner) {
+      statusBanner.textContent = 'Launching persistent Oliveboard Chromium session...';
+    }
+
+    try {
+      const res = await fetch('/api/ob-browser/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: 'https://www.oliveboard.in/?next=https%3A%2F%2Fu1.oliveboard.in%2Fexams%2F%3Fc%3Dsbipopre19%26i%3Dbanking' })
+      });
+      const data = await res.json();
+      if (data.success && statusBanner) {
+        statusBanner.textContent = 'Connected to Oliveboard Live Session! Log in manually on the screen below, open any Mock Test or Solution window, and click "⚡ Reverse-Engineer Current Page".';
+      }
+    } catch (e) {
+      if (statusBanner) statusBanner.textContent = 'Error starting browser: ' + e.message;
+    }
+
+    this._pollObBrowserFrame();
+  }
+
+  closeOliveboardLiveBrowser() {
+    const modal = document.getElementById('ob-live-browser-modal');
+    if (modal) modal.style.display = 'none';
+    this._obBrowserActive = false;
+    if (this._obFrameTimer) clearTimeout(this._obFrameTimer);
+  }
+
+  async _pollObBrowserFrame() {
+    if (!this._obBrowserActive) return;
+    try {
+      const res = await fetch('/api/ob-browser/frame');
+      const data = await res.json();
+      const imgSrc = data.imageBase64 || (data.image ? `data:image/jpeg;base64,${data.image}` : '');
+      if (data.success && imgSrc) {
+        const screenImg = document.getElementById('ob-live-screen-img');
+        if (screenImg) {
+          screenImg.src = imgSrc;
+        }
+        const urlInput = document.getElementById('ob-live-url-input');
+        if (urlInput && document.activeElement !== urlInput && data.url) {
+          urlInput.value = data.url;
+        }
+        const stageBadge = document.getElementById('ob-live-stage-badge');
+        if (stageBadge && data.stage) {
+          const stKey = typeof data.stage === 'object' ? data.stage.stage : data.stage;
+          const stLabel = typeof data.stage === 'object' ? data.stage.label : data.stage;
+          stageBadge.textContent = stLabel || `STAGE: ${String(stKey).toUpperCase()}`;
+          stageBadge.style.background = stKey === 'live_test' ? '#dc2626' : (stKey === 'solutions' ? '#16a34a' : '#0284c7');
+        }
+        this._renderObBrowserTabs(data.tabs || [], data.activeTabIndex || 0);
+      }
+    } catch (e) {
+      // Ignore transient frame poll errors
+    }
+    if (this._obBrowserActive) {
+      this._obFrameTimer = setTimeout(() => this._pollObBrowserFrame(), 450);
+    }
+  }
+
+  _renderObBrowserTabs(tabs, activeTabIndex = 0) {
+    const bar = document.getElementById('ob-live-tabs-bar');
+    if (!bar) return;
+    const key = JSON.stringify(tabs.map(t => `${t.index}:${t.index === activeTabIndex}:${t.title}`));
+    if (this._lastTabsKey === key) return;
+    this._lastTabsKey = key;
+
+    bar.innerHTML = tabs.map(t => {
+      const isAct = t.active !== undefined ? t.active : (t.index === activeTabIndex);
+      return `
+        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; background: ${isAct ? '#0284c7' : '#1e293b'}; color: ${isAct ? '#ffffff' : '#94a3b8'}; border: 1px solid ${isAct ? '#38bdf8' : '#334155'};"
+             onclick="window.appController.sendObBrowserInput({ action: 'switchTab', tabIndex: ${t.index} })">
+          <span>${isAct ? '● ' : ''}${(t.title || t.url || 'Tab ' + (t.index + 1)).slice(0, 32)}</span>
+          ${tabs.length > 1 ? `<span onclick="event.stopPropagation(); window.appController.sendObBrowserInput({ action: 'closeTab', tabIndex: ${t.index} })" style="margin-left: 4px; color: #fca5a5; font-weight: 900;">×</span>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  async sendObBrowserInput(payload) {
+    try {
+      const normalizedPayload = {
+        ...payload,
+        action: payload.action || payload.type,
+        tabIndex: payload.tabIndex !== undefined ? payload.tabIndex : payload.index
+      };
+      await fetch('/api/ob-browser/input', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(normalizedPayload)
+      });
+      // Trigger immediate frame refresh
+      if (this._obFrameTimer) clearTimeout(this._obFrameTimer);
+      this._pollObBrowserFrame();
+    } catch (e) {
+      console.error('OB browser input error:', e);
+    }
+  }
+
+  async scrapeOliveboardLivePage() {
+    const statusBanner = document.getElementById('ob-live-status-banner');
+    const btnScrape = document.getElementById('btn-ob-scrape-now');
+    if (statusBanner) {
+      statusBanner.textContent = '⏳ Reverse-engineering current Oliveboard page (extracting DOM, CSS, Base64 questions & solutions)...';
+    }
+    if (btnScrape) btnScrape.disabled = true;
+
+    try {
+      const res = await fetch('/api/ob-browser/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (data.success) {
+        const r = data.result || data;
+        const qCount = r.decryptedQuestionsCount ?? data.questionsExtracted ?? 0;
+        const sCount = r.extractedSolutionsCount ?? data.solutionsExtracted ?? 0;
+        const saved = r.specFile || data.savedFile || 'scraped/';
+        const msg = `✅ Reverse-Engineered "${r.title || 'Oliveboard Page'}" (${qCount} questions, ${sCount} solutions, ${r.uiElementsMatched || 0} UI rules)! Saved to ${saved}${r.ingestedTestId ? ' & auto-imported into Mock Dashboard!' : ''}`;
+        if (statusBanner) statusBanner.textContent = msg;
+        this.showToast(msg, 'success');
+        if (r.ingestedTestId) {
+          await this.loadAndRenderMockCards();
+        }
+      } else {
+        throw new Error(data.error || 'Scrape failed');
+      }
+    } catch (e) {
+      if (statusBanner) statusBanner.textContent = '❌ Scrape error: ' + e.message;
+      this.showToast('Scrape error: ' + e.message, 'error');
+    } finally {
+      if (btnScrape) btnScrape.disabled = false;
+    }
   }
 
   renderExamSwitcherList() {
@@ -502,25 +890,38 @@ class OliveboardAppController {
   // TEST ENGINE LAUNCH & SCORECARD REVIEW
   // ==========================================
 
-  async startMockTest(testId) {
-    console.log('Loading test payload for:', testId);
-    
-    // Fetch test questions from backend SQLite API
-    let testData = await window.obDataManager.getTestById(testId);
+  async startMockTest(testId, forceFresh = false) {
+    if (forceFresh && window.obDataManager) {
+      await window.obDataManager.clearPausedAttempt(testId);
+    }
 
-    // Fallback if not loaded via API
+    let testData = await window.obDataManager.getTestById(testId);
     if (!testData) {
       if (window.OB_TEST_APP.mockQuestions && window.OB_TEST_APP.mockQuestions[testId]) {
         testData = window.OB_TEST_APP.mockQuestions[testId];
       } else {
-        alert('Test data loading... please wait');
+        this.showToast('Unable to load test data for ' + testId, 'error');
         return;
       }
     }
 
     if (window.initTestEngine) {
       this.testEngine = window.initTestEngine(testData);
-      this.testEngine.startTest();
+      this.testEngine.startTest(null);
+    }
+  }
+
+  async resumeMockTest(testId) {
+    let testData = await window.obDataManager.getTestById(testId);
+    if (!testData && window.OB_TEST_APP.mockQuestions && window.OB_TEST_APP.mockQuestions[testId]) {
+      testData = window.OB_TEST_APP.mockQuestions[testId];
+    }
+    if (!testData) return;
+
+    const pausedState = window.obDataManager ? await window.obDataManager.getPausedAttempt(testId) : null;
+    if (window.initTestEngine) {
+      this.testEngine = window.initTestEngine(testData);
+      this.testEngine.startTest(pausedState);
     }
   }
 
@@ -537,7 +938,7 @@ class OliveboardAppController {
       }
     } catch (e) {
       console.error('Failed to view solutions:', e);
-      alert('Failed to load solutions: ' + e.message);
+      this.showToast('Failed to load solutions: ' + e.message, 'error');
     }
   }
 
@@ -555,7 +956,7 @@ class OliveboardAppController {
       this.testEngine.showScorecardForAttempt(data.attempt, testData);
     } catch (e) {
       console.error('Failed to view scorecard:', e);
-      alert('Failed to load scorecard: ' + e.message);
+      this.showToast('Failed to load scorecard: ' + e.message, 'error');
     }
   }
 

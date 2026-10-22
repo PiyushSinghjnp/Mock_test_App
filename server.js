@@ -89,6 +89,21 @@ db.exec(`
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY(test_id) REFERENCES tests(id) ON DELETE CASCADE
   );
+
+  CREATE TABLE IF NOT EXISTS paused_attempts (
+    user_id TEXT NOT NULL,
+    test_id TEXT NOT NULL,
+    current_section_index INTEGER DEFAULT 0,
+    current_question_index INTEGER DEFAULT 0,
+    last_question_number INTEGER DEFAULT 1,
+    section_remaining_seconds INTEGER DEFAULT 1200,
+    remaining_seconds INTEGER DEFAULT 3600,
+    completed_sections_json TEXT,
+    responses_json TEXT,
+    bookmarked_json TEXT,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, test_id)
+  );
 `);
 
 console.log('SQLite database schema verified.');
@@ -147,7 +162,7 @@ function seedUsers() {
 // 3. SEED TESTS (IBPS SO IT MAINS & SBI PO)
 // ==========================================
 function seedTests() {
-  const checkTestStmt = db.prepare('SELECT id FROM tests WHERE id = ?');
+  const checkTestStmt = db.prepare('SELECT id, questions_count FROM tests WHERE id = ?');
 
   // 3.1 Load and seed IBPS SO IT Mains from JSON
   const ibpsJsonPath = path.join(__dirname, 'IBPS SO IT mains questions', 'ibps_so_it_mains-1_solutions_20260924_142005.json');
@@ -286,244 +301,112 @@ function seedTests() {
     }
   }
 
-  // 3.2 Seed SBI PO Prelims Free Mock 1
-  if (!checkTestStmt.get('sbi-po-pre-01')) {
-    console.log('Seeding SBI PO Prelims Free Mock 1 into SQLite...');
-    const sbiSections = [
-      {
-        id: "english",
-        title: "English Language",
-        questionCount: 3,
-        questions: [
-          {
-            id: "sbi-q-1",
-            globalIndex: 1,
-            localIndex: 1,
-            questionNumber: 1,
-            section: "English Language",
-            questionHTML: "<p>Read the sentence to find out whether there is any grammatical error in it. The error, if any, will be in one part of the sentence.</p><p><strong>Neither the finance minister (A) / nor the bank directors (B) / was aware of the sudden (C) / collapse of the credit rating. (D)</strong></p>",
-            passageHTML: "",
-            hasPassage: false,
-            imageUrls: [],
-            options: [
-              { letter: "A", text: "Part (A)", html: "Part (A)" },
-              { letter: "B", text: "Part (B)", html: "Part (B)" },
-              { letter: "C", text: "Part (C)", html: "Part (C)" },
-              { letter: "D", text: "Part (D)", html: "Part (D)" },
-              { letter: "E", text: "No error", html: "No error" }
-            ],
-            correctAnswer: "C",
-            correctIndex: 2,
-            explanationHTML: "<p>In subject-verb agreement with 'neither... nor...', the verb agrees with the subject nearest to it. 'The bank directors' is plural, so it should be 'were aware', not 'was aware'.</p>",
-            marksForCorrect: 1.0,
-            negativeMarks: 0.25
-          },
-          {
-            id: "sbi-q-2",
-            globalIndex: 2,
-            localIndex: 2,
-            questionNumber: 2,
-            section: "English Language",
-            questionHTML: "<p>Choose the word that is most nearly <strong>SIMILAR</strong> in meaning to the given word: <strong>SURREPTITIOUS</strong></p>",
-            passageHTML: "",
-            hasPassage: false,
-            imageUrls: [],
-            options: [
-              { letter: "A", text: "Clandestine", html: "Clandestine" },
-              { letter: "B", text: "Overt", html: "Overt" },
-              { letter: "C", text: "Exorbitant", html: "Exorbitant" },
-              { letter: "D", text: "Spurious", html: "Spurious" },
-              { letter: "E", text: "Benevolent", html: "Benevolent" }
-            ],
-            correctAnswer: "A",
-            correctIndex: 0,
-            explanationHTML: "<p>Surreptitious means kept secret, especially because it would not be approved of. 'Clandestine' means secret or illicit, making it the closest synonym.</p>",
-            marksForCorrect: 1.0,
-            negativeMarks: 0.25
-          },
-          {
-            id: "sbi-q-3",
-            globalIndex: 3,
-            localIndex: 3,
-            questionNumber: 3,
-            section: "English Language",
-            questionHTML: "<p>Fill in the blank: The monetary policy committee decided to _______ the benchmark repo rate at 6.5% to anchor inflationary expectations.</p>",
-            passageHTML: "",
-            hasPassage: false,
-            imageUrls: [],
-            options: [
-              { letter: "A", text: "retain", html: "retain" },
-              { letter: "B", text: "abolish", html: "abolish" },
-              { letter: "C", text: "evaporate", html: "evaporate" },
-              { letter: "D", text: "deviate", html: "deviate" },
-              { letter: "E", text: "concur", html: "concur" }
-            ],
-            correctAnswer: "A",
-            correctIndex: 0,
-            explanationHTML: "<p>'Retain' means to keep or maintain in place. In banking context, retaining the repo rate means leaving it unchanged.</p>",
-            marksForCorrect: 1.0,
-            negativeMarks: 0.25
-          }
-        ]
-      },
-      {
-        id: "quant",
-        title: "Quantitative Aptitude",
-        questionCount: 2,
-        questions: [
-          {
-            id: "sbi-q-4",
-            globalIndex: 4,
-            localIndex: 1,
-            questionNumber: 4,
-            section: "Quantitative Aptitude",
-            questionHTML: "<p>Find the missing number in the given series:</p><p><strong>7, 11, 20, 36, 61, ?</strong></p>",
-            passageHTML: "",
-            hasPassage: false,
-            imageUrls: [],
-            options: [
-              { letter: "A", text: "95", html: "95" },
-              { letter: "B", text: "97", html: "97" },
-              { letter: "C", text: "101", html: "101" },
-              { letter: "D", text: "104", html: "104" },
-              { letter: "E", text: "108", html: "108" }
-            ],
-            correctAnswer: "B",
-            correctIndex: 1,
-            explanationHTML: "<p>The differences are: 11 - 7 = 4 (2²), 20 - 11 = 9 (3²), 36 - 20 = 16 (4²), 61 - 36 = 25 (5²). Next difference is 6² = 36. 61 + 36 = 97.</p>",
-            marksForCorrect: 1.0,
-            negativeMarks: 0.25
-          },
-          {
-            id: "sbi-q-5",
-            globalIndex: 5,
-            localIndex: 2,
-            questionNumber: 5,
-            section: "Quantitative Aptitude",
-            questionHTML: "<p>A vessel contains 80 litres of a mixture of milk and water in the ratio 7 : 1. How much water should be added so that the ratio of milk and water becomes 5 : 2?</p>",
-            passageHTML: "",
-            hasPassage: false,
-            imageUrls: [],
-            options: [
-              { letter: "A", text: "16 litres", html: "16 litres" },
-              { letter: "B", text: "18 litres", html: "18 litres" },
-              { letter: "C", text: "20 litres", html: "20 litres" },
-              { letter: "D", text: "22 litres", html: "22 litres" },
-              { letter: "E", text: "24 litres", html: "24 litres" }
-            ],
-            correctAnswer: "B",
-            correctIndex: 1,
-            explanationHTML: "<p>Milk = 80 * 7/8 = 70L, Water = 10L. Adding x litres water: 70 / (10 + x) = 5 / 2 => 140 = 50 + 5x => 5x = 90 => x = 18 litres.</p>",
-            marksForCorrect: 1.0,
-            negativeMarks: 0.25
-          }
-        ]
-      },
-      {
-        id: "reasoning",
-        title: "Reasoning Ability",
-        questionCount: 2,
-        questions: [
-          {
-            id: "sbi-q-6",
-            globalIndex: 6,
-            localIndex: 1,
-            questionNumber: 6,
-            section: "Reasoning Ability",
-            questionHTML: "<p>In a certain code language, <strong>'BANKING'</strong> is written as <strong>'CBOLJOH'</strong>. How will <strong>'CLERK'</strong> be written in that code?</p>",
-            passageHTML: "",
-            hasPassage: false,
-            imageUrls: [],
-            options: [
-              { letter: "A", text: "DMFSL", html: "DMFSL" },
-              { letter: "B", text: "DMFSK", html: "DMFSK" },
-              { letter: "C", text: "ENFTL", html: "ENFTL" },
-              { letter: "D", text: "CLERK", html: "CLERK" },
-              { letter: "E", text: "BMDQJ", html: "BMDQJ" }
-            ],
-            correctAnswer: "A",
-            correctIndex: 0,
-            explanationHTML: "<p>Each letter is shifted by +1 in alphabetical order: C->D, L->M, E->F, R->S, K->L. Hence DMFSL.</p>",
-            marksForCorrect: 1.0,
-            negativeMarks: 0.25
-          },
-          {
-            id: "sbi-q-7",
-            globalIndex: 7,
-            localIndex: 2,
-            questionNumber: 7,
-            section: "Reasoning Ability",
-            questionHTML: "<p>Statements:<br>All Deposits are Accounts.<br>No Account is Overdraft.<br>Some Overdrafts are Loans.<br><br>Conclusions:<br>I. No Deposit is Overdraft.<br>II. Some Loans are not Deposits.</p>",
-            passageHTML: "",
-            hasPassage: false,
-            imageUrls: [],
-            options: [
-              { letter: "A", text: "Only conclusion I follows", html: "Only conclusion I follows" },
-              { letter: "B", text: "Only conclusion II follows", html: "Only conclusion II follows" },
-              { letter: "C", text: "Either conclusion I or II follows", html: "Either conclusion I or II follows" },
-              { letter: "D", text: "Neither conclusion I nor II follows", html: "Neither conclusion I nor II follows" },
-              { letter: "E", text: "Both conclusions I and II follow", html: "Both conclusions I and II follow" }
-            ],
-            correctAnswer: "E",
-            correctIndex: 4,
-            explanationHTML: "<p>1. All Deposits are inside Accounts. No Account is Overdraft => No Deposit can be Overdraft. Conclusion I follows.<br>2. Overdrafts that are Loans cannot be Accounts/Deposits. Conclusion II follows. Both follow.</p>",
-            marksForCorrect: 1.0,
-            negativeMarks: 0.25
-          }
-        ]
-      }
-    ];
+  // 3.2 Seed or Upgrade SBI PO Prelims Free Mock 1 & Sectionals with full 100 Qs & verified solutions
+  try {
+    const { runSeed } = require('./scripts/seed_sbi_po');
+    runSeed();
+  } catch (err) {
+    console.error('Failed to run SBI PO seed script:', err);
+  }
+}
 
-    const sbiSectionsSummary = ["English Language (3 Qs)", "Quantitative Aptitude (2 Qs)", "Reasoning Ability (2 Qs)"];
-    const sbiPayload = {
-      id: "sbi-po-pre-01",
-      title: "SBI PO 2026 Prelims - Free Mock 1",
-      examId: "sbi-po",
-      examName: "SBI PO 2026",
-      type: "prelims",
-      subtitle: "Full Prelims Simulation with All India Ranking",
-      marks: 100,
-      questionsCount: 7,
-      durationMinutes: 60,
-      totalDurationSeconds: 60 * 60,
-      marksPerCorrect: 1.0,
-      negativeMarks: 0.25,
-      sections: sbiSections
-    };
+// ==========================================
+// 3.3 BACKEND-ONLY AUTO-INGESTION OF /papers/*.json WITH 2026 OFFICIAL TIMINGS
+// ==========================================
+const examPatterns2026 = require('./js/exam-patterns-2026');
+const PAPERS_DIR = path.join(__dirname, 'papers');
+if (!fs.existsSync(PAPERS_DIR)) {
+  fs.mkdirSync(PAPERS_DIR, { recursive: true });
+}
 
-    const insertTest = db.prepare(`
+function ingestBackendPaperFile(filePath) {
+  try {
+    if (!filePath.endsWith('.json')) return null;
+    const filename = path.basename(filePath);
+    const rawContent = fs.readFileSync(filePath, 'utf8');
+    if (!rawContent || !rawContent.trim()) return null;
+
+    const parsedPaper = JSON.parse(rawContent);
+    const normalizedTest = examPatterns2026.apply2026PatternToQuestionPaper(parsedPaper, {
+      filename
+    });
+
+    const now = new Date().toISOString();
+    db.prepare(`
       INSERT INTO tests (
         id, exam_id, exam_name, type, title, subtitle,
         marks, questions_count, duration_minutes,
         marks_per_correct, negative_marks, is_free,
         sections_summary_json, test_data_json, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    insertTest.run(
-      'sbi-po-pre-01',
-      'sbi-po',
-      'SBI PO 2026',
-      'prelims',
-      'SBI PO 2026 Prelims - Free Mock 1',
-      'Full Prelims Simulation with All India Ranking',
-      100,
-      7,
-      60,
-      1.0,
-      0.25,
+      ON CONFLICT(id) DO UPDATE SET
+        exam_id = excluded.exam_id,
+        exam_name = excluded.exam_name,
+        type = excluded.type,
+        title = excluded.title,
+        subtitle = excluded.subtitle,
+        marks = excluded.marks,
+        questions_count = excluded.questions_count,
+        duration_minutes = excluded.duration_minutes,
+        marks_per_correct = excluded.marks_per_correct,
+        negative_marks = excluded.negative_marks,
+        sections_summary_json = excluded.sections_summary_json,
+        test_data_json = excluded.test_data_json
+    `).run(
+      normalizedTest.id,
+      normalizedTest.examId,
+      normalizedTest.examName,
+      normalizedTest.type,
+      normalizedTest.title,
+      normalizedTest.subtitle,
+      normalizedTest.marks,
+      normalizedTest.questionsCount,
+      normalizedTest.durationMinutes,
+      normalizedTest.marksPerCorrect,
+      normalizedTest.negativeMarks,
       1,
-      JSON.stringify(sbiSectionsSummary),
-      JSON.stringify(sbiPayload),
-      new Date().toISOString()
+      JSON.stringify(normalizedTest.sectionsSummary),
+      JSON.stringify(normalizedTest),
+      now
     );
-    console.log('SBI PO Prelims Free Mock 1 seeded successfully.');
+
+    console.log(`[Backend Auto-Ingest] Applied 2026 Official Pattern to "${normalizedTest.title}" (${normalizedTest.id}): ${normalizedTest.questionsCount} Qs, ${normalizedTest.durationMinutes} mins, +${normalizedTest.marksPerCorrect}/-${normalizedTest.negativeMarks}`);
+    return normalizedTest;
+  } catch (err) {
+    console.error(`[Backend Auto-Ingest] Failed to ingest ${filePath}:`, err.message);
+    return null;
   }
 }
 
-// Seed on server boot
+function autoIngestBackendPapers() {
+  if (!fs.existsSync(PAPERS_DIR)) return;
+  const files = fs.readdirSync(PAPERS_DIR).filter(f => f.toLowerCase().endsWith('.json'));
+  files.forEach(f => {
+    ingestBackendPaperFile(path.join(PAPERS_DIR, f));
+  });
+}
+
+// Seed on server boot & watch /papers for backend-only paper drops
 seedUsers();
 seedTests();
+autoIngestBackendPapers();
+
+try {
+  let watchDebounce = null;
+  fs.watch(PAPERS_DIR, (eventType, filename) => {
+    if (filename && filename.toLowerCase().endsWith('.json')) {
+      clearTimeout(watchDebounce);
+      watchDebounce = setTimeout(() => {
+        const fullPath = path.join(PAPERS_DIR, filename);
+        if (fs.existsSync(fullPath)) {
+          ingestBackendPaperFile(fullPath);
+        }
+      }, 300);
+    }
+  });
+} catch (e) {
+  // Ignore watch errors on unsupported filesystems
+}
 
 // ==========================================
 // 4. REST APIS WITH MULTI-USER ISOLATION
@@ -570,7 +453,7 @@ app.post('/api/users', (req, res) => {
   }
 });
 
-// 4.2 TESTS CATALOG API (WITH USER-SPECIFIC ATTEMPT STATUS)
+// 4.2 TESTS CATALOG API (WITH USER-SPECIFIC ATTEMPT & PAUSED STATUS)
 app.get('/api/tests', (req, res) => {
   try {
     const { examId, userId } = req.query;
@@ -585,11 +468,11 @@ app.get('/api/tests', (req, res) => {
 
     const tests = db.prepare(query).all(...params);
 
-    // If userId provided, query user's latest attempt for each test to achieve perfect isolation
     let attemptsMap = {};
+    let pausedMap = {};
     if (userId) {
       const attempts = db.prepare(`
-        SELECT test_id, score, max_score, accuracy, percentile, estimated_air, completed_at, id as attempt_id
+        SELECT test_id, score, max_score, correct_count, wrong_count, unanswered_count, total_questions, accuracy, percentile, estimated_air, completed_at, id as attempt_id
         FROM test_attempts
         WHERE user_id = ?
         ORDER BY completed_at DESC
@@ -600,19 +483,137 @@ app.get('/api/tests', (req, res) => {
           attemptsMap[att.test_id] = att;
         }
       });
+
+      const pausedRows = db.prepare(`
+        SELECT * FROM paused_attempts WHERE user_id = ?
+      `).all(userId);
+      pausedRows.forEach(p => {
+        pausedMap[p.test_id] = {
+          currentSectionIndex: p.current_section_index,
+          currentQuestionIndex: p.current_question_index,
+          lastQuestionNumber: p.last_question_number,
+          sectionRemainingSeconds: p.section_remaining_seconds,
+          remainingSeconds: p.remaining_seconds,
+          completedSections: JSON.parse(p.completed_sections_json || '[]'),
+          responses: JSON.parse(p.responses_json || '{}'),
+          bookmarkedQuestions: JSON.parse(p.bookmarked_json || '{}'),
+          updatedAt: p.updated_at
+        };
+      });
     }
 
     const result = tests.map(t => {
       const userAttempt = attemptsMap[t.id] || null;
+      const pausedAttempt = pausedMap[t.id] || null;
       return {
         ...t,
         sections_summary: JSON.parse(t.sections_summary_json || '[]'),
         userAttempt: userAttempt,
-        isAttempted: !!userAttempt
+        isAttempted: !!userAttempt,
+        pausedAttempt: pausedAttempt,
+        isPaused: !!pausedAttempt
       };
     });
 
     res.json({ success: true, tests: result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4.2b PAUSED ATTEMPTS API (Spec 4.1 & 1.3 paused_in_progress state)
+app.post('/api/paused-attempts', (req, res) => {
+  try {
+    const {
+      userId,
+      testId,
+      currentSectionIndex = 0,
+      currentQuestionIndex = 0,
+      lastQuestionNumber = 1,
+      sectionRemainingSeconds = 1200,
+      remainingSeconds = 3600,
+      completedSections = [],
+      responses = {},
+      bookmarkedQuestions = {}
+    } = req.body;
+
+    if (!userId || !testId) {
+      return res.status(400).json({ success: false, error: 'userId and testId are required' });
+    }
+
+    const now = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO paused_attempts (
+        user_id, test_id, current_section_index, current_question_index,
+        last_question_number, section_remaining_seconds, remaining_seconds,
+        completed_sections_json, responses_json, bookmarked_json, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(user_id, test_id) DO UPDATE SET
+        current_section_index = excluded.current_section_index,
+        current_question_index = excluded.current_question_index,
+        last_question_number = excluded.last_question_number,
+        section_remaining_seconds = excluded.section_remaining_seconds,
+        remaining_seconds = excluded.remaining_seconds,
+        completed_sections_json = excluded.completed_sections_json,
+        responses_json = excluded.responses_json,
+        bookmarked_json = excluded.bookmarked_json,
+        updated_at = excluded.updated_at
+    `).run(
+      userId,
+      testId,
+      currentSectionIndex,
+      currentQuestionIndex,
+      lastQuestionNumber,
+      sectionRemainingSeconds,
+      remainingSeconds,
+      JSON.stringify(completedSections),
+      JSON.stringify(responses),
+      JSON.stringify(bookmarkedQuestions),
+      now
+    );
+
+    res.json({ success: true, updatedAt: now });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/paused-attempts', (req, res) => {
+  try {
+    const { userId, testId } = req.query;
+    if (!userId) return res.status(400).json({ success: false, error: 'userId required' });
+    if (testId) {
+      const row = db.prepare('SELECT * FROM paused_attempts WHERE user_id = ? AND test_id = ?').get(userId, testId);
+      if (!row) return res.json({ success: true, pausedAttempt: null });
+      return res.json({
+        success: true,
+        pausedAttempt: {
+          currentSectionIndex: row.current_section_index,
+          currentQuestionIndex: row.current_question_index,
+          lastQuestionNumber: row.last_question_number,
+          sectionRemainingSeconds: row.section_remaining_seconds,
+          remainingSeconds: row.remaining_seconds,
+          completedSections: JSON.parse(row.completed_sections_json || '[]'),
+          responses: JSON.parse(row.responses_json || '{}'),
+          bookmarkedQuestions: JSON.parse(row.bookmarked_json || '{}'),
+          updatedAt: row.updated_at
+        }
+      });
+    }
+    const rows = db.prepare('SELECT * FROM paused_attempts WHERE user_id = ?').all(userId);
+    res.json({ success: true, pausedAttempts: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/paused-attempts', (req, res) => {
+  try {
+    const { userId, testId } = req.query;
+    if (userId && testId) {
+      db.prepare('DELETE FROM paused_attempts WHERE user_id = ? AND test_id = ?').run(userId, testId);
+    }
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -629,6 +630,89 @@ app.get('/api/tests/:id', (req, res) => {
     res.json({ success: true, test: testData });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4.3b GET 2026 OFFICIAL EXAM MARKING SCHEMES & SECTIONAL TIMINGS
+app.get('/api/exam-patterns-2026', (req, res) => {
+  try {
+    const notifPath = path.join(__dirname, 'data', 'official_exam_notifications.json');
+    const rawNotif = fs.existsSync(notifPath) ? JSON.parse(fs.readFileSync(notifPath, 'utf8')) : {};
+    res.json({
+      success: true,
+      patterns: examPatterns2026.EXAM_PATTERNS_2026,
+      notifications: rawNotif
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4.3c UPLOAD QUESTION PAPER JSON & AUTO-APPLY 2026 SECTIONAL TIMINGS & MARKING SCHEME
+app.post('/api/tests/upload-json', (req, res) => {
+  try {
+    const { rawPaper, examId, stage, title, subtitle, filename } = req.body;
+    if (!rawPaper) {
+      return res.status(400).json({ success: false, error: 'rawPaper JSON payload is required' });
+    }
+
+    const parsedPaper = typeof rawPaper === 'string' ? JSON.parse(rawPaper) : rawPaper;
+    const normalizedTest = examPatterns2026.apply2026PatternToQuestionPaper(parsedPaper, {
+      examId: examId || undefined,
+      stage: stage || undefined,
+      title: title || undefined,
+      subtitle: subtitle || undefined,
+      filename: filename || undefined
+    });
+
+    const now = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO tests (
+        id, exam_id, exam_name, type, title, subtitle,
+        marks, questions_count, duration_minutes,
+        marks_per_correct, negative_marks, is_free,
+        sections_summary_json, test_data_json, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        exam_id = excluded.exam_id,
+        exam_name = excluded.exam_name,
+        type = excluded.type,
+        title = excluded.title,
+        subtitle = excluded.subtitle,
+        marks = excluded.marks,
+        questions_count = excluded.questions_count,
+        duration_minutes = excluded.duration_minutes,
+        marks_per_correct = excluded.marks_per_correct,
+        negative_marks = excluded.negative_marks,
+        sections_summary_json = excluded.sections_summary_json,
+        test_data_json = excluded.test_data_json
+    `).run(
+      normalizedTest.id,
+      normalizedTest.examId,
+      normalizedTest.examName,
+      normalizedTest.type,
+      normalizedTest.title,
+      normalizedTest.subtitle,
+      normalizedTest.marks,
+      normalizedTest.questionsCount,
+      normalizedTest.durationMinutes,
+      normalizedTest.marksPerCorrect,
+      normalizedTest.negativeMarks,
+      1,
+      JSON.stringify(normalizedTest.sectionsSummary),
+      JSON.stringify(normalizedTest),
+      now
+    );
+
+    console.log(`[2026 Pattern Applied] Saved uploaded JSON test "${normalizedTest.title}" (${normalizedTest.id}) with ${normalizedTest.questionsCount} Qs, ${normalizedTest.durationMinutes} mins`);
+    res.json({
+      success: true,
+      testId: normalizedTest.id,
+      test: normalizedTest
+    });
+  } catch (err) {
+    console.error('Failed to process uploaded JSON question paper:', err);
+    res.status(400).json({ success: false, error: err.message });
   }
 });
 
@@ -691,6 +775,9 @@ app.post('/api/attempts', (req, res) => {
       startedAt || now,
       completedAt || now
     );
+
+    // Clear any paused state for this user and test upon final submission
+    db.prepare('DELETE FROM paused_attempts WHERE user_id = ? AND test_id = ?').run(userId, testId);
 
     console.log(`Test attempt saved permanently: ID ${attemptId} for User ${userId} on Test ${testId}`);
 
@@ -846,6 +933,15 @@ app.get('/api/analytics', (req, res) => {
   }
 });
 
+// ==========================================
+// 5. MODEL CONTEXT PROTOCOL (MCP) & LIVE OLIVEBOARD BROWSER
+// ==========================================
+const { mountMcpRoutes } = require('./mcp-server');
+mountMcpRoutes(app, db);
+
+const { mountOliveboardLiveBrowserRoutes } = require('./oliveboard-live-re');
+mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile);
+
 // Fallback to index.html for SPA routing
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -856,6 +952,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`=======================================================`);
   console.log(` Oliveboard Mock Test Server running at http://0.0.0.0:${PORT}`);
   console.log(` SQLite Database: ${DB_PATH}`);
+  console.log(` MCP Server Endpoints: POST /mcp | GET /mcp/sse | stdio: node mcp-server.js`);
   console.log(` Multi-user isolation & permanent result storage ACTIVE`);
   console.log(`=======================================================`);
 });

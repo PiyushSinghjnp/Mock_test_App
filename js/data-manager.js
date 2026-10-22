@@ -6,6 +6,7 @@
  * 2. Permanent Result Storage: Saves test attempts to backend SQLite DB (/api/attempts)
  * 3. Dynamic Test Loading: Fetches 150-question IBPS SO IT Mains & other tests from DB
  * 4. User-Isolated Analytics: Fetches individual candidate stats & heatmaps
+ * 5. Question Paper JSON Upload: Uploads JSON and auto-applies 2026 official marking scheme & sectional timings
  */
 
 class OBTestDataManager {
@@ -91,7 +92,7 @@ class OBTestDataManager {
   }
 
   // ===============================================
-  // TEST CATALOG (WITH USER-SPECIFIC ATTEMPT STATUS)
+  // TEST CATALOG & 2026 JSON UPLOAD
   // ===============================================
 
   async getTestsList(examId = 'all') {
@@ -122,14 +123,43 @@ class OBTestDataManager {
     return null;
   }
 
+  async get2026ExamPatterns() {
+    if (window.OB_EXAM_PATTERNS_2026 && window.OB_EXAM_PATTERNS_2026.EXAM_PATTERNS_2026) {
+      return window.OB_EXAM_PATTERNS_2026.EXAM_PATTERNS_2026;
+    }
+    try {
+      const res = await fetch(`${this.API_BASE}/api/exam-patterns-2026`);
+      const data = await res.json();
+      if (data.success) return data.exams;
+    } catch (e) {
+      console.warn('Failed to fetch 2026 exam patterns:', e);
+    }
+    return {};
+  }
+
+  async uploadQuestionPaperJson({ rawPaper, examId, stage, customTitle, customTestId }) {
+    const res = await fetch(`${this.API_BASE}/api/tests/upload-json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        rawPaper,
+        examId,
+        stage,
+        customTitle,
+        customTestId
+      })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to upload question paper JSON');
+    }
+    return data;
+  }
+
   // ===============================================
   // PERMANENT RESULT STORAGE (NEVER DELETES DATA)
   // ===============================================
 
-  /**
-   * Save a completed test attempt to SQLite database.
-   * Every attempt is permanently recorded and keyed to the active user.
-   */
   async saveResult(result) {
     const activeUserId = this.getActiveUserId();
     
@@ -138,7 +168,7 @@ class OBTestDataManager {
       testId: result.testId,
       testTitle: result.testTitle,
       totalQuestions: result.totalQuestions,
-      score: result.score.netScore || result.score.total || 0,
+      score: result.score.netScore ?? result.score.total ?? 0,
       maxScore: result.score.maxScore || 100,
       correctCount: result.score.correct || 0,
       wrongCount: result.score.wrong || 0,
@@ -166,14 +196,76 @@ class OBTestDataManager {
       }
     } catch (e) {
       console.error('Failed to save result to backend DB, saving to localStorage as fallback:', e);
-      // Local fallback
       const key = `ob_attempts_${activeUserId}`;
       const existing = JSON.parse(localStorage.getItem(key) || '[]');
       existing.push(payload);
       localStorage.setItem(key, JSON.stringify(existing));
     }
 
+    // Clear local paused state
+    localStorage.removeItem(`ob_paused_${activeUserId}_${result.testId}`);
+
     return result;
+  }
+
+  // ===============================================
+  // PAUSED TEST PERSISTENCE (Spec 4.1 & 1.3)
+  // ===============================================
+
+  async savePausedAttempt(pausedState) {
+    const activeUserId = this.getActiveUserId();
+    const payload = {
+      userId: activeUserId,
+      testId: pausedState.testId,
+      currentSectionIndex: pausedState.currentSectionIndex ?? 0,
+      currentQuestionIndex: pausedState.currentQuestionIndex ?? 0,
+      lastQuestionNumber: pausedState.lastQuestionNumber ?? 1,
+      sectionRemainingSeconds: pausedState.sectionRemainingSeconds ?? 1200,
+      remainingSeconds: pausedState.remainingSeconds ?? 3600,
+      completedSections: pausedState.completedSections || [],
+      responses: pausedState.responses || {},
+      bookmarkedQuestions: pausedState.bookmarkedQuestions || {}
+    };
+
+    localStorage.setItem(`ob_paused_${activeUserId}_${pausedState.testId}`, JSON.stringify(payload));
+
+    try {
+      await fetch(`${this.API_BASE}/api/paused-attempts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (e) {
+      console.warn('Saved paused state to localStorage fallback:', e);
+    }
+    return payload;
+  }
+
+  async getPausedAttempt(testId) {
+    const activeUserId = this.getActiveUserId();
+    try {
+      const res = await fetch(`${this.API_BASE}/api/paused-attempts?userId=${encodeURIComponent(activeUserId)}&testId=${encodeURIComponent(testId)}`);
+      const data = await res.json();
+      if (data.success && data.pausedAttempt) {
+        return data.pausedAttempt;
+      }
+    } catch (e) {
+      // fallback to localStorage
+    }
+    const local = localStorage.getItem(`ob_paused_${activeUserId}_${testId}`);
+    return local ? JSON.parse(local) : null;
+  }
+
+  async clearPausedAttempt(testId) {
+    const activeUserId = this.getActiveUserId();
+    localStorage.removeItem(`ob_paused_${activeUserId}_${testId}`);
+    try {
+      await fetch(`${this.API_BASE}/api/paused-attempts?userId=${encodeURIComponent(activeUserId)}&testId=${encodeURIComponent(testId)}`, {
+        method: 'DELETE'
+      });
+    } catch (e) {
+      // ignore
+    }
   }
 
   // ===============================================

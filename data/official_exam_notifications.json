@@ -1,14 +1,16 @@
 {
-  "version": "1.0",
+  "version": "2026.2",
+  "year": 2026,
   "last_updated": "2026-10-22",
-  "source": "Official Notifications of SBI, IBPS, SSC, RBI, and RRB",
+  "source": "Official 2026 Notifications of SBI, IBPS, RBI, LIC, NIACL, NABARD, SEBI, SSC, and RRB",
   "exams": {
     "sbi-po": {
-      "exam_name": "State Bank of India Probationary Officer (SBI PO)",
-      "authority": "State Bank of India (Central Recruitment & Promotion Department)",
+      "exam_name": "SBI PO 2026 (State Bank of India Probationary Officer)",
+      "category": "Banking",
+      "authority": "State Bank of India (CRPD)",
       "stages": {
         "prelims": {
-          "title": "SBI PO Preliminary Examination",
+          "title": "SBI PO 2026 Preliminary Examination",
           "total_questions": 100,
           "total_marks": 100,
           "total_duration_minutes": 60,
@@ -26,43 +28,132 @@
               "section_index": 1,
               "id": "english-language",
               "name": "English Language",
+              "aliases": ["english", "general english", "english comprehension", "el"],
               "questions_count": 30,
               "max_marks": 30,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 20,
               "duration_seconds": 1200,
-              "medium": ["English"],
+              "medium": "English",
               "sectional_lock": true
             },
             {
               "section_index": 2,
               "id": "quantitative-aptitude",
               "name": "Quantitative Aptitude",
+              "aliases": ["quant", "numerical ability", "mathematics", "data interpretation", "qa"],
               "questions_count": 35,
               "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 20,
               "duration_seconds": 1200,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             },
             {
               "section_index": 3,
               "id": "reasoning-ability",
               "name": "Reasoning Ability",
+              "aliases": ["reasoning", "logical reasoning", "general intelligence", "lr"],
               "questions_count": 35,
               "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 20,
               "duration_seconds": 1200,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             }
           ]
         },
         "mains": {
-          "title": "SBI PO Main Examination (Objective)",
+          "title": "SBI PO 2026 Main Examination (Objective)",
           "total_questions": 155,
           "total_marks": 200,
           "total_duration_minutes": 180,
           "total_duration_seconds": 10800,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.29,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "reasoning-computer",
+              "name": "Reasoning & Computer Aptitude",
+              "aliases": ["reasoning", "reasoning ability", "reasoning and computer"],
+              "questions_count": 40,
+              "max_marks": 60,
+              "positive_mark": 1.5,
+              "negative_mark": 0.375,
+              "duration_minutes": 50,
+              "duration_seconds": 3000,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "data-analysis",
+              "name": "Data Analysis & Interpretation",
+              "aliases": ["quant", "quantitative aptitude", "data interpretation", "di"],
+              "questions_count": 30,
+              "max_marks": 60,
+              "positive_mark": 2.0,
+              "negative_mark": 0.5,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "general-awareness",
+              "name": "General/Economy/Banking Awareness",
+              "aliases": ["general awareness", "ga", "banking awareness", "economy"],
+              "questions_count": 50,
+              "max_marks": 60,
+              "positive_mark": 1.2,
+              "negative_mark": 0.3,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 4,
+              "id": "english-language",
+              "name": "English Language",
+              "aliases": ["english", "general english"],
+              "questions_count": 35,
+              "max_marks": 20,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 40,
+              "duration_seconds": 2400,
+              "medium": "English",
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "sbi-clerk": {
+      "exam_name": "SBI Clerk 2026 (Junior Associates)",
+      "category": "Banking",
+      "authority": "State Bank of India (CRPD)",
+      "stages": {
+        "prelims": {
+          "title": "SBI Clerk 2026 Preliminary Examination",
+          "total_questions": 100,
+          "total_marks": 100,
+          "total_duration_minutes": 60,
+          "total_duration_seconds": 3600,
           "has_sectional_timing": true,
           "is_sectional_locked": true,
           "marking_scheme": {
@@ -74,46 +165,117 @@
           "sections": [
             {
               "section_index": 1,
-              "id": "reasoning-computer",
-              "name": "Reasoning & Computer Aptitude",
-              "questions_count": 40,
-              "max_marks": 60,
-              "duration_minutes": 50,
-              "duration_seconds": 3000,
-              "medium": ["English", "Hindi"],
+              "id": "english-language",
+              "name": "English Language",
+              "aliases": ["english", "general english"],
+              "questions_count": 30,
+              "max_marks": 30,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English",
               "sectional_lock": true
             },
             {
               "section_index": 2,
-              "id": "data-analysis",
-              "name": "Data Analysis & Interpretation",
-              "questions_count": 30,
-              "max_marks": 60,
-              "duration_minutes": 45,
-              "duration_seconds": 2700,
-              "medium": ["English", "Hindi"],
+              "id": "numerical-ability",
+              "name": "Numerical Ability",
+              "aliases": ["quant", "quantitative aptitude", "numerical"],
+              "questions_count": 35,
+              "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English & Hindi",
               "sectional_lock": true
             },
             {
               "section_index": 3,
+              "id": "reasoning-ability",
+              "name": "Reasoning Ability",
+              "aliases": ["reasoning", "logical reasoning"],
+              "questions_count": 35,
+              "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            }
+          ]
+        },
+        "mains": {
+          "title": "SBI Clerk 2026 Main Examination",
+          "total_questions": 190,
+          "total_marks": 200,
+          "total_duration_minutes": 160,
+          "total_duration_seconds": 9600,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
               "id": "general-awareness",
-              "name": "General/Economy/Banking Awareness",
+              "name": "General/Financial Awareness",
+              "aliases": ["general awareness", "ga", "financial awareness"],
               "questions_count": 50,
-              "max_marks": 60,
+              "max_marks": 50,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 35,
+              "duration_seconds": 2100,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "general-english",
+              "name": "General English",
+              "aliases": ["english", "english language"],
+              "questions_count": 40,
+              "max_marks": 40,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 35,
+              "duration_seconds": 2100,
+              "medium": "English",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "aliases": ["quant", "numerical ability"],
+              "questions_count": 50,
+              "max_marks": 50,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 45,
               "duration_seconds": 2700,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             },
             {
               "section_index": 4,
-              "id": "english-language",
-              "name": "English Language",
-              "questions_count": 35,
-              "max_marks": 20,
-              "duration_minutes": 40,
-              "duration_seconds": 2400,
-              "medium": ["English"],
+              "id": "reasoning-computer",
+              "name": "Reasoning Ability & Computer Aptitude",
+              "aliases": ["reasoning", "reasoning ability"],
+              "questions_count": 50,
+              "max_marks": 60,
+              "positive_mark": 1.2,
+              "negative_mark": 0.3,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": "English & Hindi",
               "sectional_lock": true
             }
           ]
@@ -121,11 +283,12 @@
       }
     },
     "ibps-so": {
-      "exam_name": "IBPS Specialist Officer (Scale-I) IT Officer",
+      "exam_name": "IBPS SO 2026 (Specialist Officer Scale-I IT/Agri/Law/HR/Mktg)",
+      "category": "Banking Specialist",
       "authority": "Institute of Banking Personnel Selection (CRP SPL-XVI)",
       "stages": {
         "prelims": {
-          "title": "IBPS SO Prelims (IT Officer)",
+          "title": "IBPS SO 2026 Preliminary Examination",
           "total_questions": 150,
           "total_marks": 125,
           "total_duration_minutes": 120,
@@ -135,46 +298,56 @@
           "marking_scheme": {
             "positive_mark": 1.0,
             "negative_mark": 0.25,
-            "unattempted_mark": 0.0
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
           },
           "sections": [
             {
               "section_index": 1,
               "id": "english-language",
               "name": "English Language",
+              "aliases": ["english", "general english"],
               "questions_count": 50,
               "max_marks": 25,
+              "positive_mark": 0.5,
+              "negative_mark": 0.125,
               "duration_minutes": 40,
               "duration_seconds": 2400,
-              "medium": ["English"],
+              "medium": "English",
               "sectional_lock": true
             },
             {
               "section_index": 2,
               "id": "reasoning-ability",
               "name": "Reasoning Ability",
+              "aliases": ["reasoning", "logical reasoning"],
               "questions_count": 50,
               "max_marks": 50,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 40,
               "duration_seconds": 2400,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             },
             {
               "section_index": 3,
               "id": "quantitative-aptitude",
               "name": "Quantitative Aptitude",
+              "aliases": ["quant", "general awareness", "ga"],
               "questions_count": 50,
               "max_marks": 50,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 40,
               "duration_seconds": 2400,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             }
           ]
         },
         "mains": {
-          "title": "IBPS SO IT Officer Mains Full Mock (Comprehensive Pattern)",
+          "title": "IBPS SO IT Officer 2026 Mains Examination",
           "total_questions": 150,
           "total_marks": 150,
           "total_duration_minutes": 120,
@@ -192,44 +365,87 @@
               "section_index": 1,
               "id": "english-language",
               "name": "English Language",
+              "aliases": ["english", "general english"],
               "questions_count": 30,
               "max_marks": 30,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 25,
               "duration_seconds": 1500,
-              "medium": ["English"],
+              "medium": "English",
               "sectional_lock": true
             },
             {
               "section_index": 2,
               "id": "reasoning-ability",
               "name": "Reasoning Ability",
+              "aliases": ["reasoning", "logical reasoning"],
               "questions_count": 40,
               "max_marks": 40,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 35,
               "duration_seconds": 2100,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             },
             {
               "section_index": 3,
               "id": "quantitative-aptitude",
               "name": "Quantitative Aptitude",
+              "aliases": ["quant", "data interpretation", "numerical ability"],
               "questions_count": 30,
               "max_marks": 30,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 25,
               "duration_seconds": 1500,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             },
             {
               "section_index": 4,
               "id": "professional-knowledge",
               "name": "Professional Knowledge",
+              "aliases": ["pk", "it officer", "computer knowledge", "specialist", "professional"],
               "questions_count": 50,
               "max_marks": 50,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 35,
               "duration_seconds": 2100,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            }
+          ]
+        },
+        "mains-pk-only": {
+          "title": "IBPS SO 2026 Mains (Standalone Professional Knowledge)",
+          "total_questions": 60,
+          "total_marks": 60,
+          "total_duration_minutes": 45,
+          "total_duration_seconds": 2700,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "professional-knowledge",
+              "name": "Professional Knowledge",
+              "aliases": ["pk", "it officer", "professional"],
+              "questions_count": 60,
+              "max_marks": 60,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": "English & Hindi",
               "sectional_lock": true
             }
           ]
@@ -237,11 +453,12 @@
       }
     },
     "ibps-po": {
-      "exam_name": "IBPS Probationary Officer (CRP PO/MT)",
+      "exam_name": "IBPS PO 2026 (Probationary Officer CRP PO/MT-XVI)",
+      "category": "Banking",
       "authority": "Institute of Banking Personnel Selection",
       "stages": {
         "prelims": {
-          "title": "IBPS PO Preliminary Examination",
+          "title": "IBPS PO 2026 Preliminary Examination",
           "total_questions": 100,
           "total_marks": 100,
           "total_duration_minutes": 60,
@@ -251,46 +468,56 @@
           "marking_scheme": {
             "positive_mark": 1.0,
             "negative_mark": 0.25,
-            "unattempted_mark": 0.0
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
           },
           "sections": [
             {
               "section_index": 1,
               "id": "english-language",
               "name": "English Language",
+              "aliases": ["english", "general english"],
               "questions_count": 30,
               "max_marks": 30,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 20,
               "duration_seconds": 1200,
-              "medium": ["English"],
+              "medium": "English",
               "sectional_lock": true
             },
             {
               "section_index": 2,
               "id": "quantitative-aptitude",
               "name": "Quantitative Aptitude",
+              "aliases": ["quant", "numerical ability"],
               "questions_count": 35,
               "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 20,
               "duration_seconds": 1200,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             },
             {
               "section_index": 3,
               "id": "reasoning-ability",
               "name": "Reasoning Ability",
+              "aliases": ["reasoning", "logical reasoning"],
               "questions_count": 35,
               "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 20,
               "duration_seconds": 1200,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             }
           ]
         },
         "mains": {
-          "title": "IBPS PO Main Examination",
+          "title": "IBPS PO 2026 Main Examination",
           "total_questions": 155,
           "total_marks": 200,
           "total_duration_minutes": 180,
@@ -300,181 +527,261 @@
           "marking_scheme": {
             "positive_mark": 1.0,
             "negative_mark": 0.25,
-            "unattempted_mark": 0.0
-          },
-          "sections": [
-            {
-              "section_index": 1,
-              "id": "reasoning-computer",
-              "name": "Reasoning & Computer Aptitude",
-              "questions_count": 45,
-              "max_marks": 60,
-              "duration_minutes": 60,
-              "duration_seconds": 3600,
-              "medium": ["English", "Hindi"],
-              "sectional_lock": true
-            },
-            {
-              "section_index": 2,
-              "id": "general-awareness",
-              "name": "General/Economy/Banking Awareness",
-              "questions_count": 40,
-              "max_marks": 40,
-              "duration_minutes": 35,
-              "duration_seconds": 2100,
-              "medium": ["English", "Hindi"],
-              "sectional_lock": true
-            },
-            {
-              "section_index": 3,
-              "id": "english-language",
-              "name": "English Language",
-              "questions_count": 35,
-              "max_marks": 40,
-              "duration_minutes": 40,
-              "duration_seconds": 2400,
-              "medium": ["English"],
-              "sectional_lock": true
-            },
-            {
-              "section_index": 4,
-              "id": "data-analysis",
-              "name": "Data Analysis & Interpretation",
-              "questions_count": 35,
-              "max_marks": 60,
-              "duration_minutes": 45,
-              "duration_seconds": 2700,
-              "medium": ["English", "Hindi"],
-              "sectional_lock": true
-            }
-          ]
-        }
-      }
-    },
-    "ssc-cgl": {
-      "exam_name": "Staff Selection Commission - Combined Graduate Level (SSC CGL)",
-      "authority": "Staff Selection Commission (SSC)",
-      "stages": {
-        "tier-1": {
-          "title": "SSC CGL Tier-1 Examination",
-          "total_questions": 100,
-          "total_marks": 200,
-          "total_duration_minutes": 60,
-          "total_duration_seconds": 3600,
-          "has_sectional_timing": false,
-          "is_sectional_locked": false,
-          "composite_time_rule": "Candidates can switch freely between sections within 60 minutes",
-          "marking_scheme": {
-            "positive_mark": 2.0,
-            "negative_mark": 0.50,
             "unattempted_mark": 0.0,
             "penalty_ratio": "1/4th"
           },
           "sections": [
             {
               "section_index": 1,
-              "id": "general-intelligence",
-              "name": "General Intelligence and Reasoning",
-              "questions_count": 25,
-              "max_marks": 50,
+              "id": "reasoning-computer",
+              "name": "Reasoning & Computer Aptitude",
+              "aliases": ["reasoning", "reasoning ability"],
+              "questions_count": 45,
+              "max_marks": 60,
+              "positive_mark": 1.33,
+              "negative_mark": 0.25,
               "duration_minutes": 60,
               "duration_seconds": 3600,
-              "medium": ["English", "Hindi"],
-              "sectional_lock": false
+              "medium": "English & Hindi",
+              "sectional_lock": true
             },
             {
               "section_index": 2,
               "id": "general-awareness",
-              "name": "General Awareness",
-              "questions_count": 25,
-              "max_marks": 50,
-              "duration_minutes": 60,
-              "duration_seconds": 3600,
-              "medium": ["English", "Hindi"],
-              "sectional_lock": false
+              "name": "General/Economy/Banking Awareness",
+              "aliases": ["general awareness", "ga", "banking awareness"],
+              "questions_count": 40,
+              "max_marks": 40,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 35,
+              "duration_seconds": 2100,
+              "medium": "English & Hindi",
+              "sectional_lock": true
             },
             {
               "section_index": 3,
-              "id": "quantitative-aptitude",
-              "name": "Quantitative Aptitude",
-              "questions_count": 25,
-              "max_marks": 50,
-              "duration_minutes": 60,
-              "duration_seconds": 3600,
-              "medium": ["English", "Hindi"],
-              "sectional_lock": false
+              "id": "english-language",
+              "name": "English Language",
+              "aliases": ["english", "general english"],
+              "questions_count": 35,
+              "max_marks": 40,
+              "positive_mark": 1.14,
+              "negative_mark": 0.25,
+              "duration_minutes": 40,
+              "duration_seconds": 2400,
+              "medium": "English",
+              "sectional_lock": true
             },
             {
               "section_index": 4,
-              "id": "english-comprehension",
-              "name": "English Comprehension",
-              "questions_count": 25,
-              "max_marks": 50,
-              "duration_minutes": 60,
-              "duration_seconds": 3600,
-              "medium": ["English"],
-              "sectional_lock": false
-            }
-          ]
-        },
-        "tier-2": {
-          "title": "SSC CGL Tier-2 (Paper-I Session-I)",
-          "total_questions": 150,
-          "total_marks": 450,
-          "total_duration_minutes": 135,
-          "total_duration_seconds": 8100,
-          "has_sectional_timing": true,
-          "is_sectional_locked": true,
-          "marking_scheme": {
-            "positive_mark": 3.0,
-            "negative_mark": 1.00,
-            "unattempted_mark": 0.0,
-            "penalty_ratio": "1/3rd"
-          },
-          "sections": [
-            {
-              "section_index": 1,
-              "id": "section-1-math-reasoning",
-              "name": "Section I: Mathematical Abilities & Reasoning",
-              "questions_count": 60,
-              "max_marks": 180,
-              "duration_minutes": 60,
-              "duration_seconds": 3600,
-              "medium": ["English", "Hindi"],
-              "sectional_lock": true
-            },
-            {
-              "section_index": 2,
-              "id": "section-2-english-ga",
-              "name": "Section II: English Language & General Awareness",
-              "questions_count": 70,
-              "max_marks": 210,
-              "duration_minutes": 60,
-              "duration_seconds": 3600,
-              "medium": ["English", "Hindi"],
-              "sectional_lock": true
-            },
-            {
-              "section_index": 3,
-              "id": "section-3-computer",
-              "name": "Section III: Computer Knowledge Module",
-              "questions_count": 20,
+              "id": "data-analysis",
+              "name": "Data Analysis & Interpretation",
+              "aliases": ["quant", "quantitative aptitude", "di", "data interpretation"],
+              "questions_count": 35,
               "max_marks": 60,
-              "duration_minutes": 15,
-              "duration_seconds": 900,
-              "medium": ["English", "Hindi"],
+              "positive_mark": 1.71,
+              "negative_mark": 0.25,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": "English & Hindi",
               "sectional_lock": true
             }
           ]
         }
       }
     },
-    "rbi-grade-b": {
-      "exam_name": "Reserve Bank of India Grade B Officers (General)",
-      "authority": "Reserve Bank of India Services Board",
+    "ibps-clerk": {
+      "exam_name": "IBPS Clerk 2026 (Customer Service Associate CRP-XVI)",
+      "category": "Banking",
+      "authority": "Institute of Banking Personnel Selection",
       "stages": {
-        "phase-1": {
-          "title": "RBI Grade B Phase-1 Examination",
+        "prelims": {
+          "title": "IBPS Clerk 2026 Preliminary Examination",
+          "total_questions": 100,
+          "total_marks": 100,
+          "total_duration_minutes": 60,
+          "total_duration_seconds": 3600,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "english-language",
+              "name": "English Language",
+              "aliases": ["english"],
+              "questions_count": 30,
+              "max_marks": 30,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "numerical-ability",
+              "name": "Numerical Ability",
+              "aliases": ["quant", "quantitative aptitude", "numerical"],
+              "questions_count": 35,
+              "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "reasoning-ability",
+              "name": "Reasoning Ability",
+              "aliases": ["reasoning"],
+              "questions_count": 35,
+              "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            }
+          ]
+        },
+        "mains": {
+          "title": "IBPS Clerk 2026 Main Examination",
+          "total_questions": 190,
+          "total_marks": 200,
+          "total_duration_minutes": 160,
+          "total_duration_seconds": 9600,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "general-awareness",
+              "name": "General/Financial Awareness",
+              "aliases": ["general awareness", "ga"],
+              "questions_count": 50,
+              "max_marks": 50,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 35,
+              "duration_seconds": 2100,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "general-english",
+              "name": "General English",
+              "aliases": ["english", "english language"],
+              "questions_count": 40,
+              "max_marks": 40,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 35,
+              "duration_seconds": 2100,
+              "medium": "English",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "reasoning-computer",
+              "name": "Reasoning Ability & Computer Aptitude",
+              "aliases": ["reasoning", "reasoning ability"],
+              "questions_count": 50,
+              "max_marks": 60,
+              "positive_mark": 1.2,
+              "negative_mark": 0.25,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 4,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "aliases": ["quant", "numerical ability"],
+              "questions_count": 50,
+              "max_marks": 50,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 45,
+              "duration_seconds": 2700,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "ibps-rrb-po": {
+      "exam_name": "IBPS RRB PO 2026 (Officer Scale-I)",
+      "category": "Regional Rural Bank",
+      "authority": "Institute of Banking Personnel Selection (CRP RRBs-XV)",
+      "stages": {
+        "prelims": {
+          "title": "IBPS RRB PO 2026 Preliminary Examination",
+          "total_questions": 80,
+          "total_marks": 80,
+          "total_duration_minutes": 45,
+          "total_duration_seconds": 2700,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "reasoning-ability",
+              "name": "Reasoning",
+              "aliases": ["reasoning", "reasoning ability"],
+              "questions_count": 40,
+              "max_marks": 40,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 25,
+              "duration_seconds": 1500,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "aliases": ["quant", "numerical ability"],
+              "questions_count": 40,
+              "max_marks": 40,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            }
+          ]
+        },
+        "mains": {
+          "title": "IBPS RRB PO 2026 Main Examination",
           "total_questions": 200,
           "total_marks": 200,
           "total_duration_minutes": 120,
@@ -484,51 +791,482 @@
           "marking_scheme": {
             "positive_mark": 1.0,
             "negative_mark": 0.25,
-            "unattempted_mark": 0.0
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "reasoning",
+              "name": "Reasoning",
+              "aliases": ["reasoning", "reasoning ability"],
+              "questions_count": 40,
+              "max_marks": 50,
+              "positive_mark": 1.25,
+              "negative_mark": 0.31,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "computer-knowledge",
+              "name": "Computer Knowledge",
+              "aliases": ["computer", "it"],
+              "questions_count": 40,
+              "max_marks": 20,
+              "positive_mark": 0.5,
+              "negative_mark": 0.125,
+              "duration_minutes": 15,
+              "duration_seconds": 900,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "general-awareness",
+              "name": "General Awareness",
+              "aliases": ["general awareness", "ga"],
+              "questions_count": 40,
+              "max_marks": 40,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 15,
+              "duration_seconds": 900,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 4,
+              "id": "english-language",
+              "name": "English / Hindi Language",
+              "aliases": ["english", "hindi"],
+              "questions_count": 40,
+              "max_marks": 40,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 5,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "aliases": ["quant", "numerical ability"],
+              "questions_count": 40,
+              "max_marks": 50,
+              "positive_mark": 1.25,
+              "negative_mark": 0.31,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "rbi-grade-b": {
+      "exam_name": "RBI Grade B 2026 (Officers in Grade 'B' DR - General)",
+      "category": "Regulatory Body",
+      "authority": "Reserve Bank of India Services Board",
+      "stages": {
+        "prelims": {
+          "title": "RBI Grade B 2026 Phase-1 Examination",
+          "total_questions": 200,
+          "total_marks": 200,
+          "total_duration_minutes": 120,
+          "total_duration_seconds": 7200,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
           },
           "sections": [
             {
               "section_index": 1,
               "id": "general-awareness",
               "name": "General Awareness",
+              "aliases": ["general awareness", "ga"],
               "questions_count": 80,
               "max_marks": 80,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 25,
               "duration_seconds": 1500,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             },
             {
               "section_index": 2,
-              "id": "reasoning",
+              "id": "reasoning-ability",
               "name": "Reasoning Ability",
+              "aliases": ["reasoning"],
               "questions_count": 60,
               "max_marks": 60,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 45,
               "duration_seconds": 2700,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
               "sectional_lock": true
             },
             {
               "section_index": 3,
               "id": "english-language",
               "name": "English Language",
+              "aliases": ["english"],
               "questions_count": 30,
               "max_marks": 30,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 25,
               "duration_seconds": 1500,
-              "medium": ["English"],
+              "medium": "English",
               "sectional_lock": true
             },
             {
               "section_index": 4,
               "id": "quantitative-aptitude",
               "name": "Quantitative Aptitude",
+              "aliases": ["quant", "numerical"],
               "questions_count": 30,
               "max_marks": 30,
+              "positive_mark": 1.0,
+              "negative_mark": 0.25,
               "duration_minutes": 25,
               "duration_seconds": 1500,
-              "medium": ["English", "Hindi"],
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            }
+          ]
+        },
+        "mains": {
+          "title": "RBI Grade B 2026 Phase-2 (ESI & FM Objective)",
+          "total_questions": 60,
+          "total_marks": 100,
+          "total_duration_minutes": 60,
+          "total_duration_seconds": 3600,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.67,
+            "negative_mark": 0.25,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "esi",
+              "name": "Economic & Social Issues (ESI)",
+              "aliases": ["esi", "economics", "general awareness"],
+              "questions_count": 30,
+              "max_marks": 50,
+              "positive_mark": 1.67,
+              "negative_mark": 0.25,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "fm",
+              "name": "Finance & Management (FM)",
+              "aliases": ["fm", "finance", "management", "professional knowledge"],
+              "questions_count": 30,
+              "max_marks": 50,
+              "positive_mark": 1.67,
+              "negative_mark": 0.25,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "lic-aao": {
+      "exam_name": "LIC AAO 2026 (Assistant Administrative Officer)",
+      "category": "Insurance",
+      "authority": "Life Insurance Corporation of India",
+      "stages": {
+        "prelims": {
+          "title": "LIC AAO 2026 Preliminary Examination",
+          "total_questions": 100,
+          "total_marks": 70,
+          "total_duration_minutes": 60,
+          "total_duration_seconds": 3600,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.0,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "No Negative Marking"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "reasoning-ability",
+              "name": "Reasoning Ability",
+              "aliases": ["reasoning"],
+              "questions_count": 35,
+              "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.0,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "aliases": ["quant", "numerical"],
+              "questions_count": 35,
+              "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.0,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "english-language",
+              "name": "English Language (Qualifying)",
+              "aliases": ["english"],
+              "questions_count": 30,
+              "max_marks": 30,
+              "positive_mark": 1.0,
+              "negative_mark": 0.0,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English",
+              "sectional_lock": true
+            }
+          ]
+        },
+        "mains": {
+          "title": "LIC AAO 2026 Main Examination",
+          "total_questions": 120,
+          "total_marks": 300,
+          "total_duration_minutes": 120,
+          "total_duration_seconds": 7200,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 2.5,
+            "negative_mark": 0.0,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "No Negative Marking"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "reasoning-ability",
+              "name": "Reasoning Ability",
+              "aliases": ["reasoning"],
+              "questions_count": 30,
+              "max_marks": 90,
+              "positive_mark": 3.0,
+              "negative_mark": 0.0,
+              "duration_minutes": 40,
+              "duration_seconds": 2400,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "general-awareness",
+              "name": "General Knowledge, Current Affairs",
+              "aliases": ["general awareness", "gk", "ga"],
+              "questions_count": 30,
+              "max_marks": 60,
+              "positive_mark": 2.0,
+              "negative_mark": 0.0,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "data-analysis",
+              "name": "Data Analysis & Interpretation",
+              "aliases": ["quant", "data interpretation", "di"],
+              "questions_count": 30,
+              "max_marks": 90,
+              "positive_mark": 3.0,
+              "negative_mark": 0.0,
+              "duration_minutes": 40,
+              "duration_seconds": 2400,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 4,
+              "id": "insurance-awareness",
+              "name": "Insurance and Financial Market Awareness",
+              "aliases": ["insurance", "financial awareness", "professional knowledge"],
+              "questions_count": 30,
+              "max_marks": 60,
+              "positive_mark": 2.0,
+              "negative_mark": 0.0,
+              "duration_minutes": 20,
+              "duration_seconds": 1200,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            }
+          ]
+        }
+      }
+    },
+    "ssc-cgl": {
+      "exam_name": "SSC CGL 2026 (Combined Graduate Level Tier-1 & Tier-2)",
+      "category": "SSC Exams",
+      "authority": "Staff Selection Commission (SSC)",
+      "stages": {
+        "prelims": {
+          "title": "SSC CGL 2026 Tier-1 Examination",
+          "total_questions": 100,
+          "total_marks": 200,
+          "total_duration_minutes": 60,
+          "total_duration_seconds": 3600,
+          "has_sectional_timing": false,
+          "is_sectional_locked": false,
+          "composite_time_rule": "Composite 60-minute timer across all 4 sections",
+          "marking_scheme": {
+            "positive_mark": 2.0,
+            "negative_mark": 0.5,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/4th"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "general-intelligence",
+              "name": "General Intelligence and Reasoning",
+              "aliases": ["reasoning", "reasoning ability", "general intelligence"],
+              "questions_count": 25,
+              "max_marks": 50,
+              "positive_mark": 2.0,
+              "negative_mark": 0.5,
+              "duration_minutes": 15,
+              "duration_seconds": 900,
+              "medium": "English & Hindi",
+              "sectional_lock": false
+            },
+            {
+              "section_index": 2,
+              "id": "general-awareness",
+              "name": "General Awareness",
+              "aliases": ["general awareness", "ga", "gk"],
+              "questions_count": 25,
+              "max_marks": 50,
+              "positive_mark": 2.0,
+              "negative_mark": 0.5,
+              "duration_minutes": 15,
+              "duration_seconds": 900,
+              "medium": "English & Hindi",
+              "sectional_lock": false
+            },
+            {
+              "section_index": 3,
+              "id": "quantitative-aptitude",
+              "name": "Quantitative Aptitude",
+              "aliases": ["quant", "mathematics", "numerical"],
+              "questions_count": 25,
+              "max_marks": 50,
+              "positive_mark": 2.0,
+              "negative_mark": 0.5,
+              "duration_minutes": 15,
+              "duration_seconds": 900,
+              "medium": "English & Hindi",
+              "sectional_lock": false
+            },
+            {
+              "section_index": 4,
+              "id": "english-comprehension",
+              "name": "English Comprehension",
+              "aliases": ["english", "english language"],
+              "questions_count": 25,
+              "max_marks": 50,
+              "positive_mark": 2.0,
+              "negative_mark": 0.5,
+              "duration_minutes": 15,
+              "duration_seconds": 900,
+              "medium": "English",
+              "sectional_lock": false
+            }
+          ]
+        },
+        "mains": {
+          "title": "SSC CGL 2026 Tier-2 (Paper-I Session-I)",
+          "total_questions": 150,
+          "total_marks": 450,
+          "total_duration_minutes": 135,
+          "total_duration_seconds": 8100,
+          "has_sectional_timing": true,
+          "is_sectional_locked": true,
+          "marking_scheme": {
+            "positive_mark": 3.0,
+            "negative_mark": 1.0,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/3rd"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "section-1-math-reasoning",
+              "name": "Section I: Mathematical Abilities & Reasoning",
+              "aliases": ["quant", "reasoning", "mathematical abilities"],
+              "questions_count": 60,
+              "max_marks": 180,
+              "positive_mark": 3.0,
+              "negative_mark": 1.0,
+              "duration_minutes": 60,
+              "duration_seconds": 3600,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 2,
+              "id": "section-2-english-ga",
+              "name": "Section II: English Language & General Awareness",
+              "aliases": ["english", "general awareness"],
+              "questions_count": 70,
+              "max_marks": 210,
+              "positive_mark": 3.0,
+              "negative_mark": 1.0,
+              "duration_minutes": 60,
+              "duration_seconds": 3600,
+              "medium": "English & Hindi",
+              "sectional_lock": true
+            },
+            {
+              "section_index": 3,
+              "id": "section-3-computer",
+              "name": "Section III: Computer Knowledge Module",
+              "aliases": ["computer", "professional knowledge", "it"],
+              "questions_count": 20,
+              "max_marks": 60,
+              "positive_mark": 3.0,
+              "negative_mark": 1.0,
+              "duration_minutes": 15,
+              "duration_seconds": 900,
+              "medium": "English & Hindi",
               "sectional_lock": true
             }
           ]
@@ -536,18 +1274,18 @@
       }
     },
     "rrb-ntpc": {
-      "exam_name": "Railway Recruitment Board Non-Technical Popular Categories (RRB NTPC)",
+      "exam_name": "RRB NTPC 2026 (Non-Technical Popular Categories CBT-1 & CBT-2)",
+      "category": "Railways",
       "authority": "Railway Recruitment Boards (Ministry of Railways)",
       "stages": {
-        "cbt-1": {
-          "title": "RRB NTPC CBT-1 (1st Stage Computer Based Test)",
+        "prelims": {
+          "title": "RRB NTPC 2026 CBT-1 Examination",
           "total_questions": 100,
           "total_marks": 100,
           "total_duration_minutes": 90,
           "total_duration_seconds": 5400,
           "has_sectional_timing": false,
           "is_sectional_locked": false,
-          "composite_time_rule": "Candidates can switch freely between sections within 90 minutes",
           "marking_scheme": {
             "positive_mark": 1.0,
             "negative_mark": 0.33,
@@ -559,33 +1297,101 @@
               "section_index": 1,
               "id": "general-awareness",
               "name": "General Awareness",
+              "aliases": ["general awareness", "ga", "gk"],
               "questions_count": 40,
               "max_marks": 40,
-              "duration_minutes": 90,
-              "duration_seconds": 5400,
-              "medium": ["English", "Hindi", "Regional"],
+              "positive_mark": 1.0,
+              "negative_mark": 0.33,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
               "sectional_lock": false
             },
             {
               "section_index": 2,
               "id": "mathematics",
               "name": "Mathematics",
+              "aliases": ["quant", "quantitative aptitude", "mathematics", "math"],
               "questions_count": 30,
               "max_marks": 30,
-              "duration_minutes": 90,
-              "duration_seconds": 5400,
-              "medium": ["English", "Hindi", "Regional"],
+              "positive_mark": 1.0,
+              "negative_mark": 0.33,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
               "sectional_lock": false
             },
             {
               "section_index": 3,
               "id": "general-intelligence",
               "name": "General Intelligence and Reasoning",
+              "aliases": ["reasoning", "reasoning ability", "general intelligence"],
               "questions_count": 30,
               "max_marks": 30,
-              "duration_minutes": 90,
-              "duration_seconds": 5400,
-              "medium": ["English", "Hindi", "Regional"],
+              "positive_mark": 1.0,
+              "negative_mark": 0.33,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
+              "sectional_lock": false
+            }
+          ]
+        },
+        "mains": {
+          "title": "RRB NTPC 2026 CBT-2 Examination",
+          "total_questions": 120,
+          "total_marks": 120,
+          "total_duration_minutes": 90,
+          "total_duration_seconds": 5400,
+          "has_sectional_timing": false,
+          "is_sectional_locked": false,
+          "marking_scheme": {
+            "positive_mark": 1.0,
+            "negative_mark": 0.33,
+            "unattempted_mark": 0.0,
+            "penalty_ratio": "1/3rd"
+          },
+          "sections": [
+            {
+              "section_index": 1,
+              "id": "general-awareness",
+              "name": "General Awareness",
+              "aliases": ["general awareness", "ga"],
+              "questions_count": 50,
+              "max_marks": 50,
+              "positive_mark": 1.0,
+              "negative_mark": 0.33,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
+              "sectional_lock": false
+            },
+            {
+              "section_index": 2,
+              "id": "mathematics",
+              "name": "Mathematics",
+              "aliases": ["quant", "quantitative aptitude", "mathematics"],
+              "questions_count": 35,
+              "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.33,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
+              "sectional_lock": false
+            },
+            {
+              "section_index": 3,
+              "id": "general-intelligence",
+              "name": "General Intelligence and Reasoning",
+              "aliases": ["reasoning", "reasoning ability"],
+              "questions_count": 35,
+              "max_marks": 35,
+              "positive_mark": 1.0,
+              "negative_mark": 0.33,
+              "duration_minutes": 30,
+              "duration_seconds": 1800,
+              "medium": "English & Hindi",
               "sectional_lock": false
             }
           ]
