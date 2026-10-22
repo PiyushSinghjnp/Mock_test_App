@@ -852,9 +852,9 @@ app.use((req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`=======================================================`);
-  console.log(` Oliveboard Mock Test Server running at http://localhost:${PORT}`);
+  console.log(` Oliveboard Mock Test Server running at http://0.0.0.0:${PORT}`);
   console.log(` SQLite Database: ${DB_PATH}`);
   console.log(` Multi-user isolation & permanent result storage ACTIVE`);
   console.log(`=======================================================`);
