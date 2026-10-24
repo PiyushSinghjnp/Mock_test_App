@@ -32,6 +32,9 @@ class OliveboardAppController {
 
     // 3. Bind UI events
     this.bindEvents();
+
+    // 4. Initialize History & Deep-Linking Router (prevents about:blank back-button exit)
+    this.initHistoryRouter();
   }
 
   showToast(message, type = 'info') {
@@ -56,6 +59,391 @@ class OliveboardAppController {
   }
 
   // ==========================================
+  // UNIFIED SYMMETRIC HISTORY ROUTER (BACK & FORWARD)
+  // ==========================================
+
+  initHistoryRouter() {
+    this._currentStep = 0;
+    this._isApplyingState = false;
+
+    // 1. Initial State Resolution from URL
+    const parsedState = this.parseLocationToState();
+
+    // Set initial history state cleanly without destroying or pushing extra entries
+    window.history.replaceState({
+      ...parsedState,
+      navStep: 0,
+      appInitialized: true
+    }, '', window.location.pathname + window.location.search + window.location.hash);
+
+    // Apply initial state to render UI immediately
+    this.applyState(window.history.state);
+
+    // 2. Global popstate interceptor (Single Source of Truth for Back AND Forward)
+    window.addEventListener('popstate', (e) => {
+      this.handlePopState(e);
+    });
+  }
+
+  parseLocationToState() {
+    const hash = window.location.hash || '';
+
+    if (hash.startsWith('#test/')) {
+      const testId = hash.replace('#test/', '').split('/')[0];
+      return { view: 'test-engine', testId };
+    }
+
+    if (hash.startsWith('#solutions/')) {
+      const rest = hash.replace('#solutions/', '');
+      const parts = rest.split('/');
+      const testId = parts[0];
+      let qIndex = undefined;
+      if (parts[1] === 'q' && parts[2]) {
+        const qNum = parseInt(parts[2], 10);
+        qIndex = !isNaN(qNum) ? Math.max(0, qNum - 1) : 0;
+      }
+      return { view: 'solutions', testId, qIndex };
+    }
+
+    if (hash.startsWith('#scorecard/')) {
+      const attemptId = hash.replace('#scorecard/', '').split('/')[0];
+      return { view: 'tests', modal: 'scorecard', attemptId };
+    }
+
+    if (hash === '#analytics' || hash === '#dashboard') {
+      return { view: 'analytics' };
+    }
+
+    if (hash === '#leaderboard') {
+      return { view: 'leaderboard' };
+    }
+
+    if (hash === '#exam-switcher') {
+      return { view: 'tests', modal: 'exam-switcher' };
+    }
+
+    if (hash === '#profile') {
+      return { view: 'tests', modal: 'user-profile' };
+    }
+
+    if (hash === '#live-browser') {
+      return { view: 'tests', modal: 'live-browser' };
+    }
+
+    return { view: 'tests' };
+  }
+
+  pushNavState(stateObj, url) {
+    if (!window.history) return;
+    this._currentStep = (typeof this._currentStep === 'number' ? this._currentStep : 0) + 1;
+    const finalState = {
+      ...stateObj,
+      navStep: this._currentStep,
+      appInitialized: true
+    };
+    window.history.pushState(finalState, '', url);
+  }
+
+  replaceNavState(stateObj, url) {
+    if (!window.history) return;
+    const finalState = {
+      ...stateObj,
+      navStep: (typeof this._currentStep === 'number' ? this._currentStep : 0),
+      appInitialized: true
+    };
+    window.history.replaceState(finalState, '', url);
+  }
+
+  handlePopState(e) {
+    const rawState = e.state;
+    const prevStep = (typeof this._currentStep === 'number' ? this._currentStep : 0);
+    if (rawState && typeof rawState.navStep === 'number') {
+      this._currentStep = rawState.navStep;
+    } else {
+      this._currentStep = 0;
+    }
+
+    // Resolve state: if state is null or missing appInitialized, parse from URL
+    const state = (rawState && rawState.appInitialized) ? rawState : this.parseLocationToState();
+
+    // Bulletproof Back Interceptor for Solutions Console:
+    // When the solutions console is currently open and a popstate event occurs,
+    // if the target state still points to ANY solutions state (e.g. from lingering question entries in history),
+    // NEVER move questions backward—immediately exit solutions to the tests dashboard!
+    const isSolnOpen = (window.obSolutionEngine && window.obSolutionEngine.isOpen) ||
+                       (document.getElementById('solution-console-overlay') && document.getElementById('solution-console-overlay').classList.contains('active'));
+    if (isSolnOpen && (state.view === 'solutions' || state.view === 'solution-detail')) {
+      this.exitSolutionsToTests();
+      return;
+    }
+
+    // Apply the target state (never call pushState here so Forward stack is preserved!)
+    this.applyState(state);
+  }
+
+  async applyState(state) {
+    if (!state) return;
+    this._isApplyingState = true;
+
+    try {
+      const targetModal = state.modal || null;
+
+      // 1. Modals Handling (Bidirectional: open when navigating forward to modal, close when popping)
+      const obLiveModal = document.getElementById('ob-live-browser-modal');
+      if (targetModal === 'live-browser') {
+        if (obLiveModal && obLiveModal.style.display !== 'flex') {
+          this.openOliveboardLiveBrowser(false);
+        }
+      } else {
+        if (obLiveModal && obLiveModal.style.display === 'flex') {
+          this.closeOliveboardLiveBrowser(false);
+        }
+      }
+
+      const userModal = document.getElementById('user-profile-modal');
+      if (targetModal === 'user-profile') {
+        if (userModal && !userModal.classList.contains('active')) {
+          this.renderUserProfileModal(false);
+        }
+      } else {
+        if (userModal && userModal.classList.contains('active')) {
+          userModal.classList.remove('active');
+        }
+      }
+
+      const examModal = document.getElementById('exam-switcher-modal');
+      if (targetModal === 'exam-switcher') {
+        if (examModal && !examModal.classList.contains('active')) {
+          this.renderExamSwitcherList();
+          examModal.classList.add('active');
+        }
+      } else {
+        if (examModal && examModal.classList.contains('active')) {
+          examModal.classList.remove('active');
+        }
+      }
+
+      const scorecardModal = document.getElementById('scorecard-modal-overlay');
+      if (targetModal === 'scorecard') {
+        if (scorecardModal && !scorecardModal.classList.contains('active')) {
+          if (state.attemptId && state.testId) {
+            await this.viewAttemptScorecard(state.attemptId, state.testId, false);
+          } else {
+            scorecardModal.classList.add('active');
+          }
+        }
+      } else {
+        if (scorecardModal && scorecardModal.classList.contains('active')) {
+          scorecardModal.classList.remove('active');
+        }
+      }
+
+      // 2. Overlays Handling (Solution Console vs Test Engine vs Main View Tabs)
+      const view = state.view || 'tests';
+      const solnOverlay = document.getElementById('solution-console-overlay');
+      const testOverlay = document.getElementById('test-modal-overlay');
+
+      if (view === 'solutions' || view === 'solution-detail') {
+        // Close Test Engine if open
+        if (testOverlay && testOverlay.classList.contains('active')) {
+          if (this.testEngine) this.testEngine._doExitTest();
+        }
+
+        // If solution console is NOT open, open it
+        if (!solnOverlay || !solnOverlay.classList.contains('active')) {
+          let attId = state.attemptId;
+          const tId = state.testId;
+          if (!attId && tId) {
+            const user = window.obDataManager ? (window.obDataManager.getActiveUser() || { id: 'user-rahul' }) : { id: 'user-rahul' };
+            if (user) {
+              try {
+                const res = await fetch(`/api/attempts?userId=${encodeURIComponent(user.id)}&testId=${encodeURIComponent(tId)}`);
+                const data = await res.json();
+                if (data.success && data.attempts && data.attempts.length > 0) {
+                  const att = data.attempts[0];
+                  attId = att.id || att.attempt_id;
+                } else {
+                  const res2 = await fetch(`/api/attempts?userId=${encodeURIComponent(user.id)}`);
+                  const data2 = await res2.json();
+                  if (data2.success && data2.attempts && data2.attempts.length > 0) {
+                    const att = data2.attempts.find(a => a.test_id === tId) || data2.attempts[0];
+                    attId = att.id || att.attempt_id;
+                  }
+                }
+              } catch (err) {
+                console.warn('Attempt lookup error:', err);
+              }
+            }
+          }
+          if (attId && tId) {
+            await this.viewSolutions(attId, tId, false);
+          }
+        }
+
+        // If solution engine is open, set correct subview
+        if (window.obSolutionEngine && window.obSolutionEngine.isOpen) {
+          if (state.qIndex !== undefined && state.qIndex !== null) {
+            window.obSolutionEngine.goToQuestion(state.qIndex, false);
+          } else {
+            window.obSolutionEngine.gotoreview(false);
+          }
+        }
+        return;
+      }
+
+      if (view === 'test-engine') {
+        // Close Solution Console if open
+        if (solnOverlay && solnOverlay.classList.contains('active')) {
+          if (window.obSolutionEngine) window.obSolutionEngine._doExit();
+        }
+
+        // If test overlay is NOT open, open it
+        if (!testOverlay || !testOverlay.classList.contains('active')) {
+          if (state.testId) {
+            await this.resumeMockTest(state.testId, false);
+          }
+        } else {
+          // If already open, return to active question view
+          if (this.testEngine) {
+            this.testEngine.getAllBack();
+            this.testEngine.sBack();
+          }
+        }
+        return;
+      }
+
+      // 3. For all other views (tests, analytics, leaderboard):
+      if (solnOverlay && solnOverlay.classList.contains('active')) {
+        if (window.obSolutionEngine) window.obSolutionEngine._doExit();
+      }
+      if (testOverlay && testOverlay.classList.contains('active')) {
+        if (this.testEngine) this.testEngine._doExitTest();
+      }
+
+      // Switch Main View Tab
+      this.switchAppView(view, false);
+
+    } finally {
+      this._isApplyingState = false;
+    }
+  }
+
+  hasAnyModalOrOverlayOpen() {
+    const obLiveModal = document.getElementById('ob-live-browser-modal');
+    const userModal = document.getElementById('user-profile-modal');
+    const examModal = document.getElementById('exam-switcher-modal');
+    const scorecardModal = document.getElementById('scorecard-modal-overlay');
+    const solnOverlay = document.getElementById('solution-console-overlay');
+    const testOverlay = document.getElementById('test-modal-overlay');
+
+    return (obLiveModal && obLiveModal.style.display === 'flex') ||
+           (userModal && userModal.classList.contains('active')) ||
+           (examModal && examModal.classList.contains('active')) ||
+           (scorecardModal && scorecardModal.classList.contains('active')) ||
+           (solnOverlay && solnOverlay.classList.contains('active')) ||
+           (testOverlay && testOverlay.classList.contains('active'));
+  }
+
+  closeAllModalsAndOverlays() {
+    const obLiveModal = document.getElementById('ob-live-browser-modal');
+    if (obLiveModal) {
+      obLiveModal.style.display = 'none';
+      this._obBrowserActive = false;
+      if (this._obFrameTimer) clearTimeout(this._obFrameTimer);
+    }
+
+    const userModal = document.getElementById('user-profile-modal');
+    if (userModal) userModal.classList.remove('active');
+
+    const examModal = document.getElementById('exam-switcher-modal');
+    if (examModal) examModal.classList.remove('active');
+
+    const scorecardModal = document.getElementById('scorecard-modal-overlay');
+    if (scorecardModal) scorecardModal.classList.remove('active');
+
+    const solnOverlay = document.getElementById('solution-console-overlay');
+    if (solnOverlay && solnOverlay.classList.contains('active')) {
+      if (window.obSolutionEngine) window.obSolutionEngine._doExit();
+    }
+
+    const testOverlay = document.getElementById('test-modal-overlay');
+    if (testOverlay && testOverlay.classList.contains('active')) {
+      if (this.testEngine) this.testEngine._doExitTest();
+    }
+  }
+
+  goBack() {
+    const obLiveModal = document.getElementById('ob-live-browser-modal');
+    const userModal = document.getElementById('user-profile-modal');
+    const examModal = document.getElementById('exam-switcher-modal');
+    const scorecardModal = document.getElementById('scorecard-modal-overlay');
+    const solnOverlay = document.getElementById('solution-console-overlay');
+    const testOverlay = document.getElementById('test-modal-overlay');
+
+    // 1. Solution Console: immediately exit to tests dashboard
+    if (solnOverlay && solnOverlay.classList.contains('active')) {
+      this.exitSolutionsToTests();
+      return;
+    }
+
+    // 2. Test Engine: exit or pause safely
+    if (testOverlay && testOverlay.classList.contains('active')) {
+      if (this.testEngine) {
+        if (!this.testEngine.isExamActive) {
+          this.testEngine.exitTest();
+        } else {
+          this.testEngine.pauseTest();
+        }
+      }
+      return;
+    }
+
+    const hasModalOpen = (obLiveModal && obLiveModal.style.display === 'flex') ||
+                         (userModal && userModal.classList.contains('active')) ||
+                         (examModal && examModal.classList.contains('active')) ||
+                         (scorecardModal && scorecardModal.classList.contains('active'));
+
+    const hasOverlayOpen = (solnOverlay && solnOverlay.classList.contains('active')) ||
+                           (testOverlay && testOverlay.classList.contains('active'));
+
+    const isSubView = (this.currentViewTab !== 'tests');
+
+    // If we have history steps within our app session, go back in history
+    if (this._currentStep > 0) {
+      window.history.back();
+      return;
+    }
+
+    // Fallback if at the session root (prevents navigating out of app to about:blank)
+    if (hasModalOpen || hasOverlayOpen) {
+      this.closeAllModalsAndOverlays();
+      this.switchAppView('tests', false);
+      window.history.replaceState({ view: 'tests', navStep: 0, appInitialized: true }, '', window.location.pathname);
+    } else if (isSubView) {
+      this.switchAppView('tests', false);
+      window.history.replaceState({ view: 'tests', navStep: 0, appInitialized: true }, '', window.location.pathname);
+    } else {
+      this.showToast('You are on the Home dashboard', 'info');
+    }
+  }
+
+  exitSolutionsToTests() {
+    if (window.obSolutionEngine) {
+      window.obSolutionEngine._doExit();
+    }
+    const solnOverlay = document.getElementById('solution-console-overlay');
+    if (solnOverlay) {
+      solnOverlay.classList.remove('active');
+      solnOverlay.style.display = 'none';
+    }
+    const scorecardModal = document.getElementById('scorecard-modal-overlay');
+    if (scorecardModal) scorecardModal.classList.remove('active');
+
+    this.switchAppView('tests', false);
+    this.replaceNavState({ view: 'tests' }, window.location.pathname);
+  }
+
+  // ==========================================
   // CANDIDATE PROFILE & MULTI-USER ISOLATION
   // ==========================================
 
@@ -75,7 +463,7 @@ class OliveboardAppController {
     if (tagEl) tagEl.textContent = `Showing performance analytics for: ${user.name} (${user.roll_no})`;
   }
 
-  renderUserProfileModal() {
+  renderUserProfileModal(pushHistory = true) {
     const modal = document.getElementById('user-profile-modal');
     const activeBox = document.getElementById('active-user-profile-box');
     const usersList = document.getElementById('users-selection-list');
@@ -119,6 +507,9 @@ class OliveboardAppController {
     `).join('');
 
     modal.classList.add('active');
+    if (pushHistory) {
+      this.pushNavState({ modal: 'user-profile', view: this.currentViewTab }, '#profile');
+    }
   }
 
   async switchCandidate(userId) {
@@ -160,9 +551,13 @@ class OliveboardAppController {
     const btnSelector = document.getElementById('btn-active-exam-selector');
     if (btnSelector) {
       btnSelector.innerHTML = `
-        <span>🏦 ${exam.name}</span>
-        <span class="chevron">▼</span>
+        <span class="exam-category-current-label">💻 ${exam.name}</span>
+        <i class="fa-solid fa-chevron-down exam-category-chevron"></i>
       `;
+    }
+    const catName = document.getElementById('current-category-name');
+    if (catName) {
+      catName.textContent = exam.category || 'Banking & Insurance';
     }
   }
 
@@ -204,17 +599,17 @@ class OliveboardAppController {
       { id: "prelims", label: "Prelims Full Tests" },
       { id: "mains", label: "Mains Full Tests" },
       { id: "sectional", label: "Sectional Speed Tests" },
-      { id: "topic", label: "Topic Tests" },
-      { id: "pyq", label: "Previous Year Papers" }
+      { id: "topic", label: "Topic Tests & Drills" },
+      { id: "pyp", label: "Previous Year Papers" }
     ];
 
     tabsContainer.innerHTML = tabs.map(tab => `
-      <button class="tab-pill ${tab.id === this.currentFilterTab ? 'active' : ''}" data-tab="${tab.id}">
+      <a href="javascript:void(0)" class="fltr-tab-link ${tab.id === this.currentFilterTab ? 'active' : ''}" data-tab="${tab.id}">
         ${tab.label}
-      </button>
+      </a>
     `).join('');
 
-    tabsContainer.querySelectorAll('.tab-pill').forEach(btn => {
+    tabsContainer.querySelectorAll('.fltr-tab-link').forEach(btn => {
       btn.addEventListener('click', async () => {
         this.currentFilterTab = btn.dataset.tab;
         this.renderFilterTabs();
@@ -228,19 +623,19 @@ class OliveboardAppController {
     if (!statusContainer) return;
 
     const pills = [
-      { id: "all", label: "All" },
+      { id: "all", label: "All Tests" },
       { id: "unattempted", label: "Unattempted" },
       { id: "attempted", label: "Attempted" },
       { id: "free", label: "Free Tests" }
     ];
 
     statusContainer.innerHTML = pills.map(p => `
-      <button class="status-pill ${p.id === this.currentStatusFilter ? 'active' : ''}" data-status="${p.id}">
+      <button class="fltr-lang-btn ${p.id === this.currentStatusFilter ? 'active' : ''}" data-status="${p.id}">
         ${p.label}
       </button>
     `).join('');
 
-    statusContainer.querySelectorAll('.status-pill').forEach(btn => {
+    statusContainer.querySelectorAll('.fltr-lang-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         this.currentStatusFilter = btn.dataset.status;
         this.renderStatusFilterPills();
@@ -263,7 +658,12 @@ class OliveboardAppController {
 
     let displayPacks = [...tests];
     if (this.currentFilterTab !== "all") {
-      displayPacks = displayPacks.filter(p => p.type === this.currentFilterTab);
+      displayPacks = displayPacks.filter(p => {
+        if (this.currentFilterTab === 'pyp' || this.currentFilterTab === 'pyq') {
+          return p.type === 'pyp' || p.type === 'pyq';
+        }
+        return p.type === this.currentFilterTab;
+      });
     }
 
     if (this.currentStatusFilter === "unattempted") {
@@ -336,9 +736,9 @@ class OliveboardAppController {
             <p class="mock-desc">${pack.subtitle || 'TCS iON authentic exam simulation'}</p>
 
             <div class="mock-specs-row">
-              <div class="spec-entry"><span class="spec-icon">❓</span> ${totalQs} Qs</div>
-              <div class="spec-entry"><span class="spec-icon">✓</span> ${pack.marks} Marks</div>
-              <div class="spec-entry"><span class="spec-icon">⏱</span> ${pack.duration_minutes || pack.durationMinutes} Mins</div>
+              <div class="spec-entry"><img class="spec-icon-img" src="img/numq.svg" alt=""> ${totalQs} Questions</div>
+              <div class="spec-entry"><img class="spec-icon-img" src="img/marks.svg" alt=""> ${pack.marks} Marks</div>
+              <div class="spec-entry"><img class="spec-icon-img" src="img/duration.svg" alt=""> ${pack.duration_minutes || pack.durationMinutes} Mins</div>
             </div>
 
             <!-- Sections chips -->
@@ -499,6 +899,404 @@ class OliveboardAppController {
     `).join('');
   }
 
+  switchAppView(viewName, pushHistory = true) {
+    let target = viewName;
+    if (target === 'dashboard') target = 'analytics';
+
+    // Handle Previous Year Papers tab link
+    if (target === 'pyp') {
+      this.currentFilterTab = 'pyp';
+      this.switchAppView('tests', false);
+      this.renderFilterTabs();
+      this.loadAndRenderMockCards();
+      // Highlight PYPs in sidebar
+      document.querySelectorAll('#sm-nav-container .sm-nav-item, #ob-sidebar-nav .ob-nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.view === 'pyp');
+      });
+      return;
+    }
+
+    const validViews = ['tests', 'analytics', 'courses', 'mentorship', 'bookmarks', 'subscription', 'leaderboard'];
+    if (!validViews.includes(target)) {
+      target = 'tests';
+    }
+
+    const isSameView = (target === this.currentViewTab);
+    const hasActiveOverlay = this.hasAnyModalOrOverlayOpen();
+
+    this.currentViewTab = target;
+
+    // Toggle main views
+    const viewTests = document.getElementById('view-tests');
+    const viewAnalytics = document.getElementById('view-analytics');
+    const viewCourses = document.getElementById('view-courses');
+    const viewMentorship = document.getElementById('view-mentorship');
+    const viewBookmarks = document.getElementById('view-bookmarks');
+    const viewSubscription = document.getElementById('view-subscription');
+    const viewLeaderboard = document.getElementById('view-leaderboard');
+
+    if (viewTests) viewTests.classList.toggle('active', target === 'tests');
+    if (viewAnalytics) viewAnalytics.classList.toggle('active', target === 'analytics');
+    if (viewCourses) viewCourses.classList.toggle('active', target === 'courses');
+    if (viewMentorship) viewMentorship.classList.toggle('active', target === 'mentorship');
+    if (viewBookmarks) viewBookmarks.classList.toggle('active', target === 'bookmarks');
+    if (viewSubscription) viewSubscription.classList.toggle('active', target === 'subscription');
+    if (viewLeaderboard) viewLeaderboard.classList.toggle('active', target === 'leaderboard');
+
+    // Update Header Back Button
+    const hdrBackBtn = document.getElementById('hdr-global-back-btn');
+    if (hdrBackBtn) {
+      hdrBackBtn.style.display = (target !== 'tests') ? 'inline-flex' : 'none';
+    }
+
+    // Update Sidebar Navigation state
+    document.querySelectorAll('#sm-nav-container .sm-nav-item, #ob-sidebar-nav .ob-nav-item').forEach(item => {
+      const v = item.dataset.view;
+      const isActive = (v === target || (v === 'analytics' && target === 'analytics') || (v === 'dashboard' && target === 'analytics'));
+      item.classList.toggle('active', isActive);
+      const img = item.querySelector('img');
+      if (img && v === 'tests') {
+        img.src = isActive ? 'img/Tests_active.svg' : 'img/Tests.svg';
+      }
+    });
+
+    // Update Bottom Navigation items (for mobile)
+    document.querySelectorAll('#bottom-app-bar .app-nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.view === target || (item.dataset.view === 'dashboard' && target === 'analytics'));
+    });
+
+    // History routing
+    if (pushHistory && window.history) {
+      if (!isSameView || hasActiveOverlay) {
+        const hash = (target === 'tests') ? '' : '#' + target;
+        this.pushNavState({ view: target }, window.location.pathname + hash);
+      }
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (target === 'analytics') {
+      this.renderAnalytics();
+    } else if (target === 'leaderboard') {
+      this.renderLeaderboard();
+    } else if (target === 'courses') {
+      this.renderCourses();
+    } else if (target === 'mentorship') {
+      this.renderMentorship();
+    } else if (target === 'bookmarks') {
+      this.renderBookmarks();
+    } else if (target === 'subscription') {
+      this.renderSubscription();
+    }
+  }
+
+  // ==========================================
+  // DEDICATED APP VIEWS: COURSES, MENTORSHIP, BOOKMARKS, SUBSCRIPTION
+  // ==========================================
+
+  renderCourses() {
+    const container = document.getElementById('courses-view-container');
+    if (!container) return;
+
+    const exam = this.getCurrentExam();
+    const courses = [
+      {
+        id: 'course-selection-2026',
+        title: `${exam.name} - Complete Selection Batch 2026`,
+        tag: 'LIVE BATCH',
+        instructor: 'Deepak Sir & Faculty Team (Ex-SBI / Bank POs)',
+        duration: '180+ Hours Live',
+        lectures: '150 Live Lectures + 60 Mock Tests',
+        rating: '4.9 ★ (12.4k students)',
+        price: '₹ 2,499',
+        gradient: 'linear-gradient(135deg, #008479 0%, #064e3b 100%)'
+      },
+      {
+        id: 'course-quant-mastery',
+        title: 'Quantitative Aptitude & High-Level DI Special Course',
+        tag: 'SPECIAL CRASH COURSE',
+        instructor: 'Dr. Vivek Sharma (Quantitative Genius)',
+        duration: '65+ Hours',
+        lectures: '70 Video Classes + 25 Sectionals',
+        rating: '4.8 ★ (8.1k students)',
+        price: '₹ 1,199',
+        gradient: 'linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%)'
+      },
+      {
+        id: 'course-reasoning-puzzles',
+        title: 'Reasoning Ability: Advanced Puzzles & Seating Drills',
+        tag: 'RECORDED + LIVE SESSIONS',
+        instructor: 'Sheetal Ma\'am (Reasoning Specialist)',
+        duration: '50+ Hours',
+        lectures: '55 Sessions + 400 Puzzle Sets',
+        rating: '4.9 ★ (14.2k students)',
+        price: '₹ 999',
+        gradient: 'linear-gradient(135deg, #581c87 0%, #1e1b4b 100%)'
+      },
+      {
+        id: 'course-super-elite',
+        title: 'Banking Super Elite Complete All-Access Pass',
+        tag: 'ALL-IN-ONE',
+        instructor: 'Oliveboard Master Panel (All Subjects)',
+        duration: '500+ Hours',
+        lectures: 'Access to All 25+ Bank Courses & 1000+ Mocks',
+        rating: '5.0 ★ (45k+ students)',
+        price: '₹ 3,999',
+        gradient: 'linear-gradient(135deg, #0f172a 0%, #008479 100%)'
+      }
+    ];
+
+    container.innerHTML = `
+      <div class="courses-grid">
+        ${courses.map(c => `
+          <div class="course-card">
+            <div class="course-card-header" style="background: ${c.gradient};">
+              <span class="course-badge-live">${c.tag}</span>
+              <h4 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0 0 6px 0;">${c.title}</h4>
+              <div style="font-size: 12px; color: rgba(255,255,255,0.85);">${c.instructor}</div>
+            </div>
+            <div class="course-card-body">
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; font-size: 13px; color: #475569;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span>⏱️</span> <span><b>${c.duration}</b> interactive learning</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span>📚</span> <span><b>${c.lectures}</b></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span>⭐</span> <span style="color: #d97706; font-weight: 700;">${c.rating}</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 14px;">
+                <div>
+                  <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Course Fee</div>
+                  <div style="font-size: 18px; font-weight: 800; color: #0f172a;">${c.price}</div>
+                </div>
+                <button onclick="window.appController.enrollCourse('${c.id}', '${c.title}')" style="padding: 9px 18px; background: #008479; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.15s ease;">
+                  Start Learning 🚀
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  enrollCourse(courseId, courseTitle) {
+    this.showToast(`Enrolled in "${courseTitle}"! Access unlocked.`, 'success');
+  }
+
+  renderMentorship() {
+    const container = document.getElementById('mentorship-view-container');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="mentorship-banner">
+        <div style="max-width: 600px;">
+          <span style="background: rgba(0, 132, 121, 0.3); border: 1px solid #008479; color: #2dd4bf; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">Premium 1-on-1 Mentorship</span>
+          <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 10px 0 6px 0;">Accelerate Your Selection with an Assigned Bank Officer Mentor</h2>
+          <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0;">Get customized daily schedules, 1-on-1 mock interview preparation, weakness diagnosis, and personal doubt resolution every week.</p>
+        </div>
+        <div>
+          <button onclick="window.appController.bookMentorSession()" style="padding: 12px 22px; background: #008479; color: #ffffff; border: none; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,132,121,0.4);">
+            📅 Schedule 1-on-1 Call
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 24px; background: #ffffff; border-radius: 14px; border: 1.5px solid #008479; padding: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; border: 2px solid #008479;">
+            👩‍💼
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h4 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">S. Priyadarshini Rao</h4>
+              <span style="background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">Assigned Mentor</span>
+            </div>
+            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Ex-SBI PO (AIR 18) • 6+ Years Coaching Bank & Specialist Aspirants</div>
+            <div style="font-size: 12px; color: #008479; font-weight: 600; margin-top: 4px;">Next Session: Tomorrow at 7:00 PM IST (Strategy & Weakness Review)</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button onclick="window.appController.showToast('Connecting to Google Meet Video Room...', 'info')" style="padding: 9px 16px; background: #008479; color: #ffffff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+            🎥 Join Video Room
+          </button>
+          <button onclick="window.appController.showToast('Customized 30-Day Study Plan PDF downloaded', 'success')" style="padding: 9px 16px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #1e293b; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+            📄 Study Timetable
+          </button>
+        </div>
+      </div>
+
+      <h4 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 14px;">Available Top Mentors & Subject Specialists</h4>
+      <div class="mentors-grid">
+        <div class="mentor-card">
+          <div class="mentor-avatar">👨‍💼</div>
+          <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Vikram Malhotra</h4>
+          <span style="font-size: 12px; color: #008479; font-weight: 600; margin-bottom: 8px;">Ex-IBPS SO IT Officer Scale-II</span>
+          <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">Specialist in Professional Knowledge (DBMS, Networking, OS) & Mains descriptive guidance.</p>
+          <button onclick="window.appController.bookMentorSession('Vikram Malhotra')" style="width: 100%; padding: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">Request 1-on-1 Slot</button>
+        </div>
+
+        <div class="mentor-card">
+          <div class="mentor-avatar">👩‍🏫</div>
+          <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Ananya Deshmukh</h4>
+          <span style="font-size: 12px; color: #008479; font-weight: 600; margin-bottom: 8px;">RBI Grade B Officer (Rank 9)</span>
+          <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">Specialist in High-Speed Quant DI & Elimination shortcuts under intense exam timer pressure.</p>
+          <button onclick="window.appController.bookMentorSession('Ananya Deshmukh')" style="width: 100%; padding: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">Request 1-on-1 Slot</button>
+        </div>
+
+        <div class="mentor-card">
+          <div class="mentor-avatar">👨‍🏫</div>
+          <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Rajeev Nambiar</h4>
+          <span style="font-size: 12px; color: #008479; font-weight: 600; margin-bottom: 8px;">Chief Mock Interview Evaluator</span>
+          <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">Specialist in Personality, Banking Awareness, and official IBPS / SBI interview preparation.</p>
+          <button onclick="window.appController.bookMentorSession('Rajeev Nambiar')" style="width: 100%; padding: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">Request 1-on-1 Slot</button>
+        </div>
+      </div>
+    `;
+  }
+
+  bookMentorSession(mentorName = 'Assigned Mentor') {
+    this.showToast(`Session slot requested with ${mentorName}. Check your email for invite!`, 'success');
+  }
+
+  renderBookmarks() {
+    const container = document.getElementById('bookmarks-view-container');
+    if (!container) return;
+
+    const sampleBookmarks = [
+      {
+        id: 1003,
+        testId: 'sbi-po-pre-01',
+        section: 'English Language',
+        title: 'Parajumble Rearrangement Sequence',
+        questionSnippet: 'Rearrange sentences C, E, A, F, B, D to form a coherent paragraph on the Great Pacific Garbage Patch...',
+        answerKey: 'Option B (C is opening sentence)',
+        difficulty: 'Moderate'
+      },
+      {
+        id: 1025,
+        testId: 'ibps-so-it-mains-1',
+        section: 'Professional Knowledge',
+        title: 'B+ Tree Indexing & Page Splitting Order',
+        questionSnippet: 'In a B+ tree of order 4, what is the maximum number of pointers that can be stored in an internal node before splitting occurs?',
+        answerKey: 'Order = 4, max pointers = 4, max keys = 3',
+        difficulty: 'Hard'
+      },
+      {
+        id: 1032,
+        testId: 'sbi-po-sec-quant',
+        section: 'Quantitative Aptitude',
+        title: 'Missing Number Series with Alternating Cubes & Primes',
+        questionSnippet: 'Find the missing number in the series: 7, 16, 41, 90, 171, ?',
+        answerKey: 'Pattern: +9 (+3²), +25 (+5²), +49 (+7²), +81 (+9²), +121 (+11²) => 292',
+        difficulty: 'Tricky'
+      }
+    ];
+
+    container.innerHTML = `
+      <div class="bookmarks-container">
+        ${sampleBookmarks.map(b => `
+          <div class="bookmark-card">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">${b.section}</span>
+                <span style="background: #fef3c7; color: #b45309; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">${b.difficulty}</span>
+                <span style="font-size: 12px; color: #64748b;">Source: ${b.testId}</span>
+              </div>
+              <span style="color: #d97706; font-size: 16px;">★ Saved</span>
+            </div>
+            <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 4px 0;">${b.title}</h4>
+            <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.4;">${b.questionSnippet}</p>
+            <div style="background: #f8fafc; border-left: 3px solid #008479; padding: 8px 12px; font-size: 12px; color: #1e293b; border-radius: 0 4px 4px 0;">
+              <b>Key Takeaway:</b> ${b.answerKey}
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
+              <button onclick="window.appController.startMockTest('${b.testId}')" style="padding: 6px 14px; background: #008479; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                Practice Test
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderSubscription() {
+    const container = document.getElementById('subscription-view-container');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div style="background: linear-gradient(135deg, #008479 0%, #064e3b 100%); color: #ffffff; border-radius: 16px; padding: 24px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <span style="background: rgba(255,255,255,0.2); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">Active Membership</span>
+          <h2 style="font-size: 24px; font-weight: 800; margin: 8px 0 4px 0;">Banking Super Elite (12 Months)</h2>
+          <p style="font-size: 13px; color: rgba(255,255,255,0.9); margin: 0;">Unlimited access to All 25+ Bank & Insurance Mock Tests, Live Video Classes, Sectional Speed Drills, and OliveScore AI Analytics.</p>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 12px; color: rgba(255,255,255,0.8);">Validity Expires</div>
+          <div style="font-size: 18px; font-weight: 800;">Oct 24, 2027</div>
+          <span style="display: inline-block; margin-top: 4px; background: #22c55e; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">ACTIVE</span>
+        </div>
+      </div>
+
+      <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 16px;">Available Subscription Plans & Upgrades</h3>
+      <div class="subscription-plans-grid">
+        <div class="sub-plan-card">
+          <div>
+            <h4 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0;">Banking Elite (Test Series Only)</h4>
+            <div style="font-size: 24px; font-weight: 800; color: #008479; margin-bottom: 12px;">₹ 1,999 <span style="font-size: 13px; color: #64748b; font-weight: 500;">/ 12 Months</span></div>
+            <ul style="padding-left: 18px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+              <li>All Prelims & Mains Full Tests for 20+ Bank Exams</li>
+              <li>Sectional Tests & Topic Drills</li>
+              <li>Previous Year Papers with Official Answers</li>
+              <li>OliveScore AIR & Percentile Analytics</li>
+            </ul>
+          </div>
+          <button onclick="window.appController.showToast('You already have higher Super Elite plan active!', 'info')" style="padding: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 13px; color: #475569; cursor: pointer;">
+            Included in Current Plan
+          </button>
+        </div>
+
+        <div class="sub-plan-card featured">
+          <div class="sub-badge-popular">MOST POPULAR • CURRENT ACTIVE</div>
+          <div>
+            <h4 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0;">Banking Super Elite (Courses + Mocks)</h4>
+            <div style="font-size: 24px; font-weight: 800; color: #008479; margin-bottom: 12px;">₹ 3,999 <span style="font-size: 13px; color: #64748b; font-weight: 500;">/ 12 Months</span></div>
+            <ul style="padding-left: 18px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+              <li><b>Everything in Banking Elite</b></li>
+              <li>All Live Video Classes & Foundation Batches</li>
+              <li>High-Level DI & Puzzle Special Sessions</li>
+              <li>1-on-1 Mentor Guidance & Doubt Rooms</li>
+              <li>Complete PDF Notes & Descriptive Tests</li>
+            </ul>
+          </div>
+          <button style="padding: 10px; background: #008479; color: #ffffff; border: none; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: default;">
+            ✓ Active Plan
+          </button>
+        </div>
+
+        <div class="sub-plan-card">
+          <div>
+            <h4 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0;">Regulatory Super Elite</h4>
+            <div style="font-size: 24px; font-weight: 800; color: #008479; margin-bottom: 12px;">₹ 5,499 <span style="font-size: 13px; color: #64748b; font-weight: 500;">/ 12 Months</span></div>
+            <ul style="padding-left: 18px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+              <li>RBI Grade B Phase 1 & 2 Full Tests</li>
+              <li>SEBI Grade A & NABARD Grade A Batches</li>
+              <li>ESI & FM Comprehensive Video Classes</li>
+              <li>Descriptive English Evaluation with Faculty</li>
+            </ul>
+          </div>
+          <button onclick="window.appController.showToast('Regulatory Pack add-on activated for testing!', 'success')" style="padding: 10px; background: #0f172a; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;">
+            Add Regulatory Pack 🚀
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   // ==========================================
   // EVENT BINDINGS
   // ==========================================
@@ -513,12 +1311,43 @@ class OliveboardAppController {
       btnSelector.addEventListener('click', () => {
         this.renderExamSwitcherList();
         examModal.classList.add('active');
+        this.pushNavState({ modal: 'exam-switcher', view: this.currentViewTab }, '#exam-switcher');
       });
     }
 
     if (btnCloseExamModal && examModal) {
       btnCloseExamModal.addEventListener('click', () => {
-        examModal.classList.remove('active');
+        this.goBack();
+      });
+    }
+
+    // Category button
+    const btnCategory = document.getElementById('btn-category-selector');
+    if (btnCategory && examModal) {
+      btnCategory.addEventListener('click', () => {
+        this.renderExamSwitcherList();
+        examModal.classList.add('active');
+        this.pushNavState({ modal: 'exam-switcher', view: this.currentViewTab }, '#exam-switcher');
+      });
+    }
+
+    // Modal background clicks
+    if (examModal) {
+      examModal.addEventListener('click', (e) => {
+        if (e.target === examModal) this.goBack();
+      });
+    }
+
+    // App search box
+    const searchInput = document.getElementById('app-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        const cards = document.querySelectorAll('#mock-cards-container .mock-test-card');
+        cards.forEach(c => {
+          const text = c.innerText.toLowerCase();
+          c.style.display = text.includes(query) ? '' : 'none';
+        });
       });
     }
 
@@ -536,7 +1365,13 @@ class OliveboardAppController {
 
     if (btnCloseUserModal && userModal) {
       btnCloseUserModal.addEventListener('click', () => {
-        userModal.classList.remove('active');
+        this.goBack();
+      });
+    }
+
+    if (userModal) {
+      userModal.addEventListener('click', (e) => {
+        if (e.target === userModal) this.goBack();
       });
     }
 
@@ -550,8 +1385,16 @@ class OliveboardAppController {
       });
     }
 
-    // Bottom Navigation switching
-    document.querySelectorAll('.app-nav-item').forEach(btn => {
+    // Sidebar navigation clicks
+    document.querySelectorAll('#sm-nav-container .sm-nav-item, #ob-sidebar-nav .ob-nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        this.switchAppView(view);
+      });
+    });
+
+    // Bottom Navigation switching (mobile)
+    document.querySelectorAll('#bottom-app-bar .app-nav-item').forEach(btn => {
       btn.addEventListener('click', () => {
         const view = btn.dataset.view;
         this.switchAppView(view);
@@ -561,8 +1404,14 @@ class OliveboardAppController {
     // ESC key closes modals
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        if (examModal) examModal.classList.remove('active');
-        if (userModal) userModal.classList.remove('active');
+        const obLiveModal = document.getElementById('ob-live-browser-modal');
+        const scorecardModal = document.getElementById('scorecard-modal-overlay');
+        if ((examModal && examModal.classList.contains('active')) ||
+            (userModal && userModal.classList.contains('active')) ||
+            (scorecardModal && scorecardModal.classList.contains('active')) ||
+            (obLiveModal && obLiveModal.style.display === 'flex')) {
+          this.goBack();
+        }
       }
     });
 
@@ -584,12 +1433,63 @@ class OliveboardAppController {
     const btnNavGo = document.getElementById('btn-ob-nav-go');
     const btnNavBack = document.getElementById('btn-ob-nav-back');
     const btnNavReload = document.getElementById('btn-ob-nav-reload');
-    const textInput = document.getElementById('ob-live-text-input');
+    const textInput = document.getElementById('ob-live-type-input') || document.getElementById('ob-live-text-input');
     const btnSendText = document.getElementById('btn-ob-send-text');
     const btnPressEnter = document.getElementById('btn-ob-press-enter');
     const btnPressBackspace = document.getElementById('btn-ob-press-backspace');
     const btnPressTab = document.getElementById('btn-ob-press-tab');
+    const btnBringFront = document.getElementById('btn-ob-bring-front');
     const btnScrapeNow = document.getElementById('btn-ob-scrape-now');
+
+    // Login Assistant Form Controls
+    const credEmail = document.getElementById('ob-cred-email');
+    const credPass = document.getElementById('ob-cred-pass');
+    const btnFillLogin = document.getElementById('btn-ob-fill-login');
+    const btnSwitchLogin = document.getElementById('btn-ob-switch-login-tab');
+    const btnSwitchSignup = document.getElementById('btn-ob-switch-signup-tab');
+
+    if (btnFillLogin) {
+      const executeFill = async () => {
+        const email = credEmail ? credEmail.value.trim() : '';
+        const password = credPass ? credPass.value : '';
+        if (!email && !password) return;
+        await this.sendObBrowserInput({
+          action: 'fillLogin',
+          email,
+          password,
+          submit: true
+        });
+      };
+      btnFillLogin.addEventListener('click', executeFill);
+      if (credPass) {
+        credPass.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            executeFill();
+          }
+        });
+      }
+      if (credEmail) {
+        credEmail.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            executeFill();
+          }
+        });
+      }
+    }
+
+    if (btnSwitchLogin) {
+      btnSwitchLogin.addEventListener('click', () => {
+        this.sendObBrowserInput({ action: 'switchLoginTab', tab: 'login' });
+      });
+    }
+
+    if (btnSwitchSignup) {
+      btnSwitchSignup.addEventListener('click', () => {
+        this.sendObBrowserInput({ action: 'switchLoginTab', tab: 'signup' });
+      });
+    }
 
     if (btnOpen && modal) {
       btnOpen.addEventListener('click', () => this.openOliveboardLiveBrowser());
@@ -597,6 +1497,12 @@ class OliveboardAppController {
 
     if (btnClose && modal) {
       btnClose.addEventListener('click', () => this.closeOliveboardLiveBrowser());
+    }
+
+    if (btnBringFront) {
+      btnBringFront.addEventListener('click', async () => {
+        await this.sendObBrowserInput({ action: 'bringToFront' });
+      });
     }
 
     if (btnNavGo && urlInput) {
@@ -650,8 +1556,12 @@ class OliveboardAppController {
     if (screenImg) {
       const getScaledCoords = (e) => {
         const rect = screenImg.getBoundingClientRect();
-        const scaleX = 1280 / Math.max(1, rect.width);
-        const scaleY = 760 / Math.max(1, rect.height);
+        // Exact CSS pixel viewport dimensions of the Chromium page (correcting for devicePixelRatio)
+        const dpr = this._lastDpr || 1.25;
+        const cssW = (this._lastViewport && this._lastViewport.width) || Math.round((screenImg.naturalWidth || 1677) / dpr) || 1342;
+        const cssH = (this._lastViewport && this._lastViewport.height) || Math.round((screenImg.naturalHeight || 844) / dpr) || 675;
+        const scaleX = cssW / Math.max(1, rect.width);
+        const scaleY = cssH / Math.max(1, rect.height);
         return {
           x: Math.round((e.clientX - rect.left) * scaleX),
           y: Math.round((e.clientY - rect.top) * scaleY),
@@ -663,11 +1573,16 @@ class OliveboardAppController {
       screenImg.addEventListener('click', (e) => {
         const coords = getScaledCoords(e);
         const dot = document.getElementById('ob-live-click-dot');
-        if (dot) {
-          dot.style.left = `${e.clientX - viewportWrapper.getBoundingClientRect().left}px`;
-          dot.style.top = `${e.clientY - viewportWrapper.getBoundingClientRect().top}px`;
+        if (dot && viewportWrapper) {
+          const wrapperRect = viewportWrapper.getBoundingClientRect();
+          dot.style.left = `${e.clientX - wrapperRect.left}px`;
+          dot.style.top = `${e.clientY - wrapperRect.top}px`;
           dot.style.display = 'block';
-          setTimeout(() => { dot.style.display = 'none'; }, 350);
+          dot.style.opacity = '1';
+          setTimeout(() => {
+            dot.style.opacity = '0';
+            setTimeout(() => { dot.style.display = 'none'; }, 200);
+          }, 300);
         }
         if (viewportWrapper) viewportWrapper.focus();
         this.sendObBrowserInput({ type: 'click', x: coords.x, y: coords.y });
@@ -686,10 +1601,18 @@ class OliveboardAppController {
 
     if (viewportWrapper) {
       viewportWrapper.addEventListener('keydown', (e) => {
-        // Don't hijack typing if user is focused on the URL bar or text box
+        // Don't hijack typing if user is focused on the URL bar or text input box
         if (document.activeElement === urlInput || document.activeElement === textInput) return;
+        // Don't prevent Ctrl+C or DevTools shortcuts
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'v' || e.key === 'V' || e.key === 'i' || e.key === 'I')) return;
         e.preventDefault();
-        this.sendObBrowserInput({ type: 'keydown', key: e.key });
+        this.sendObBrowserInput({
+          type: 'keydown',
+          key: e.key,
+          ctrlKey: e.ctrlKey,
+          altKey: e.altKey,
+          metaKey: e.metaKey
+        });
       });
     }
 
@@ -698,12 +1621,15 @@ class OliveboardAppController {
     }
   }
 
-  async openOliveboardLiveBrowser() {
+  async openOliveboardLiveBrowser(pushHistory = true) {
     const modal = document.getElementById('ob-live-browser-modal');
     const statusBanner = document.getElementById('ob-live-status-banner');
     if (!modal) return;
     modal.style.display = 'flex';
     this._obBrowserActive = true;
+    if (pushHistory) {
+      this.pushNavState({ modal: 'live-browser', view: this.currentViewTab }, '#live-browser');
+    }
 
     if (statusBanner) {
       statusBanner.textContent = 'Launching persistent Oliveboard Chromium session...';
@@ -726,11 +1652,15 @@ class OliveboardAppController {
     this._pollObBrowserFrame();
   }
 
-  closeOliveboardLiveBrowser() {
+  closeOliveboardLiveBrowser(popHistory = true) {
     const modal = document.getElementById('ob-live-browser-modal');
     if (modal) modal.style.display = 'none';
     this._obBrowserActive = false;
     if (this._obFrameTimer) clearTimeout(this._obFrameTimer);
+
+    if (popHistory) {
+      this.goBack();
+    }
   }
 
   async _pollObBrowserFrame() {
@@ -740,6 +1670,10 @@ class OliveboardAppController {
       const data = await res.json();
       const imgSrc = data.imageBase64 || (data.image ? `data:image/jpeg;base64,${data.image}` : '');
       if (data.success && imgSrc) {
+        if (data.viewport) {
+          this._lastViewport = data.viewport;
+          this._lastDpr = data.viewport.dpr || 1.25;
+        }
         const screenImg = document.getElementById('ob-live-screen-img');
         if (screenImg) {
           screenImg.src = imgSrc;
@@ -796,9 +1730,9 @@ class OliveboardAppController {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(normalizedPayload)
       });
-      // Trigger immediate frame refresh
+      // Trigger immediate frame refresh after brief render tick
       if (this._obFrameTimer) clearTimeout(this._obFrameTimer);
-      this._pollObBrowserFrame();
+      setTimeout(() => this._pollObBrowserFrame(), 40);
     } catch (e) {
       console.error('OB browser input error:', e);
     }
@@ -806,11 +1740,18 @@ class OliveboardAppController {
 
   async scrapeOliveboardLivePage() {
     const statusBanner = document.getElementById('ob-live-status-banner');
+    const statusFooter = document.getElementById('ob-live-status-msg');
+    const scrapeSummary = document.getElementById('ob-live-scrape-summary');
     const btnScrape = document.getElementById('btn-ob-scrape-now');
-    if (statusBanner) {
-      statusBanner.textContent = '⏳ Reverse-engineering current Oliveboard page (extracting DOM, CSS, Base64 questions & solutions)...';
+
+    const loadingText = '📸 Capturing visual snapshot of active window & deep inspecting all DOM, modals, tables, and questions with REA MCP...';
+    if (statusBanner) statusBanner.textContent = loadingText;
+    if (statusFooter) statusFooter.textContent = loadingText;
+    if (scrapeSummary) scrapeSummary.textContent = '⏳ Processing CDP snapshot & REA extraction...';
+    if (btnScrape) {
+      btnScrape.disabled = true;
+      btnScrape.textContent = '⏳ Capturing Snapshot...';
     }
-    if (btnScrape) btnScrape.disabled = true;
 
     try {
       const res = await fetch('/api/ob-browser/scrape', {
@@ -822,10 +1763,58 @@ class OliveboardAppController {
         const r = data.result || data;
         const qCount = r.decryptedQuestionsCount ?? data.questionsExtracted ?? 0;
         const sCount = r.extractedSolutionsCount ?? data.solutionsExtracted ?? 0;
-        const saved = r.specFile || data.savedFile || 'scraped/';
-        const msg = `✅ Reverse-Engineered "${r.title || 'Oliveboard Page'}" (${qCount} questions, ${sCount} solutions, ${r.uiElementsMatched || 0} UI rules)! Saved to ${saved}${r.ingestedTestId ? ' & auto-imported into Mock Dashboard!' : ''}`;
+        const mCount = r.modalsDetectedCount ?? 0;
+        const tCount = r.tablesDetectedCount ?? 0;
+        const saved = r.specFile || data.savedFile || 'scraped/snapshots/';
+        const reaEv = r.reaEvidenceId ? ` [REA Evidence: ${r.reaEvidenceId.slice(0, 16)}...]` : '';
+        const stageLabel = r.stage ? (r.stage.label || r.stage) : 'Active Screen';
+
+        // Update Snapshot Inspection Bar
+        const snapshotBar = document.getElementById('ob-live-snapshot-bar');
+        const snapshotThumb = document.getElementById('ob-snapshot-thumb');
+        const snapshotLink = document.getElementById('ob-snapshot-link');
+        const btnViewSnapshotFull = document.getElementById('btn-view-snapshot-full');
+        const btnViewReportJson = document.getElementById('btn-view-report-json');
+        const snapshotInfo = document.getElementById('ob-snapshot-info');
+        const snapshotBadges = document.getElementById('ob-snapshot-badges');
+
+        if (snapshotBar) {
+          snapshotBar.style.display = 'flex';
+        }
+        if (snapshotThumb && (r.screenshotThumbnail || r.screenshotUrl)) {
+          snapshotThumb.src = r.screenshotThumbnail || r.screenshotUrl;
+        }
+        if (snapshotLink && r.screenshotUrl) {
+          snapshotLink.href = r.screenshotUrl;
+        }
+        if (btnViewSnapshotFull && r.screenshotUrl) {
+          btnViewSnapshotFull.href = r.screenshotUrl;
+        }
+        if (btnViewReportJson && r.specFile) {
+          btnViewReportJson.href = '/' + r.specFile;
+        }
+        if (snapshotInfo) {
+          snapshotInfo.innerHTML = `<strong>${stageLabel}</strong> • Snapshot: <a href="${r.screenshotUrl}" target="_blank" style="color: #38bdf8; text-decoration: underline;">${r.screenshotUrl ? r.screenshotUrl.split('/').pop() : 'screenshot.png'}</a>`;
+        }
+        if (snapshotBadges) {
+          const tabsCount = (r.otherTabs ? r.otherTabs.length : 0);
+          snapshotBadges.innerHTML = `
+            <span style="background: #0284c7; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 10px;">📸 Snapshot Saved</span>
+            ${tabsCount > 0 ? `<span style="background: #7c3aed; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 10px;">🗂️ +${tabsCount} Tabs Captured</span>` : ''}
+            <span style="background: #1e293b; color: #38bdf8; border: 1px solid #0284c7; padding: 2px 7px; border-radius: 4px; font-size: 10px;">📑 ${mCount} Modals/Dialogs</span>
+            <span style="background: #1e293b; color: #4ade80; border: 1px solid #16a34a; padding: 2px 7px; border-radius: 4px; font-size: 10px;">📊 ${tCount} Tables</span>
+            <span style="background: #1e293b; color: #fde047; border: 1px solid #ca8a04; padding: 2px 7px; border-radius: 4px; font-size: 10px;">❓ ${qCount} Questions</span>
+            <span style="background: #1e293b; color: #a78bfa; border: 1px solid #7c3aed; padding: 2px 7px; border-radius: 4px; font-size: 10px;">📝 ${sCount} Solutions</span>
+            ${r.reaEvidenceId ? `<span style="background: #059669; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 10px;" title="${r.reaEvidenceId}">🛡️ REA Verified</span>` : ''}
+          `;
+        }
+
+        const msg = `✅ Snapshot & Scrape Complete: "${r.title || 'Oliveboard'}" (${qCount} Qs, ${sCount} Solns, ${mCount} Modals, ${tCount} Tables)!${reaEv}`;
         if (statusBanner) statusBanner.textContent = msg;
+        if (statusFooter) statusFooter.textContent = msg;
+        if (scrapeSummary) scrapeSummary.textContent = `Snapshot saved to ${r.screenshotUrl || 'scraped/snapshots/'}`;
         this.showToast(msg, 'success');
+
         if (r.ingestedTestId) {
           await this.loadAndRenderMockCards();
         }
@@ -833,10 +1822,14 @@ class OliveboardAppController {
         throw new Error(data.error || 'Scrape failed');
       }
     } catch (e) {
-      if (statusBanner) statusBanner.textContent = '❌ Scrape error: ' + e.message;
-      this.showToast('Scrape error: ' + e.message, 'error');
+      if (statusBanner) statusBanner.textContent = '❌ REA Scrape error: ' + e.message;
+      if (statusFooter) statusFooter.textContent = '❌ REA Scrape error: ' + e.message;
+      this.showToast('REA Scrape error: ' + e.message, 'error');
     } finally {
-      if (btnScrape) btnScrape.disabled = false;
+      if (btnScrape) {
+        btnScrape.disabled = false;
+        btnScrape.textContent = '📸 Capture Window Snapshot & Rigorous Scrape (REA MCP)';
+      }
     }
   }
 
@@ -868,29 +1861,11 @@ class OliveboardAppController {
     await this.loadAndRenderMockCards();
   }
 
-  switchAppView(viewId) {
-    this.currentViewTab = viewId;
-
-    document.querySelectorAll('.app-nav-item').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.view === viewId);
-    });
-
-    document.querySelectorAll('.app-view-tab').forEach(tab => {
-      tab.classList.toggle('active', tab.id === `view-${viewId}`);
-    });
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    if (viewId === 'analytics') {
-      this.renderAnalytics();
-    }
-  }
-
   // ==========================================
   // TEST ENGINE LAUNCH & SCORECARD REVIEW
   // ==========================================
 
-  async startMockTest(testId, forceFresh = false) {
+  async startMockTest(testId, forceFresh = false, pushHistory = true) {
     if (forceFresh && window.obDataManager) {
       await window.obDataManager.clearPausedAttempt(testId);
     }
@@ -905,18 +1880,26 @@ class OliveboardAppController {
       }
     }
 
+    if (pushHistory) {
+      this.pushNavState({ view: 'test-engine', testId }, '#test/' + testId);
+    }
+
     if (window.initTestEngine) {
       this.testEngine = window.initTestEngine(testData);
       this.testEngine.startTest(null);
     }
   }
 
-  async resumeMockTest(testId) {
+  async resumeMockTest(testId, pushHistory = true) {
     let testData = await window.obDataManager.getTestById(testId);
     if (!testData && window.OB_TEST_APP.mockQuestions && window.OB_TEST_APP.mockQuestions[testId]) {
       testData = window.OB_TEST_APP.mockQuestions[testId];
     }
     if (!testData) return;
+
+    if (pushHistory) {
+      this.pushNavState({ view: 'test-engine', testId }, '#test/' + testId);
+    }
 
     const pausedState = window.obDataManager ? await window.obDataManager.getPausedAttempt(testId) : null;
     if (window.initTestEngine) {
@@ -925,13 +1908,17 @@ class OliveboardAppController {
     }
   }
 
-  async viewSolutions(attemptId, testId) {
+  async viewSolutions(attemptId, testId, pushHistory = true) {
     try {
       const res = await fetch(`/api/attempts/${encodeURIComponent(attemptId)}`);
       const data = await res.json();
       if (!data.success) throw new Error('Attempt not found');
 
       const testData = await window.obDataManager.getTestById(testId);
+
+      if (pushHistory) {
+        this.pushNavState({ view: 'solutions', testId, attemptId }, '#solutions/' + testId);
+      }
 
       if (window.openOliveboardSolutions) {
         window.openOliveboardSolutions(data.attempt, testData);
@@ -942,13 +1929,17 @@ class OliveboardAppController {
     }
   }
 
-  async viewAttemptScorecard(attemptId, testId) {
+  async viewAttemptScorecard(attemptId, testId, pushHistory = true) {
     try {
       const res = await fetch(`/api/attempts/${encodeURIComponent(attemptId)}`);
       const data = await res.json();
       if (!data.success) throw new Error('Attempt not found');
 
       const testData = await window.obDataManager.getTestById(testId);
+
+      if (pushHistory) {
+        this.pushNavState({ modal: 'scorecard', testId, attemptId, view: this.currentViewTab }, '#scorecard/' + attemptId);
+      }
 
       if (!this.testEngine) {
         this.testEngine = window.initTestEngine(testData);

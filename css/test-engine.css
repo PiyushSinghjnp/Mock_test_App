@@ -736,6 +736,9 @@ html * {
   box-sizing: border-box;
   font-size: 12px;
   font-family: verdana, helvetica, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Status Legend (#legend) */
@@ -743,7 +746,8 @@ html * {
   width: 100%;
   font-size: 11px;
   font-family: verdana, helvetica, sans-serif;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 #legend b {
@@ -807,13 +811,16 @@ html * {
 /* Question Palette 4-Column Grid (#question-main-pallette) */
 #question-main-pallette {
   width: 100%;
-  height: calc(100% - 195px);
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
   background-color: #E4EDF7;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 4px;
   box-sizing: border-box;
   border: 1px solid #c0d4e8;
+  margin-bottom: 6px;
 }
 
 #question-main-pallette table {
@@ -858,11 +865,12 @@ html * {
 
 /* Bottom Navigation Buttons 2x2 Grid (#button-bottom) */
 #button-bottom {
-  position: absolute;
-  height: 70px;
-  width: calc(100% - 20px);
-  bottom: 8px;
-  left: 10px;
+  position: relative;
+  height: 64px;
+  width: 100%;
+  bottom: auto;
+  left: auto;
+  flex-shrink: 0;
 }
 
 #button-bottom table {
@@ -885,14 +893,19 @@ html * {
   border: 1px solid #A9D0F5;
   text-decoration: none;
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
   font-family: verdana, helvetica, sans-serif;
   vertical-align: middle;
   border-radius: 2px;
   cursor: pointer;
   color: #000;
   font-weight: normal;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 0 4px;
+  box-sizing: border-box;
   transition: background-color 0.15s ease;
 }
 
@@ -2626,13 +2639,17 @@ html * {
   box-sizing: border-box;
   font-size: 12px;
   font-family: verdana, helvetica, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 #soln-legend {
   width: 100%;
   font-size: 11px;
   font-family: verdana, helvetica, sans-serif;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 #soln-legend b {
@@ -2655,17 +2672,21 @@ html * {
   margin-bottom: 4px;
   font-size: 11px;
   font-family: verdana, helvetica, sans-serif;
+  flex-shrink: 0;
 }
 
 #soln-question-main-pallette {
   width: 100%;
-  height: calc(100% - 195px);
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
   background-color: #E4EDF7;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 4px;
   box-sizing: border-box;
   border: 1px solid #c0d4e8;
+  margin-bottom: 6px;
 }
 
 #soln-question-main-pallette table {
@@ -2680,11 +2701,12 @@ html * {
 }
 
 #soln-button-bottom {
-  position: absolute;
-  height: 70px;
-  width: calc(100% - 20px);
-  bottom: 8px;
-  left: 10px;
+  position: relative;
+  height: 64px;
+  width: 100%;
+  bottom: auto;
+  left: auto;
+  flex-shrink: 0;
 }
 
 #soln-button-bottom table {
@@ -2707,14 +2729,19 @@ html * {
   border: 1px solid #A9D0F5;
   text-decoration: none;
   text-align: center;
-  font-size: 13px;
+  font-size: 12px;
   font-family: verdana, helvetica, sans-serif;
   vertical-align: middle;
   border-radius: 2px;
   cursor: pointer;
   color: #000;
   font-weight: normal;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 0 4px;
+  box-sizing: border-box;
   transition: background-color 0.15s ease;
 }
 

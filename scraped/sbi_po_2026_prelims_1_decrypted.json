@@ -38,7 +38,10 @@
           "html": "Only B-F<br>",
           "text": "Only B-F"
         }
-      ]
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Both B-F and C-D</b></p><p><b>Explanation:</b><br>• <b>B-F:</b> \"The elevated inflation levels robbed people <i>of their purchasing power and worsened India's trade deficit</i>\" is grammatically and contextually sound ('robbed someone of something').<br>• <b>C-D:</b> \"While it is not unusual for egg prices to increase in the winter, <i>this year the price rise was a tad bit on the higher side</i>\" forms a coherent contrast.<br>• <b>A-E</b> is grammatically incorrect because 'enables you to take off you to customise' repeats the object pronoun.</p>"
     },
     {
       "qid": 1002,
@@ -73,7 +76,10 @@
           "html": "Both B-F &amp; C-E<br>",
           "text": "Both B-F & C-E"
         }
-      ]
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) All A-F, B-E & C-D</b></p><p><b>Explanation:</b><br>• <b>A-F:</b> \"The train departed earlier than expected and so <i>passengers were running across the platform to catch the train.</i>\"<br>• <b>B-E:</b> \"The snake is bred in captivity and that is why <i>it is used to its own company and dislikes other snakes.</i>\"<br>• <b>C-D:</b> \"The sun is shining a bit extra bright today as it is the <i>peak of summer and the sunlight is blinding at these times.</i>\"<br>All three pairs form contextually and grammatically meaningful sentences.</p>"
     },
     {
       "qid": 1003,
@@ -108,7 +114,10 @@
           "html": "D<br>",
           "text": "D"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) C</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>• <b>C</b> is the opening sentence as it introduces the central subject: <i>\"The Great Pacific Garbage Patch is a vast accumulation of marine debris...\"</i><br>• <b>E</b> follows C by clarifying the \"floating island of trash\" metaphor: <i>\"It is not a solid mass but is primarily composed of microplastics...\"</i><br>• <b>A</b> explains how \"This patch was formed by the North Pacific Subtropical Gyre...\"<br>• <b>F</b> elaborates on \"The gyre's slow, circular motion traps the debris... allowing it to concentrate...\"<br>• <b>B</b> links \"The concentration of plastic poses a significant threat to marine life...\"<br>• <b>D</b> concludes with the challenge of addressing this environmental issue.</p>"
     },
     {
       "qid": 1004,
@@ -143,7 +152,10 @@
           "html": "C<br>",
           "text": "C"
         }
-      ]
+      ],
+      "correctAnswer": "D",
+      "correctIndex": 3,
+      "explanationHTML": "<p><b>Correct Answer: d) A</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>Sentence <b>A</b> (<i>\"This patch was formed by the North Pacific Subtropical Gyre...\"</i>) is the <b>THIRD</b> sentence after C and E.</p>"
     },
     {
       "qid": 1005,
@@ -178,7 +190,10 @@
           "html": "A<br>",
           "text": "A"
         }
-      ]
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) D</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>Sentence <b>D</b> (<i>\"Addressing this environmental issue is incredibly challenging...\"</i>) is the <b>SIXTH (last)</b> sentence concluding the paragraph.</p>"
     },
     {
       "qid": 1006,
@@ -213,7 +228,10 @@
           "html": "D<br>",
           "text": "D"
         }
-      ]
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) F</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>Sentence <b>F</b> (<i>\"The gyre's slow, circular motion traps the debris...\"</i>) directly follows A (which introduces the Gyre) and is the <b>FOURTH</b> sentence.</p>"
     },
     {
       "qid": 1007,
@@ -248,7 +266,10 @@
           "html": "E<br>",
           "text": "E"
         }
-      ]
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) E</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>Sentence <b>E</b> (<i>\"It is not a solid mass but is primarily composed of microplastics...\"</i>) immediately clarifies the \"floating island\" mentioned in C, making it the <b>SECOND</b> sentence.</p>"
     },
     {
       "qid": 1008,
@@ -283,7 +304,10 @@
           "html": "No rearrangement required<br>",
           "text": "No rearrangement required"
         }
-      ]
+      ],
+      "correctAnswer": "D",
+      "correctIndex": 3,
+      "explanationHTML": "<p><b>Correct Answer: d) CABD</b></p><p><b>Explanation:</b><br>• Position 1 requires an adjective modifying \"girls\" → <b>adolescent (C)</b>.<br>• Position 2 requires an adjective after \"most\" → <b>likely (A)</b> (\"most likely to report\").<br>• Position 3 requires a noun after \"comparing their\" → <b>appearance (B)</b>.<br>• Position 4 remains <b>reported (D)</b>.<br>Correct rearrangement: <b>CABD</b>.</p>"
     },
     {
       "qid": 1009,
@@ -318,7 +342,10 @@
           "html": "No rearrangement required<br>",
           "text": "No rearrangement required"
         }
-      ]
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) CABD</b></p><p><b>Explanation:</b><br>• \"believed to have been <b>domesticated (C)</b> in the Andes mountains\"<br>• \"a robust crop <b>ideally (A)</b> suited to the harsh, frozen conditions\"<br>• \"of the world's <b>longest (B)</b> mountain range\"<br>• \"a nutritious <b>foodstuff (D)</b>\"<br>Hence, <b>CABD</b> is the correct sequence.</p>"
     },
     {
       "qid": 1010,
@@ -353,7 +380,10 @@
           "html": "No rearrangement required<br>",
           "text": "No rearrangement required"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) CABD</b></p><p><b>Explanation:</b><br>• \"Better <b>known (C)</b> as a 'Dancing Queen'...\"<br>• \"...Theresa May <b>took (A)</b> office <b>in (B)</b> 2016, as David Cameron jumped ship after the Brexit <b>referendum (D)</b>.\"<br>Hence, <b>CABD</b> is the correct arrangement.</p>"
     },
     {
       "qid": 1011,
@@ -388,7 +418,10 @@
           "html": "No correction required<br>",
           "text": "No correction required"
         }
-      ]
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) visitors from feeding the animals</b></p><p><b>Explanation:</b><br>The verb <b>\"prohibit\"</b> takes the preposition <b>\"from\"</b> followed by a gerund (<i>prohibit someone from doing something</i>), not an infinitive (<i>to feed</i>). Therefore, \"visitors from feeding the animals\" is grammatically correct.</p>"
     },
     {
       "qid": 1012,
@@ -423,7 +456,10 @@
           "html": "No correction required<br>",
           "text": "No correction required"
         }
-      ]
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) were to exercise more caution</b></p><p><b>Explanation:</b><br>In hypothetical conditional clauses (\"If a person...\"), the subjunctive mood requires <b>\"were\"</b> instead of \"was\" (<i>\"If a person were to exercise more caution...\"</i>).</p>"
     },
     {
       "qid": 1013,
@@ -458,7 +494,10 @@
           "html": "No correction required<br>",
           "text": "No correction required"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Despite the heavy rain</b></p><p><b>Explanation:</b><br><b>\"Despite\"</b> is never followed by the preposition \"of\" (unlike \"In spite of\"). Hence, <b>\"Despite the heavy rain\"</b> is the correct replacement.</p>"
     },
     {
       "qid": 1014,
@@ -493,7 +532,10 @@
           "html": "No correction required<br>",
           "text": "No correction required"
         }
-      ]
+      ],
+      "correctAnswer": "D",
+      "correctIndex": 3,
+      "explanationHTML": "<p><b>Correct Answer: d) When we arrived late for the show</b></p><p><b>Explanation:</b><br>The original sentence suffers from a <b>dangling modifier</b>: \"Having arrived late for the concert\" modifies the subject of the main clause (\"the gates\"), which is illogical because gates cannot arrive late. Replacing the participial phrase with the finite clause <b>\"When we arrived late for the show\"</b> resolves the dangling modifier.</p>"
     },
     {
       "qid": 1015,
@@ -528,7 +570,10 @@
           "html": "No correction required<br>",
           "text": "No correction required"
         }
-      ]
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) No correction required</b></p><p><b>Explanation:</b><br>The relative clause <b>\"to whom the task was assigned\"</b> properly uses the objective pronoun <i>whom</i> after the preposition <i>to</i>. No correction is needed.</p>"
     },
     {
       "qid": 1016,
@@ -563,7 +608,10 @@
           "html": "No error<br>",
           "text": "No error"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) D</b></p><p><b>Explanation:</b><br>In part (D), <i>\"in the human historical\"</i> uses the adjective \"historical\" instead of the noun <b>\"history\"</b>. It should read <b>\"in human history\"</b>. Thus, the error is in part (D), which corresponds to option <b>b)</b>.</p>"
     },
     {
       "qid": 1017,
@@ -598,7 +646,10 @@
           "html": "No error<br>",
           "text": "No error"
         }
-      ]
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) No error</b></p><p><b>Explanation:</b><br>\"The book that I borrowed from the library was very interesting\" is grammatically complete and free of error.</p>"
     },
     {
       "qid": 1018,
@@ -633,7 +684,10 @@
           "html": "C<br>",
           "text": "C"
         }
-      ]
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) C</b></p><p><b>Explanation:</b><br>The correlative conjunction pair is <b>\"not only ... but also\"</b>. In part (C), \"yet\" is erroneously used instead of \"but also\" (<i>\"...not only the best-preserved water gardens in South Asia <b>but also</b> some of...\"</i>). Thus, the error is in part (C), which is option <b>e)</b>.</p>"
     },
     {
       "qid": 1019,
@@ -668,7 +722,10 @@
           "html": "No error<br>",
           "text": "No error"
         }
-      ]
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) B</b></p><p><b>Explanation:</b><br>Since the sentence makes a comparison using <b>\"than anyone else here\"</b>, both adjectives joined by \"and\" must be in the comparative degree: <b>\"smarter and more beautiful than...\"</b>. Hence, the error lies in part (B), which corresponds to option <b>a)</b>.</p>"
     },
     {
       "qid": 1020,
@@ -703,7 +760,10 @@
           "html": "assess<br>",
           "text": "assess"
         }
-      ]
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) connects</b></p><p><b>Explanation:</b><br>The antecedent of \"that\" is \"a network\" (singular), so it requires the singular present-tense verb <b>\"connects\"</b> (<i>\"a network of paths that connects different brain areas to many bodily organs\"</i>).</p>"
     },
     {
       "qid": 1021,
@@ -738,7 +798,10 @@
           "html": "divided<br>",
           "text": "divided"
         }
-      ]
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) divided</b></p><p><b>Explanation:</b><br>Passive construction \"can be ___ into two parts\" requires the past participle <b>\"divided\"</b> (<i>\"can be divided into two parts: sympathetic and parasympathetic\"</i>).</p>"
     },
     {
       "qid": 1022,
@@ -773,7 +836,10 @@
           "html": "laziness<br>",
           "text": "laziness"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) activity</b></p><p><b>Explanation:</b><br>Following the preposition \"of\" and parallel with the noun \"excitement\", we need a noun: <b>\"activity\"</b> (<i>\"during times of activity or excitement\"</i>).</p>"
     },
     {
       "qid": 1023,
@@ -808,7 +874,10 @@
           "html": "entirely<br>",
           "text": "entirely"
         }
-      ]
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) facial</b></p><p><b>Explanation:</b><br>To modify the noun \"expressions\", the adjective <b>\"facial\"</b> (<i>\"gestures and facial expressions\"</i>) is required.</p>"
     },
     {
       "qid": 1024,
@@ -843,7 +912,10 @@
           "html": "greed<br>",
           "text": "greed"
         }
-      ]
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) naturally</b></p><p><b>Explanation:</b><br>To modify the verb \"cues\", we need the adverb <b>\"naturally\"</b> (<i>\"A gentler, more relaxed style of singing naturally cues the drummer to slow down\"</i>).</p>"
     },
     {
       "qid": 1025,
@@ -878,7 +950,10 @@
           "html": "Western concern extends beyond prices to questions of long-term competitiveness.<br>",
           "text": "Western concern extends beyond prices to questions of long-term competitiveness."
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Chinese firms have completely abandoned cost competitiveness in favour of premium pricing.</b></p><p><b>Explanation:</b><br>Paragraph 2 explicitly states: <i>\"The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.\"</i> Thus, Chinese firms have <b>not</b> abandoned affordability/cost competitiveness, making option (b) FALSE.</p>"
     },
     {
       "qid": 1026,
@@ -913,7 +988,10 @@
           "html": "Focus solely on domestic markets over exports<br>",
           "text": "Focus solely on domestic markets over exports"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Shift from affordability alone to affordability combined with technical sophistication</b></p><p><b>Explanation:</b><br>The last sentence of Paragraph 2 directly states: <i>\"The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.\"</i></p>"
     },
     {
       "qid": 1027,
@@ -948,7 +1026,10 @@
           "html": "Germany attributes China's rise solely to unfair trade practices.<br>",
           "text": "Germany attributes China's rise solely to unfair trade practices."
         }
-      ]
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Germany recognises a challenge to traditional innovation hierarchies.</b></p><p><b>Explanation:</b><br>Paragraph 3 notes that even economies like Germany express concern, and <i>\"This unease is not rooted solely in price competition but in the possibility that established innovation hierarchies may be reconfigured.\"</i></p>"
     },
     {
       "qid": 1028,
@@ -983,7 +1064,10 @@
           "html": "Innovation in China is confined to low-technology sectors.<br>",
           "text": "Innovation in China is confined to low-technology sectors."
         }
-      ]
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Chinese firms rapidly convert research outputs into mass production.</b></p><p><b>Explanation:</b><br>Paragraph 3 highlights concern over <i>\"the speed and coordination with which Chinese firms translate research into scalable output.\"</i> Option (c) directly reinforces and strengthens this argument.</p>"
     },
     {
       "qid": 1029,
@@ -1018,7 +1102,10 @@
           "html": "It reflects a lack of domestic manufacturing capacity in the West.<br>",
           "text": "It reflects a lack of domestic manufacturing capacity in the West."
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) It persists despite concerns because of efficiency benefits.</b></p><p><b>Explanation:</b><br>Paragraph 4 states: <i>\"On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency...\"</i></p>"
     },
     {
       "qid": 1030,
@@ -1053,7 +1140,10 @@
           "html": "A, B, and C<br>",
           "text": "A, B, and C"
         }
-      ]
+      ],
+      "correctAnswer": "D",
+      "correctIndex": 3,
+      "explanationHTML": "<p><b>Correct Answer: d) Both A and C</b></p><p><b>Explanation:</b><br>• Statement <b>A</b> is supported by Paragraph 2 (<i>\"Rather than relying solely on imitation, firms have absorbed global knowledge...\"</i>).<br>• Statement <b>B</b> is contradicted by Paragraph 3 (<i>\"This unease is not rooted solely in price competition...\"</i>).<br>• Statement <b>C</b> is supported by Paragraph 4 (<i>\"...a landscape in which technological leadership is no longer geographically concentrated\"</i>).</p>"
     },
     {
       "qid": 1031,
@@ -1088,7 +1178,10 @@
           "html": "admiration<br>",
           "text": "admiration"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) anxiety</b></p><p><b>Explanation:</b><br>In context, <b>\"unease\"</b> refers to apprehension, worry, or <b>\"anxiety\"</b> felt by established industrial economies.</p>"
     },
     {
       "qid": 1032,
@@ -1123,7 +1216,10 @@
           "html": "procedures<br>",
           "text": "procedures"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) rankings</b></p><p><b>Explanation:</b><br>In the phrase <i>\"established innovation hierarchies may be reconfigured\"</i>, <b>\"hierarchies\"</b> refers to the order of standing or <b>\"rankings\"</b> among nations.</p>"
     },
     {
       "qid": 1033,
@@ -1158,7 +1254,10 @@
           "html": "Only II<br>",
           "text": "Only II"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Only III</b></p><p><b>Explanation:</b><br>• Sentence I confuses <i>bland</i> with <b>blend</b> (to mix colours).<br>• Sentence II misuses <i>bland</i> where a noun like <b>tray</b> is needed.<br>• Sentence III correctly uses the adjective <b>bland</b> (uninteresting/mediocre) to describe track designs.</p>"
     },
     {
       "qid": 1034,
@@ -1193,7 +1292,10 @@
           "html": "All I, II and III<br>",
           "text": "All I, II and III"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Only I and II</b></p><p><b>Explanation:</b><br>• Sentence I correctly uses the verb <b>lies</b> (to be in a horizontal/resting state).<br>• Sentence II correctly uses the noun <b>lie</b> (an intentionally false statement).<br>• Sentence III erroneously uses <i>lie</i> instead of <b>like</b> (\"didn't like plum pudding\").</p>"
     },
     {
       "qid": 1035,
@@ -1228,7 +1330,10 @@
           "html": "Only I, III<br>",
           "text": "Only I, III"
         }
-      ]
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) Only I, III</b></p><p><b>Explanation:</b><br>• Sentence I correctly uses the plural noun <b>conditions</b> (\"weather conditions\").<br>• Sentence II is ungrammatical because the idiom for state of repair is singular: <i>\"in good driving <b>condition</b>\"</i>.<br>• Sentence III correctly uses <b>conditions</b> as a singular verb (\"Reena conditions her hair\").</p>"
     },
     {
       "qid": 1036,
@@ -1263,7 +1368,10 @@
           "html": "Hatred, loved<br>",
           "text": "Hatred, loved"
         }
-      ]
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Narrow, broad</b></p><p><b>Explanation:</b><br><b>\"Narrow\"</b> and <b>\"broad\"</b> are antonyms that fit both grammatically and contextually: <i>\"These narrow alleys eventually merge into a broad expressway.\"</i></p>"
     },
     {
       "qid": 1037,
@@ -1298,7 +1406,10 @@
           "html": "Careless, careful<br>",
           "text": "Careless, careful"
         }
-      ]
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Benign, malignant</b></p><p><b>Explanation:</b><br>In medical terminology, <b>\"benign\"</b> (non-cancerous/harmless) and <b>\"malignant\"</b> (cancerous/virulent) are exact antonyms: <i>\"The tumour seems benign, but it might turn malignant later on.\"</i></p>"
     },
     {
       "qid": 1038,
@@ -1333,7 +1444,10 @@
           "html": "Thorough, nor<br>",
           "text": "Thorough, nor"
         }
-      ]
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Throughout, or</b></p><p><b>Explanation:</b><br>• Blank 1 requires the preposition <b>\"throughout\"</b> (meaning all the way through history; \"thorough\" is an adjective).<br>• Blank 2 pairs with <b>\"either\"</b>, requiring the correlative conjunction <b>\"or\"</b> (<i>\"either through the splendour... or the value...\"</i>).</p>"
     },
     {
       "qid": 1039,
@@ -1368,7 +1482,10 @@
           "html": "Refines, excess<br>",
           "text": "Refines, excess"
         }
-      ]
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) Refined, access</b></p><p><b>Explanation:</b><br>• Blank 1 follows \"has\", requiring the past participle <b>\"refined\"</b> (improved/polished).<br>• Blank 2 is followed by the preposition \"to\", requiring the noun <b>\"access\"</b> (<i>\"provided me with access to a plethora of...\"</i>).</p>"
     },
     {
       "qid": 1040,
@@ -1403,7 +1520,10 @@
           "html": "biggest, award<br>",
           "text": "biggest, award"
         }
-      ]
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) biggest, award</b></p><p><b>Explanation:</b><br>• Blank 1 follows the definite article \"the\", requiring the superlative adjective <b>\"biggest\"</b> (<i>\"the biggest hit movie of the year\"</i>).<br>• Blank 2 follows \"wins an international\", requiring the singular countable noun <b>\"award\"</b>.</p>"
     }
   ]
 }

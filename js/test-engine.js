@@ -119,6 +119,7 @@ class OliveboardTestEngine {
     this.btnClearResponse = document.getElementById('btn-clear-response');
     this.btnSubmitExam = document.getElementById('btn-submit-exam');
     this.btnExitExam = document.getElementById('btn-exit-exam');
+    this.btnHeaderExit = document.getElementById('btn-header-exit-test');
     this.btnScreenToggle = document.getElementById('btn-screen-toggle');
 
     // Bookmark Toggle Button
@@ -246,6 +247,16 @@ class OliveboardTestEngine {
     }
 
     // Header Exit & Fullscreen
+    if (this.btnHeaderExit) {
+      this.btnHeaderExit.onclick = (e) => {
+        e.preventDefault();
+        if (!this.isExamActive) {
+          this.exitTest();
+        } else {
+          this.pauseTest();
+        }
+      };
+    }
     if (this.btnExitExam) {
       this.btnExitExam.onclick = (e) => { e.preventDefault(); this.pauseTest(); };
     }
@@ -341,9 +352,13 @@ class OliveboardTestEngine {
     // Scorecard Close Button
     if (this.btnCloseScorecard) {
       this.btnCloseScorecard.onclick = () => {
-        this.scorecardOverlay.classList.remove('active');
-        if (!window.obSolutionEngine || !window.obSolutionEngine.isOpen) {
-          this.exitTest();
+        if (window.appController) {
+          window.appController.goBack();
+        } else {
+          this.scorecardOverlay.classList.remove('active');
+          if (!window.obSolutionEngine || !window.obSolutionEngine.isOpen) {
+            this.exitTest();
+          }
         }
       };
     }
@@ -374,7 +389,7 @@ class OliveboardTestEngine {
    */
   expandPaletteSidebar() {
     this.isPaletteCollapsed = false;
-    if (this.rightLowHalfOuter) this.rightLowHalfOuter.style.display = 'block';
+    if (this.rightLowHalfOuter) this.rightLowHalfOuter.style.display = '';
     if (this.rightContainerPost) this.rightContainerPost.classList.remove('palette-collapsed');
     if (this.questionOuterPane) this.questionOuterPane.classList.remove('expanded-full-lower');
     const btnExpand = document.getElementById('btn-expand-sidebar');
@@ -1631,37 +1646,6 @@ class OliveboardTestEngine {
         unanswered++;
         sectionBreakdown[secName].unanswered++;
       }
-
-      const selectedLetter = isAttempted ? (q.options[selectedIdx]?.letter || String.fromCharCode(65 + selectedIdx)) : 'Not Attempted';
-      const correctLetter = q.options[q.correctIndex]?.letter || String.fromCharCode(65 + (q.correctIndex || 0));
-      const statusClass = isAttempted ? (isCorrect ? 'correct' : 'wrong') : 'skipped';
-      const statusIcon = isAttempted ? (isCorrect ? '✅' : '❌') : '⬜';
-
-      solutionsHTML.push(`
-        <div class="solution-card ${statusClass}" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px;">
-            <div style="font-weight: bold; color: #1c4b79;">
-              <span>${statusIcon}</span> Question ${q.questionNumber || (idx + 1)}
-              <span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">${secName}</span>
-            </div>
-            <div style="font-weight: bold;">
-              ${isAttempted ? (isCorrect ? `<span style="color: #2e7d32;">+${marksPos.toFixed(2)}</span>` : `<span style="color: #e03131;">-${marksNeg.toFixed(2)}</span>`) : '<span style="color: #64748b;">0.00</span>'}
-            </div>
-          </div>
-          ${q.hasPassage && q.passageHTML ? `<div style="background: #f8fafc; border-left: 3px solid #3476BB; padding: 10px; margin-bottom: 12px; font-size: 13px;">${q.passageHTML}</div>` : ''}
-          <div style="margin-bottom: 12px; font-size: 14px; line-height: 22px;">${q.questionHTML}</div>
-          <div style="display: flex; gap: 20px; font-size: 13px; margin-bottom: 12px; background: #f1f5f9; padding: 8px 12px; border-radius: 4px;">
-            <div>Your Answer: <strong style="${isAttempted ? (isCorrect ? 'color: #2e7d32;' : 'color: #e03131;') : 'color: #64748b;'}">${selectedLetter}</strong></div>
-            <div>Correct Answer: <strong style="color: #2e7d32;">${correctLetter}</strong></div>
-          </div>
-          ${q.explanationHTML ? `
-            <div style="background: #fdfaf3; border: 1px solid #fde68a; border-radius: 6px; padding: 10px 14px; font-size: 13px; line-height: 20px;">
-              <div style="font-weight: bold; color: #b45309; margin-bottom: 4px;">📝 Solution Explanation</div>
-              ${q.explanationHTML}
-            </div>
-          ` : ''}
-        </div>
-      `);
     });
 
     const maxScore = this.testData.marks || Math.round(computedMaxScore) || 100;
@@ -1733,7 +1717,7 @@ class OliveboardTestEngine {
 
     const solutionsContainer = document.getElementById('scorecard-solutions-list');
     if (solutionsContainer) {
-      solutionsContainer.innerHTML = solutionsHTML.join('');
+      solutionsContainer.innerHTML = '';
     }
 
     if (this.modalOverlay) {
@@ -1750,7 +1734,7 @@ class OliveboardTestEngine {
       };
     }
 
-    // Directly open the authentic Oliveboard Solution Window (index3.php) upon submitting the mock test
+    // Launch Oliveboard Authentic Solution & Review Console immediately upon submission
     if (window.openOliveboardSolutions) {
       window.openOliveboardSolutions(resultObj, this.testData);
     } else if (this.scorecardOverlay) {
@@ -1801,45 +1785,7 @@ class OliveboardTestEngine {
       this._renderScorecardTopicBreakdown(breakdown, allQuestions);
       this._renderTopperComparisonModule(netScore, maxScore, parseFloat(accuracy), timeSpent, allQuestions.length, breakdown);
 
-      const responses = attempt.responses || {};
-      const solutionsHTML = allQuestions.map((q, idx) => {
-        const resp = responses[q.id];
-        const selectedIdx = resp ? resp.selectedIndex : null;
-        const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
-        const isCorrect = isAttempted && selectedIdx === q.correctIndex;
-
-        const selectedLetter = isAttempted ? (q.options[selectedIdx]?.letter || String.fromCharCode(65 + selectedIdx)) : 'Not Attempted';
-        const correctLetter = q.options[q.correctIndex]?.letter || String.fromCharCode(65 + (q.correctIndex || 0));
-        const statusClass = isAttempted ? (isCorrect ? 'correct' : 'wrong') : 'skipped';
-        const statusIcon = isAttempted ? (isCorrect ? '✅' : '❌') : '⬜';
-
-        return `
-          <div class="solution-card ${statusClass}" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px;">
-              <div style="font-weight: bold; color: #1c4b79;">
-                <span>${statusIcon}</span> Question ${q.questionNumber || (idx + 1)}
-                <span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">${q.section}</span>
-              </div>
-              <div style="font-weight: bold;">
-                ${isAttempted ? (isCorrect ? `<span style="color: #2e7d32;">+${(q.marksForCorrect || 1).toFixed(2)}</span>` : `<span style="color: #e03131;">-${(q.negativeMarks || 0.25).toFixed(2)}</span>`) : '<span style="color: #64748b;">0.00</span>'}
-              </div>
-            </div>
-            ${q.hasPassage && q.passageHTML ? `<div style="background: #f8fafc; border-left: 3px solid #3476BB; padding: 10px; margin-bottom: 12px; font-size: 13px;">${q.passageHTML}</div>` : ''}
-            <div style="margin-bottom: 12px; font-size: 14px; line-height: 22px;">${q.questionHTML}</div>
-            <div style="display: flex; gap: 20px; font-size: 13px; margin-bottom: 12px; background: #f1f5f9; padding: 8px 12px; border-radius: 4px;">
-              <div>Your Answer: <strong style="${isAttempted ? (isCorrect ? 'color: #2e7d32;' : 'color: #e03131;') : 'color: #64748b;'}">${selectedLetter}</strong></div>
-              <div>Correct Answer: <strong style="color: #2e7d32;">${correctLetter}</strong></div>
-            </div>
-            ${q.explanationHTML ? `
-              <div style="background: #fdfaf3; border: 1px solid #fde68a; border-radius: 6px; padding: 10px 14px; font-size: 13px; line-height: 20px;">
-                <div style="font-weight: bold; color: #b45309; margin-bottom: 4px;">📝 Solution Explanation</div>
-                ${q.explanationHTML}
-              </div>
-            ` : ''}
-          </div>
-        `;
-      });
-      solutionsContainer.innerHTML = solutionsHTML.join('');
+      solutionsContainer.innerHTML = '';
     }
 
     if (this.scorecardOverlay) {
@@ -2105,7 +2051,15 @@ class OliveboardTestEngine {
     return `${m}m ${s}s`;
   }
 
-  exitTest() {
+  exitTest(fromPopstate = false) {
+    if (!fromPopstate && window.appController) {
+      window.appController.goBack();
+    } else {
+      this._doExitTest();
+    }
+  }
+
+  _doExitTest() {
     clearInterval(this.timerInterval);
     this.isExamActive = false;
     this.isPaused = false;

@@ -1,0 +1,464 @@
+{
+  "capturedAt": "2026-10-23T14:29:02.846Z",
+  "url": "https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking",
+  "title": "Oliveboard | Banking & Insurance SBI PO 2026 Prelims",
+  "stage": {
+    "stage": "dashboard",
+    "label": "1. Oliveboard Mock Test Dashboard (Ready to Select & Launch Test)",
+    "info": {}
+  },
+  "visualSnapshots": {
+    "main": "scraped/snapshots/screenshot_oliveboard_banking_amp_insurance_sbi_po_2026_prelims_1792765731570.png",
+    "mainUrl": "/scraped/snapshots/screenshot_oliveboard_banking_amp_insurance_sbi_po_2026_prelims_1792765731570.png",
+    "mainByteSize": 495133,
+    "otherTabsCount": 0,
+    "otherTabs": []
+  },
+  "domHtmlFile": "scraped/snapshots/dom_oliveboard_banking_amp_insurance_sbi_po_2026_prelims_1792765731570.html",
+  "reaEvidenceFile": "scraped/snapshots/rea_evidence_oliveboard_banking_amp_insurance_sbi_po_2026_prelims_1792765731570.json",
+  "reaEvidenceId": "ev_0de5b3ea729b612fb392ac47aabc555c086a6b4cd505070df29546e369071be1",
+  "reaProvider": "REA Chrome DevTools Protocol observation provider",
+  "viewport": {
+    "innerWidth": 1352,
+    "innerHeight": 675,
+    "devicePixelRatio": 1.25,
+    "scrollX": 0,
+    "scrollY": 0,
+    "screenWidth": 1536,
+    "screenHeight": 864
+  },
+  "modalsCount": 17,
+  "visibleModals": [],
+  "detectedModals": [
+    {
+      "selector": ".modal",
+      "id": "buyModal",
+      "className": "modal fade buyModal",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "Please make a purchase to access the remaining classes",
+      "textSnippet": "×\n                    \n                   \n                  \n                        \n                            \n                        \n                        Please make a purchase to access the remaining classes\n                        Buy Now",
+      "buttonsCount": 2,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close buyclose",
+          "text": "×"
+        },
+        {
+          "id": "",
+          "className": "btn-upgrade",
+          "text": "Buy Now"
+        }
+      ]
+    },
+    {
+      "selector": ".modal",
+      "id": "callreqmodal",
+      "className": "modal",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": ".modal",
+      "id": "videoModal",
+      "className": "modal",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "Course Overview",
+      "textSnippet": "Course Overview\n        \n          ×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": ".modal",
+      "id": "modal-reporterror",
+      "className": "modal",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "Ask Doubt\n              \n            \n            \n              Please describe your doubt below.\n              \n            \n            \n              Submit\n              Cancel\n              Submitted successfully",
+      "buttonsCount": 2,
+      "buttons": [
+        {
+          "id": "smtbtn",
+          "className": "button is-success modalpostclick",
+          "text": "Submit"
+        },
+        {
+          "id": "",
+          "className": "button delete-remodal modalpostclick",
+          "text": "Cancel"
+        }
+      ]
+    },
+    {
+      "selector": ".modal",
+      "id": "summaryModal",
+      "className": "modal fade summaryModal bd-example-modal-lg",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "sumclose",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": ".modal",
+      "id": "modal-offerimg",
+      "className": "modal fade offerimg-modal",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "popupdismiss",
+          "className": "close",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": ".modal",
+      "id": "selcategoryModal",
+      "className": "modal fade in",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "Choose the Category you want to view today.",
+      "textSnippet": "Choose the Category you want to view today.\n        You can always switch to other exam categories anytime.\n        ×\n        \n        \n        \n            \n            \n            JAIIB/CAIIB\n            JAIIB, CAIIB, Bank Promotion Exams\n            \n            \n            \n            \n            SSC\n            CGL, CHSL, IB ACIO, CPO, MTS, Steno & More\n            \n            \n            \n            \n            Railways RRB\n            RRB NTPC, JE, ALP, Group D\n            \n            \n            \n            \n            Regulatory\n            RBI Grade B, NABARD, NPS, SEBI, IRDAI, SIDBI, IFSCA\n            \n            \n            \n            \n            UPSC EPFO\n            UPSC EPFO EO/AO, APFC, SSA\n            \n            \n            \n            \n            UGC NET\n            UGC NET\n            \n            \n            \n            \n            Andhra Pradesh Exams\n            AP State Level Exams\n            \n            \n            \n            \n     ",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close sc-close",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": "[role=\"dialog\"]",
+      "id": "buyModal",
+      "className": "modal fade buyModal",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "Please make a purchase to access the remaining classes",
+      "textSnippet": "×\n                    \n                   \n                  \n                        \n                            \n                        \n                        Please make a purchase to access the remaining classes\n                        Buy Now",
+      "buttonsCount": 2,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close buyclose",
+          "text": "×"
+        },
+        {
+          "id": "",
+          "className": "btn-upgrade",
+          "text": "Buy Now"
+        }
+      ]
+    },
+    {
+      "selector": "[role=\"dialog\"]",
+      "id": "summaryModal",
+      "className": "modal fade summaryModal bd-example-modal-lg",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "sumclose",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": "[role=\"dialog\"]",
+      "id": "modal-offerimg",
+      "className": "modal fade offerimg-modal",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "popupdismiss",
+          "className": "close",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": "[role=\"dialog\"]",
+      "id": "selcategoryModal",
+      "className": "modal fade in",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "Choose the Category you want to view today.",
+      "textSnippet": "Choose the Category you want to view today.\n        You can always switch to other exam categories anytime.\n        ×\n        \n        \n        \n            \n            \n            JAIIB/CAIIB\n            JAIIB, CAIIB, Bank Promotion Exams\n            \n            \n            \n            \n            SSC\n            CGL, CHSL, IB ACIO, CPO, MTS, Steno & More\n            \n            \n            \n            \n            Railways RRB\n            RRB NTPC, JE, ALP, Group D\n            \n            \n            \n            \n            Regulatory\n            RBI Grade B, NABARD, NPS, SEBI, IRDAI, SIDBI, IFSCA\n            \n            \n            \n            \n            UPSC EPFO\n            UPSC EPFO EO/AO, APFC, SSA\n            \n            \n            \n            \n            UGC NET\n            UGC NET\n            \n            \n            \n            \n            Andhra Pradesh Exams\n            AP State Level Exams\n            \n            \n            \n            \n     ",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close sc-close",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": ".modal-dialog",
+      "id": "",
+      "className": "modal-dialog buydialog",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "Please make a purchase to access the remaining classes",
+      "textSnippet": "×\n                    \n                   \n                  \n                        \n                            \n                        \n                        Please make a purchase to access the remaining classes\n                        Buy Now",
+      "buttonsCount": 2,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close buyclose",
+          "text": "×"
+        },
+        {
+          "id": "",
+          "className": "btn-upgrade",
+          "text": "Buy Now"
+        }
+      ]
+    },
+    {
+      "selector": ".modal-dialog",
+      "id": "",
+      "className": "modal-dialog",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": ".modal-dialog",
+      "id": "",
+      "className": "modal-dialog",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "Course Overview",
+      "textSnippet": "Course Overview\n        \n          ×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": ".modal-dialog",
+      "id": "",
+      "className": "modal-dialog  modal-lg",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "sumclose",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": ".modal-dialog",
+      "id": "",
+      "className": "modal-dialog",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "×",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "popupdismiss",
+          "className": "close",
+          "text": "×"
+        }
+      ]
+    },
+    {
+      "selector": ".modal-dialog",
+      "id": "catselmodal",
+      "className": "modal-dialog",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "Choose the Category you want to view today.",
+      "textSnippet": "Choose the Category you want to view today.\n        You can always switch to other exam categories anytime.\n        ×\n        \n        \n        \n            \n            \n            JAIIB/CAIIB\n            JAIIB, CAIIB, Bank Promotion Exams\n            \n            \n            \n            \n            SSC\n            CGL, CHSL, IB ACIO, CPO, MTS, Steno & More\n            \n            \n            \n            \n            Railways RRB\n            RRB NTPC, JE, ALP, Group D\n            \n            \n            \n            \n            Regulatory\n            RBI Grade B, NABARD, NPS, SEBI, IRDAI, SIDBI, IFSCA\n            \n            \n            \n            \n            UPSC EPFO\n            UPSC EPFO EO/AO, APFC, SSA\n            \n            \n            \n            \n            UGC NET\n            UGC NET\n            \n            \n            \n            \n            Andhra Pradesh Exams\n            AP State Level Exams\n            \n            \n            \n            \n     ",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "",
+          "className": "close sc-close",
+          "text": "×"
+        }
+      ]
+    }
+  ],
+  "tablesCount": 0,
+  "allTables": [],
+  "globals": {},
+  "storage": {
+    "localStorage": {
+      "63c7d81e44e23b010a37d4d8.clientId": "4d59c57b10c4472a83c072db4004fed1",
+      "WZRK_L": "%7B%7D",
+      "_gcl_ls": "{\"schema\":\"gcl\",\"version\":1,\"gcl_ctr\":{\"value\":{\"value\":0,\"timeouts\":0,\"errors\":0,\"eopCount\":0,\"creationTimeMs\":1792765723163},\"expires\":1800541723163},\"gsid_dc\":{\"value\":{\"joinId\":\"ECdPD4P0R0CIj2Gylm8rT0XaJ90OeYmang\",\"lastJoinedTimeMs\":1792765723166},\"expires\":1792766023166}}",
+      "WZRK_K": "%7B%22flag%22%3Atrue%2C%22id%22%3A%22piyusholiveboard2%40gmail.com%22%7D",
+      "WZRK_FPU": "false",
+      "WZRK_ARP": "%7B%22k_n%22%3A%22DHgiIktFQlw4Njs9Mjg9KkBUA3QwNzMiO3QxJF8SbA%3D%3D%22%2C%22j_n%22%3A%22Zw%3D%3D%22%2C%22i_n%22%3A%22ZW9kfAsDBQI%3D%22%2C%22d_ts%22%3A0%2C%22dh%22%3A0%2C%22v%22%3A2%2C%22j_s%22%3A%22%7B%7D%22%2C%22id%22%3A%2265R-6K5-785Z%22%2C%22r_ts%22%3A1792765724%2C%22isOUL%22%3Atrue%7D",
+      "WZRK_META": "%7B%22ps%22%3A1792765724%2C%22cs%22%3A1792765724%2C%22sc%22%3A1%7D",
+      "ZD-suid": "{\"id\":\"5bce5b74cd7c440d86d9eb6389c2a486\",\"expiry\":1792766623507,\"tabs\":{\"count\":1,\"expiry\":0}}",
+      "WZRK_EV": "%7B%22Exam%20Viewed%22%3A%5B1%2C1792765723%2C1792765723%5D%7D",
+      "lastExternalReferrerTime": "1792765723969",
+      "ZD-buid": "4d59c57b10c4472a83c072db4004fed1",
+      "lastExternalReferrer": "other",
+      "WZRK_PR": "%7B%22Email%22%3A%22piyusholiveboard2%40gmail.com%22%2C%22Phone%22%3A918808455284%2C%22tz%22%3A%22GMT%2B0530%22%7D",
+      "WZRK_G": "%22deb513ab614e4e47966f4dc41d420e6b%22"
+    },
+    "sessionStorage": {},
+    "cookies": "__utmc=94392130; _gcl_au=1.1.2040535351.1792739205; _ga=GA1.1.955971716.1792739205; _fbp=fb.1.1792739204819.113613283652610449; susmid=3583b116MTM4Nzg3MjNeXnBpeXVzaG9saXZlYm9hcmQy4e5eae0d; obph=8808455284%2C+Regd+0+days+ago%2C+Prem%3A+; obem=piyusholiveboard2%40gmail.com; uauth=3583b1163ff3ea6d2d707fad4e5eae0d; luauth=3583b1163ff3ea6d2d707fad4e5eae0d; session=2K15edf96cef9d706a65c9adaf1fa871fd28; obctapinfo2=1; obwb=2000; obsession=RQD2H2TTMjMxMzg3ODcyMw%3D%3DVB6I102X; oblpv=https%253A%252F%252Fu1.oliveboard.in%252Ftests%252F%253Fc%253Dsbipopre19%2526i%253Dbanking; obctapinfo3=1; pupnt=0; offerimg=1; __utma=94392130.939627338.1792739205.1792757999.1792765723.3; __utmz=94392130.1792765723.3.2.utmcsr=oliveboard.in|utmccn=(referral)|utmcmd=referral|utmcct=/; __utmt=1; __utmb=94392130.2.10.1792765723; lcatv=banking; _ga_M8DH7WJ9QL=GS2.1.s1792765720$o3$g1$t1792765723$j57$l0$h0; WZRK_G=deb513ab614e4e47966f4dc41d420e6b; WZRK_S_65R-6K5-785Z=%7B%22p%22%3A1%2C%22s%22%3A1792765724%2C%22t%22%3A1792765724%7D"
+  },
+  "computedUI": {},
+  "decryptedQuestionsCount": 0,
+  "extractedSolutionsCount": 0,
+  "dashboardCardsCount": 0,
+  "verificationChecklist": {
+    "visualSnapshotCaptured": true,
+    "fullDomCaptured": true,
+    "reaEvidenceCaptured": true,
+    "modalsInspectedCount": 17,
+    "tablesInspectedCount": 0,
+    "questionsDecryptedCount": 0,
+    "solutionsExtractedCount": 0
+  }
+}

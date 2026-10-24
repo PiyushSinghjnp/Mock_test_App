@@ -1,0 +1,23 @@
+<svg id="time_left_copy" data-name="time left copy" xmlns="http://www.w3.org/2000/svg" width="46" height="50" viewBox="0 0 46 50">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-1, .cls-2 {
+        stroke: #34a2ce;
+        stroke-width: 3px;
+        fill-rule: evenodd;
+      }
+
+      .cls-2 {
+        fill: #34a2ce;
+      }
+    </style>
+  </defs>
+  <path class="cls-1" d="M5.406,3.406H16.188a2,2,0,0,1,2,2V17.5a2,2,0,0,1-2,2H5.406a2,2,0,0,1-2-2V5.406A2,2,0,0,1,5.406,3.406Z"/>
+  <path id="Rectangle_6_copy_2" data-name="Rectangle 6 copy 2" class="cls-1" d="M28.813,3.406H39.594a2,2,0,0,1,2,2V17.5a2,2,0,0,1-2,2H28.813a2,2,0,0,1-2-2V5.406A2,2,0,0,1,28.813,3.406Z"/>
+  <path id="Rectangle_6_copy_3" data-name="Rectangle 6 copy 3" class="cls-1" d="M5.406,30.5H16.188a2,2,0,0,1,2,2V44.594a2,2,0,0,1-2,2H5.406a2,2,0,0,1-2-2V32.5A2,2,0,0,1,5.406,30.5Z"/>
+  <path id="Rectangle_6_copy_3-2" data-name="Rectangle 6 copy 3" class="cls-2" d="M29.813,30.5H40.594a2,2,0,0,1,2,2V44.594a2,2,0,0,1-2,2H29.813a2,2,0,0,1-2-2V32.5A2,2,0,0,1,29.813,30.5Z"/>
+</svg>

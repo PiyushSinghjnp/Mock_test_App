@@ -1,0 +1,24 @@
+{
+  "capturedAt": "2026-10-23T07:06:59.962Z",
+  "reaEvidenceId": "ev_f5817bc84b66333f94b422e12f057bdad6ce20aeaf23143478369b9bb6e3d316",
+  "reaProvider": {
+    "id": "rea-cdp-browser",
+    "name": "REA Chrome DevTools Protocol observation provider",
+    "version": "2"
+  },
+  "url": "https://www.oliveboard.in/",
+  "title": "Oliveboard - India's Top Exam Preparation Platform",
+  "htmlFile": "scraped/live_capture_oliveboard_india_s_top_exam_preparation_platform_1792739214414.html",
+  "reaEvidenceFile": "scraped/rea_evidence_oliveboard_india_s_top_exam_preparation_platform_1792739214414.json",
+  "stylesheets": [
+    "https://www.oliveboard.in/css/common.css?v=10",
+    "https://www.oliveboard.in/css/home1.css?v=1",
+    "https://accounts.google.com/gsi/style"
+  ],
+  "globals": {},
+  "computedUI": {},
+  "decryptedQuestionsCount": 0,
+  "extractedSolutionsCount": 0,
+  "dashboardCardsCount": 0,
+  "dashboardCards": []
+}

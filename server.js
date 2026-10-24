@@ -308,6 +308,14 @@ function seedTests() {
   } catch (err) {
     console.error('Failed to run SBI PO seed script:', err);
   }
+
+  // 3.2b Seed authentic 100-Question IBPS SO IT Prelims 1 test
+  try {
+    const { runSeedIbpsSo } = require('./scripts/seed_ibps_so_prelims');
+    runSeedIbpsSo();
+  } catch (err) {
+    console.error('Failed to run IBPS SO seed script:', err);
+  }
 }
 
 // ==========================================
@@ -456,7 +464,8 @@ app.post('/api/users', (req, res) => {
 // 4.2 TESTS CATALOG API (WITH USER-SPECIFIC ATTEMPT & PAUSED STATUS)
 app.get('/api/tests', (req, res) => {
   try {
-    const { examId, userId } = req.query;
+    const examId = req.query.examId || req.query.exam;
+    const userId = req.query.userId || req.query.user_id;
     let query = 'SELECT id, exam_id, exam_name, type, title, subtitle, marks, questions_count, duration_minutes, is_free, sections_summary_json FROM tests';
     const params = [];
 
@@ -795,7 +804,8 @@ app.post('/api/attempts', (req, res) => {
 // 4.5 GET ALL ATTEMPTS FOR SPECIFIC USER (USER ISOLATED)
 app.get('/api/attempts', (req, res) => {
   try {
-    const { userId, testId } = req.query;
+    const userId = req.query.userId || req.query.user_id;
+    const testId = req.query.testId || req.query.test_id;
     if (!userId) {
       return res.status(400).json({ success: false, error: 'userId is required for isolated attempts' });
     }

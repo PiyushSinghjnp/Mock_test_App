@@ -489,6 +489,188 @@ function runSeed() {
     );
   }
 
+  // 2b. Seed Topic Test Drills (Spec 1.1 Topic Tests Tab)
+  if (ibpsQuant.length > 0) {
+    const topicDiQs = ibpsQuant.slice(0, 25).map((q, idx) =>
+      formatIbpsQuestion(q, idx + 1, idx + 1, 'topic-di', 'Data Interpretation')
+    );
+    const topicDiPayload = {
+      id: 'sbi-po-topic-di',
+      title: 'Data Interpretation & Caselet Mastery Drill',
+      examId: 'sbi-po',
+      examName: 'SBI PO 2026',
+      type: 'topic',
+      subtitle: 'Tabular, Radar, Bar & Missing DI Targeted Practice Drill',
+      marks: topicDiQs.length,
+      questionsCount: topicDiQs.length,
+      durationMinutes: 15,
+      totalDurationSeconds: 900,
+      hasSectionalTiming: true,
+      isSectionalLocked: true,
+      marksPerCorrect: 1.0,
+      negativeMarks: 0.25,
+      sections: [{
+        id: 'di',
+        title: 'Data Interpretation',
+        questionCount: topicDiQs.length,
+        durationMinutes: 15,
+        durationSeconds: 900,
+        maxMarks: topicDiQs.length,
+        positiveMarks: 1.0,
+        negativeMarks: 0.25,
+        language: 'English & Hindi',
+        isSectionalLocked: true,
+        questions: topicDiQs
+      }]
+    };
+    upsertTest.run(
+      'sbi-po-topic-di',
+      'sbi-po',
+      'SBI PO 2026',
+      'topic',
+      'Data Interpretation & Caselet Mastery Drill',
+      'Tabular, Radar, Bar & Missing DI Targeted Practice Drill',
+      topicDiQs.length,
+      topicDiQs.length,
+      15,
+      1.0,
+      0.25,
+      1,
+      JSON.stringify([`Data Interpretation (${topicDiQs.length} Qs)`]),
+      JSON.stringify(topicDiPayload),
+      now
+    );
+  }
+
+  if (ibpsReasoning.length > 0) {
+    const topicPuzzQs = ibpsReasoning.slice(0, 25).map((q, idx) =>
+      formatIbpsQuestion(q, idx + 1, idx + 1, 'topic-puzzles', 'Logical Reasoning Puzzles')
+    );
+    const topicPuzzPayload = {
+      id: 'sbi-po-topic-puzzles',
+      title: 'High-Level Seating & Floor Puzzles Drill',
+      examId: 'sbi-po',
+      examName: 'SBI PO 2026',
+      type: 'topic',
+      subtitle: 'Uncertain Number of Persons, Flat-Floor & Circular Seating Arrangement',
+      marks: topicPuzzQs.length,
+      questionsCount: topicPuzzQs.length,
+      durationMinutes: 15,
+      totalDurationSeconds: 900,
+      hasSectionalTiming: true,
+      isSectionalLocked: true,
+      marksPerCorrect: 1.0,
+      negativeMarks: 0.25,
+      sections: [{
+        id: 'puzzles',
+        title: 'Logical Reasoning Puzzles',
+        questionCount: topicPuzzQs.length,
+        durationMinutes: 15,
+        durationSeconds: 900,
+        maxMarks: topicPuzzQs.length,
+        positiveMarks: 1.0,
+        negativeMarks: 0.25,
+        language: 'English & Hindi',
+        isSectionalLocked: true,
+        questions: topicPuzzQs
+      }]
+    };
+    upsertTest.run(
+      'sbi-po-topic-puzzles',
+      'sbi-po',
+      'SBI PO 2026',
+      'topic',
+      'High-Level Seating & Floor Puzzles Drill',
+      'Uncertain Number of Persons, Flat-Floor & Circular Seating Arrangement',
+      topicPuzzQs.length,
+      topicPuzzQs.length,
+      15,
+      1.0,
+      0.25,
+      1,
+      JSON.stringify([`Logical Reasoning Puzzles (${topicPuzzQs.length} Qs)`]),
+      JSON.stringify(topicPuzzPayload),
+      now
+    );
+  }
+
+  // 2c. Seed Previous Year Paper (Spec 1.1 PYP Tab)
+  const pypSections = [
+    {
+      id: 'el',
+      title: 'English Language',
+      questionCount: englishQuestions.length,
+      durationMinutes: 20,
+      durationSeconds: 1200,
+      maxMarks: englishQuestions.length,
+      positiveMarks: 1.0,
+      negativeMarks: 0.25,
+      language: 'English',
+      isSectionalLocked: true,
+      questions: englishQuestions
+    },
+    {
+      id: 'qa',
+      title: 'Quantitative Aptitude',
+      questionCount: quantQuestions.length,
+      durationMinutes: 20,
+      durationSeconds: 1200,
+      maxMarks: quantQuestions.length,
+      positiveMarks: 1.0,
+      negativeMarks: 0.25,
+      language: 'English & Hindi',
+      isSectionalLocked: true,
+      questions: quantQuestions
+    },
+    {
+      id: 'ra',
+      title: 'Reasoning Ability',
+      questionCount: reasoningQuestions.length,
+      durationMinutes: 20,
+      durationSeconds: 1200,
+      maxMarks: reasoningQuestions.length,
+      positiveMarks: 1.0,
+      negativeMarks: 0.25,
+      language: 'English & Hindi',
+      isSectionalLocked: true,
+      questions: reasoningQuestions
+    }
+  ];
+  const pypPayload = {
+    id: 'sbi-po-pyp-2024',
+    title: 'SBI PO Prelims 2024 (Memory Based Paper)',
+    examId: 'sbi-po',
+    examName: 'SBI PO 2026',
+    type: 'pyp',
+    subtitle: 'Exact Questions Asked in Shift 1 & Shift 2 Examination',
+    marks: totalQ,
+    questionsCount: totalQ,
+    durationMinutes: 60,
+    totalDurationSeconds: 3600,
+    hasSectionalTiming: true,
+    isSectionalLocked: true,
+    marksPerCorrect: 1.0,
+    negativeMarks: 0.25,
+    sections: pypSections
+  };
+  upsertTest.run(
+    'sbi-po-pyp-2024',
+    'sbi-po',
+    'SBI PO 2026',
+    'pyp',
+    'SBI PO Prelims 2024 (Memory Based Paper)',
+    'Exact Questions Asked in Shift 1 & Shift 2 Examination',
+    totalQ,
+    totalQ,
+    60,
+    1.0,
+    0.25,
+    1,
+    JSON.stringify(sbiSectionsSummary),
+    JSON.stringify(pypPayload),
+    now
+  );
+
   // 3. Remove broken 0-score unattempted or outdated 40-Q attempts so dashboard cards start clean
   const deleted = db.prepare(`
     DELETE FROM test_attempts

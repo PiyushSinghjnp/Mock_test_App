@@ -1,0 +1,10 @@
+    <!-- Target Icon (List View Only) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+<mask id="mask0_1589_203" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="16" height="16">
+<rect width="16" height="16" fill="#D9D9D9"></rect>
+</mask>
+<g mask="url(#mask0_1589_203)">
+<path d="M2.66699 12.6666H5.55799V7.33331H2.66699V12.6666ZM6.55799 12.6666H9.44266V3.33331H6.55799V12.6666ZM10.4427 12.6666H13.3337V8.66665H10.4427V12.6666ZM1.66699 13.6666V6.33331H5.55799V2.33331H10.4427V7.66665H14.3337V13.6666H1.66699Z" fill="#0273A0"></path>
+</g>
+</svg>
+

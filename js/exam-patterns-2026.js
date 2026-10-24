@@ -105,17 +105,18 @@
         prelims: {
           stageId: 'prelims',
           title: 'IBPS SO 2026 Prelims',
-          totalQuestions: 150,
+          totalQuestions: 100,
           totalMarks: 125,
-          totalDurationMinutes: 120,
-          totalDurationSeconds: 7200,
+          totalDurationMinutes: 80,
+          totalDurationSeconds: 4800,
           hasSectionalTiming: true,
           isSectionalLocked: true,
           markingScheme: { positive: 1.0, negative: 0.25, penaltyRatio: '1/4th' },
           sections: [
-            { id: 'english-language', title: 'English Language', aliases: ['english', 'english language'], questionCount: 50, maxMarks: 25, positiveMarks: 0.5, negativeMarks: 0.125, durationMinutes: 40, durationSeconds: 2400, language: 'English', isSectionalLocked: true },
-            { id: 'reasoning-ability', title: 'Reasoning Ability', aliases: ['reasoning', 'reasoning ability'], questionCount: 50, maxMarks: 50, positiveMarks: 1.0, negativeMarks: 0.25, durationMinutes: 40, durationSeconds: 2400, language: 'English & Hindi', isSectionalLocked: true },
-            { id: 'quantitative-aptitude', title: 'Quantitative Aptitude', aliases: ['quant', 'quantitative aptitude', 'general awareness'], questionCount: 50, maxMarks: 50, positiveMarks: 1.0, negativeMarks: 0.25, durationMinutes: 40, durationSeconds: 2400, language: 'English & Hindi', isSectionalLocked: true }
+            { id: 'english-language', title: 'English Language', aliases: ['english', 'english language', 'el'], questionCount: 25, maxMarks: 25, positiveMarks: 1.0, negativeMarks: 0.25, durationMinutes: 20, durationSeconds: 1200, language: 'English', isSectionalLocked: true },
+            { id: 'reasoning-ability', title: 'Reasoning Ability', aliases: ['reasoning', 'reasoning ability', 'lr'], questionCount: 25, maxMarks: 25, positiveMarks: 1.0, negativeMarks: 0.25, durationMinutes: 20, durationSeconds: 1200, language: 'English & Hindi', isSectionalLocked: true },
+            { id: 'quantitative-aptitude', title: 'Quantitative Aptitude', aliases: ['quant', 'quantitative aptitude', 'qa'], questionCount: 25, maxMarks: 25, positiveMarks: 1.0, negativeMarks: 0.25, durationMinutes: 20, durationSeconds: 1200, language: 'English & Hindi', isSectionalLocked: true },
+            { id: 'professional-knowledge', title: 'Professional Knowledge', aliases: ['professional knowledge', 'pk', 'it officer', 'it', 'computer', 'specialist'], questionCount: 25, maxMarks: 50, positiveMarks: 2.0, negativeMarks: 0.5, durationMinutes: 20, durationSeconds: 1200, language: 'English & Hindi', isSectionalLocked: true }
           ]
         },
         mains: {

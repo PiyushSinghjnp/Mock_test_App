@@ -1,0 +1,3324 @@
+{
+  "capturedAt": "2026-10-23T14:30:10.119Z",
+  "url": "https://u1.oliveboard.in/exams/tests/part.php?c=ibpssopreit&testid=1",
+  "title": "Oliveboard",
+  "stage": {
+    "stage": "instructions",
+    "label": "2. Pre-Test Instructions Window (Ready to Start Live Mock)",
+    "info": {}
+  },
+  "visualSnapshots": {
+    "main": "scraped/snapshots/screenshot_oliveboard_1792765801902.png",
+    "mainUrl": "/scraped/snapshots/screenshot_oliveboard_1792765801902.png",
+    "mainByteSize": 199740,
+    "otherTabsCount": 2,
+    "otherTabs": [
+      {
+        "tabIndex": 1,
+        "targetId": "D1B101377807A34C7802B2A86D353D17",
+        "title": "Oliveboard",
+        "url": "https://u1.oliveboard.in/exams/tests/part.php?c=ibpssopreit&testid=1",
+        "filePath": "scraped/snapshots/screenshot_oliveboard_tab2_1792765801902.png",
+        "urlPath": "/scraped/snapshots/screenshot_oliveboard_tab2_1792765801902.png",
+        "byteSize": 118000
+      },
+      {
+        "tabIndex": 2,
+        "targetId": "3C7B996A1DE223126AB9FEA410E3DDE5",
+        "title": "Oliveboard | Banking &amp; Insurance IBPS SO Prelims [IT]",
+        "url": "https://u1.oliveboard.in/tests/?c=ibpssopreit&i=banking",
+        "filePath": "scraped/snapshots/screenshot_oliveboard_tab3_1792765801902.png",
+        "urlPath": "/scraped/snapshots/screenshot_oliveboard_tab3_1792765801902.png",
+        "byteSize": 139205
+      }
+    ]
+  },
+  "domHtmlFile": "scraped/snapshots/dom_oliveboard_1792765801902.html",
+  "reaEvidenceFile": "scraped/snapshots/rea_evidence_oliveboard_1792765801902.json",
+  "reaEvidenceId": "ev_1db8ceea71e90c57faa2eccc6be5490a1720958f2509fae8eb180b3312bb16b7",
+  "reaProvider": "REA Chrome DevTools Protocol observation provider",
+  "viewport": {
+    "innerWidth": 1370,
+    "innerHeight": 744,
+    "devicePixelRatio": 1.25,
+    "scrollX": 0,
+    "scrollY": 0,
+    "screenWidth": 1536,
+    "screenHeight": 864
+  },
+  "modalsCount": 4,
+  "visibleModals": [
+    {
+      "selector": "#cand-time-outer",
+      "id": "cand-time-outer",
+      "className": "",
+      "isVisible": true,
+      "rect": {
+        "top": 59.51250076293945,
+        "left": 1055.2000732421875,
+        "width": 308.3374938964844,
+        "height": 107.125
+      },
+      "heading": "",
+      "textSnippet": "Time Left: 19:51\n\nPause Test",
+      "buttonsCount": 0,
+      "buttons": []
+    }
+  ],
+  "detectedModals": [
+    {
+      "selector": "#submit-pane",
+      "id": "submit-pane",
+      "className": "",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "Exam Summary",
+      "textSnippet": "Exam Summary\n              \n              \n                \n                  \n                  \n                    Section Name\n                  \n                  \n                    No of Questions\n                  \n                  \n                    Answered\n                  \n                  \n                    Not Answered\n                  \n                  \n                    Marked for Review\n                  \n                  \n                    Not Visited",
+      "buttonsCount": 0,
+      "buttons": []
+    },
+    {
+      "selector": "#sure",
+      "id": "sure",
+      "className": "",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "Are you sure you want to submit?\n              Back\n                             Next Section",
+      "buttonsCount": 0,
+      "buttons": []
+    },
+    {
+      "selector": "#calert",
+      "id": "calert",
+      "className": "",
+      "isVisible": false,
+      "rect": {
+        "top": 0,
+        "left": 0,
+        "width": 0,
+        "height": 0
+      },
+      "heading": "",
+      "textSnippet": "Please wait while we save your test.\n        \n        \n          Saving..",
+      "buttonsCount": 1,
+      "buttons": [
+        {
+          "id": "pauseok",
+          "className": "okbtn",
+          "text": "Saving.."
+        }
+      ]
+    },
+    {
+      "selector": "#cand-time-outer",
+      "id": "cand-time-outer",
+      "className": "",
+      "isVisible": true,
+      "rect": {
+        "top": 59.51250076293945,
+        "left": 1055.2000732421875,
+        "width": 308.3374938964844,
+        "height": 107.125
+      },
+      "heading": "",
+      "textSnippet": "Time Left: 19:51\n\nPause Test",
+      "buttonsCount": 0,
+      "buttons": []
+    }
+  ],
+  "tablesCount": 67,
+  "allTables": [
+    {
+      "tableIndex": 0,
+      "id": "",
+      "className": "",
+      "headers": [
+        "Section Name",
+        "No of Questions",
+        "Answered",
+        "Not Answered",
+        "Marked for Review",
+        "Not Visited"
+      ],
+      "rowCount": 0,
+      "rows": [],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 1,
+      "id": "",
+      "className": "tab-in",
+      "headers": [
+        "Section #",
+        "Section Name",
+        "Total Number of Questions",
+        "Max Score",
+        "Time (minutes)",
+        "Language"
+      ],
+      "rowCount": 4,
+      "rows": [
+        [
+          "1",
+          "English Language",
+          "25",
+          "25",
+          "20",
+          "English"
+        ],
+        [
+          "2",
+          "Reasoning Ability",
+          "25",
+          "25",
+          "20",
+          "English & Hindi"
+        ],
+        [
+          "3",
+          "Quantitative Aptitude",
+          "25",
+          "25",
+          "20",
+          "English & Hindi"
+        ],
+        [
+          "4",
+          "Professional Knowledge",
+          "25",
+          "50",
+          "20",
+          "English & Hindi"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 2,
+      "id": "",
+      "className": "explain-butts",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "You have not visited the question yet.",
+          "",
+          "Mark for Review & Next",
+          "Use this to mark and go to next"
+        ],
+        [
+          "",
+          "You have not answered the question.",
+          "",
+          "Clear Response",
+          "Use this to clear selection or marking."
+        ],
+        [
+          "",
+          "You have answered the question.",
+          "",
+          "Save & Next",
+          "Use this to save and go to next."
+        ],
+        [
+          "",
+          "You have NOT answered the question, but have marked the question for review.",
+          "",
+          "Questions",
+          "Use this to View the Question Paper"
+        ],
+        [
+          "",
+          "You have answered the question, but marked it for review.",
+          "",
+          "Instructions",
+          "Use this to View Instructions"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 3,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 1,
+      "rows": [
+        [
+          "English Language"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 4,
+      "id": "",
+      "className": "",
+      "headers": [
+        "hoverbox"
+      ],
+      "rowCount": 5,
+      "rows": [
+        [
+          "Answered",
+          "1"
+        ],
+        [
+          "Not Answered",
+          "1"
+        ],
+        [
+          "Marked for review",
+          "1"
+        ],
+        [
+          "Not Visited",
+          "1"
+        ],
+        [
+          "Answered Marked for review",
+          "1"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 5,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 1,
+      "rows": [
+        [
+          "Directions : Read the passage carefully and answer the questions that follow.\n\n\"I wouldn't say I have a work-life balance,\" a junior doctor recently told me. \"I have a work-life imbalance. I often work 12 days straight, which means I work one week and the weekend and then the following week too. On average I work 48 hours a week, but some weeks it's more like 70.\"\n\nJunior doctors, of course, have long been the paradigm of overworked, underpaid, overstressed, under-appreciated Britons. What many more workers are experiencing now, though, is a grisly new order, a working day that is never done, because phones and emails enable bosses to pester staff at all hours. As a result, one third of us feel unhappy about the time we devote to work and 40% of us are neglecting other parts of our lives because of work demands - which is likely to increase mental health problems.\n\n\"I think of work as an overbearing fascist country that's invading its nice neighbour to establish more lebensraum,\" says an economist who declines to be named or even reveal his or her gender (\"It would be career death,\" he or she says). \"Work and leisure used to have a border, and the Republic of Leisure used to be so peaceful. Now it's just 24/7 anxiety. You never know when you're going to get a text or an email commissioning you to do some work. Or just have your line manager on the phone wanting to discuss something that, in the past, could have waited until the following morning.\"\n\n\"Many's the time I've been nodding off in bed, then I get a text from a commissioning editor, \" says one staff journalist. \"It's like a midnight call from Stalin or something. Next thing I know I'm sitting at my computer in my pyjamas working.\" Having compared his boss to the Soviet Union's leading tyrant, he, perhaps understandably, also asks for his name to be kept secret.\n\nWhat is happening is not just a/an ___________ shift that enables bosses to contact you outside working hours. \"I think there's been a shift in the mentality of working Britons because of the insecurity of employment since the economic downturn of 2008,\" argues Jenny, a freelance radio journalist. \"If you don't do the work in what was once your leisure time, you risk your job. A few years ago, when I was on staff, I'd happily tell a boss to get stuffed if they asked me to do some work on a day I wasn't on the rota. The ethos changed round about 2008/9: I didn't feel as though I could say no because there were compulsory redundancies. When I went self-employed, I thought that anxiety would go away; I thought I'd be able to ringfence my personal time from work time. But in reality, it's not like that: nowadays I never turn my phone off and I'm always checking my emails and texts just in case I get commissioned to do a piece of work. I know some people say you shouldn't check your emails after 6pm or something, but that's just crazy - I'd have missed so much paid work if I'd done that.\""
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 6,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "Which of the following is/are TRUE as per the given passage?\n\nI. 40% of us are neglecting other parts of our lives because of work demands.\n\nII. Junior doctors have long been the paradigm of overworked, underpaid, overstressed, under-appreciated Britons.\n\nIII. The author works for 70 hours per week, on an average."
+        ],
+        [
+          "a)\tI and III only\n\n\tb)\tII only\n\n\tc)\tII and III only\n\n\td)\tI and II only\n\n\te)\tAll I, II and III",
+          "",
+          "a)",
+          "I and III only",
+          "",
+          "b)",
+          "II only",
+          "",
+          "c)",
+          "II and III only",
+          "",
+          "d)",
+          "I and II only",
+          "",
+          "e)",
+          "All I, II and III"
+        ],
+        [
+          "",
+          "a)",
+          "I and III only"
+        ],
+        [
+          "",
+          "b)",
+          "II only"
+        ],
+        [
+          "",
+          "c)",
+          "II and III only"
+        ],
+        [
+          "",
+          "d)",
+          "I and II only"
+        ],
+        [
+          "",
+          "e)",
+          "All I, II and III"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 7,
+      "id": "rightpane-answer1001",
+      "className": "opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "I and III only"
+        ],
+        [
+          "",
+          "b)",
+          "II only"
+        ],
+        [
+          "",
+          "c)",
+          "II and III only"
+        ],
+        [
+          "",
+          "d)",
+          "I and II only"
+        ],
+        [
+          "",
+          "e)",
+          "All I, II and III"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 8,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 1,
+      "rows": [
+        [
+          "Directions : Read the passage carefully and answer the questions that follow.\"I wouldn't say I have a work-life balance,\" a junior doctor recently told me. \"I have a work-life imbalance. I often work 12 days straight, which means I work one week and the weekend and then the following week too. On average I work 48 hours a week, but some weeks it's more like 70.\"Junior doctors, of course, have long been the paradigm of overworked, underpaid, overstressed, under-appreciated Britons. What many more workers are experiencing now, though, is a grisly new order, a working day that is never done, because phones and emails enable bosses to pester staff at all hours. As a result, one third of us feel unhappy about the time we devote to work and 40% of us are neglecting other parts of our lives because of work demands - which is likely to increase mental health problems.\"I think of work as an overbearing fascist country that's invading its nice neighbour to establish more lebensraum,\" says an economist who declines to be named or even reveal his or her gender (\"It would be career death,\" he or she says). \"Work and leisure used to have a border, and the Republic of Leisure used to be so peaceful. Now it's just 24/7 anxiety. You never know when you're going to get a text or an email commissioning you to do some work. Or just have your line manager on the phone wanting to discuss something that, in the past, could have waited until the following morning.\"\"Many's the time I've been nodding off in bed, then I get a text from a commissioning editor, \" says one staff journalist. \"It's like a midnight call from Stalin or something. Next thing I know I'm sitting at my computer in my pyjamas working.\" Having compared his boss to the Soviet Union's leading tyrant, he, perhaps understandably, also asks for his name to be kept secret.What is happening is not just a/an ___________ shift that enables bosses to contact you outside working hours. \"I think there's been a shift in the mentality of working Britons because of the insecurity of employment since the economic downturn of 2008,\" argues Jenny, a freelance radio journalist. \"If you don't do the work in what was once your leisure time, you risk your job. A few years ago, when I was on staff, I'd happily tell a boss to get stuffed if they asked me to do some work on a day I wasn't on the rota. The ethos changed round about 2008/9: I didn't feel as though I could say no because there were compulsory redundancies. When I went self-employed, I thought that anxiety would go away; I thought I'd be able to ringfence my personal time from work time. But in reality, it's not like that: nowadays I never turn my phone off and I'm always checking my emails and texts just in case I get commissioned to do a piece of work. I know some people say you shouldn't check your emails after 6pm or something, but that's just crazy - I'd have missed so much paid work if I'd done that.\""
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 9,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "Which of the following would be synonymous with the word 'straight', as used in the passage?"
+        ],
+        [
+          "a) Unbendingb) Linearc) Honestd) Coherente) Consecutive",
+          "",
+          "a)",
+          "Unbending",
+          "",
+          "b)",
+          "Linear",
+          "",
+          "c)",
+          "Honest",
+          "",
+          "d)",
+          "Coherent",
+          "",
+          "e)",
+          "Consecutive"
+        ],
+        [
+          "",
+          "a)",
+          "Unbending"
+        ],
+        [
+          "",
+          "b)",
+          "Linear"
+        ],
+        [
+          "",
+          "c)",
+          "Honest"
+        ],
+        [
+          "",
+          "d)",
+          "Coherent"
+        ],
+        [
+          "",
+          "e)",
+          "Consecutive"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 10,
+      "id": "rightpane-answer1002",
+      "className": "opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "Unbending"
+        ],
+        [
+          "",
+          "b)",
+          "Linear"
+        ],
+        [
+          "",
+          "c)",
+          "Honest"
+        ],
+        [
+          "",
+          "d)",
+          "Coherent"
+        ],
+        [
+          "",
+          "e)",
+          "Consecutive"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 11,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 1,
+      "rows": [
+        [
+          "Directions : Read the passage carefully and answer the questions that follow.\"I wouldn't say I have a work-life balance,\" a junior doctor recently told me. \"I have a work-life imbalance. I often work 12 days straight, which means I work one week and the weekend and then the following week too. On average I work 48 hours a week, but some weeks it's more like 70.\"Junior doctors, of course, have long been the paradigm of overworked, underpaid, overstressed, under-appreciated Britons. What many more workers are experiencing now, though, is a grisly new order, a working day that is never done, because phones and emails enable bosses to pester staff at all hours. As a result, one third of us feel unhappy about the time we devote to work and 40% of us are neglecting other parts of our lives because of work demands - which is likely to increase mental health problems.\"I think of work as an overbearing fascist country that's invading its nice neighbour to establish more lebensraum,\" says an economist who declines to be named or even reveal his or her gender (\"It would be career death,\" he or she says). \"Work and leisure used to have a border, and the Republic of Leisure used to be so peaceful. Now it's just 24/7 anxiety. You never know when you're going to get a text or an email commissioning you to do some work. Or just have your line manager on the phone wanting to discuss something that, in the past, could have waited until the following morning.\"\"Many's the time I've been nodding off in bed, then I get a text from a commissioning editor, \" says one staff journalist. \"It's like a midnight call from Stalin or something. Next thing I know I'm sitting at my computer in my pyjamas working.\" Having compared his boss to the Soviet Union's leading tyrant, he, perhaps understandably, also asks for his name to be kept secret.What is happening is not just a/an ___________ shift that enables bosses to contact you outside working hours. \"I think there's been a shift in the mentality of working Britons because of the insecurity of employment since the economic downturn of 2008,\" argues Jenny, a freelance radio journalist. \"If you don't do the work in what was once your leisure time, you risk your job. A few years ago, when I was on staff, I'd happily tell a boss to get stuffed if they asked me to do some work on a day I wasn't on the rota. The ethos changed round about 2008/9: I didn't feel as though I could say no because there were compulsory redundancies. When I went self-employed, I thought that anxiety would go away; I thought I'd be able to ringfence my personal time from work time. But in reality, it's not like that: nowadays I never turn my phone off and I'm always checking my emails and texts just in case I get commissioned to do a piece of work. I know some people say you shouldn't check your emails after 6pm or something, but that's just crazy - I'd have missed so much paid work if I'd done that.\""
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 12,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "Which of the following will be synonym of the word 'invading', as used in the passage?"
+        ],
+        [
+          "a) Trespassingb) Yieldingc) Withdrawingd) Assistinge) Surrendering",
+          "",
+          "a)",
+          "Trespassing",
+          "",
+          "b)",
+          "Yielding",
+          "",
+          "c)",
+          "Withdrawing",
+          "",
+          "d)",
+          "Assisting",
+          "",
+          "e)",
+          "Surrendering"
+        ],
+        [
+          "",
+          "a)",
+          "Trespassing"
+        ],
+        [
+          "",
+          "b)",
+          "Yielding"
+        ],
+        [
+          "",
+          "c)",
+          "Withdrawing"
+        ],
+        [
+          "",
+          "d)",
+          "Assisting"
+        ],
+        [
+          "",
+          "e)",
+          "Surrendering"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 13,
+      "id": "rightpane-answer1003",
+      "className": "opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "Trespassing"
+        ],
+        [
+          "",
+          "b)",
+          "Yielding"
+        ],
+        [
+          "",
+          "c)",
+          "Withdrawing"
+        ],
+        [
+          "",
+          "d)",
+          "Assisting"
+        ],
+        [
+          "",
+          "e)",
+          "Surrendering"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 14,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 1,
+      "rows": [
+        [
+          "Directions : Read the passage carefully and answer the questions that follow.\"I wouldn't say I have a work-life balance,\" a junior doctor recently told me. \"I have a work-life imbalance. I often work 12 days straight, which means I work one week and the weekend and then the following week too. On average I work 48 hours a week, but some weeks it's more like 70.\"Junior doctors, of course, have long been the paradigm of overworked, underpaid, overstressed, under-appreciated Britons. What many more workers are experiencing now, though, is a grisly new order, a working day that is never done, because phones and emails enable bosses to pester staff at all hours. As a result, one third of us feel unhappy about the time we devote to work and 40% of us are neglecting other parts of our lives because of work demands - which is likely to increase mental health problems.\"I think of work as an overbearing fascist country that's invading its nice neighbour to establish more lebensraum,\" says an economist who declines to be named or even reveal his or her gender (\"It would be career death,\" he or she says). \"Work and leisure used to have a border, and the Republic of Leisure used to be so peaceful. Now it's just 24/7 anxiety. You never know when you're going to get a text or an email commissioning you to do some work. Or just have your line manager on the phone wanting to discuss something that, in the past, could have waited until the following morning.\"\"Many's the time I've been nodding off in bed, then I get a text from a commissioning editor, \" says one staff journalist. \"It's like a midnight call from Stalin or something. Next thing I know I'm sitting at my computer in my pyjamas working.\" Having compared his boss to the Soviet Union's leading tyrant, he, perhaps understandably, also asks for his name to be kept secret.What is happening is not just a/an ___________ shift that enables bosses to contact you outside working hours. \"I think there's been a shift in the mentality of working Britons because of the insecurity of employment since the economic downturn of 2008,\" argues Jenny, a freelance radio journalist. \"If you don't do the work in what was once your leisure time, you risk your job. A few years ago, when I was on staff, I'd happily tell a boss to get stuffed if they asked me to do some work on a day I wasn't on the rota. The ethos changed round about 2008/9: I didn't feel as though I could say no because there were compulsory redundancies. When I went self-employed, I thought that anxiety would go away; I thought I'd be able to ringfence my personal time from work time. But in reality, it's not like that: nowadays I never turn my phone off and I'm always checking my emails and texts just in case I get commissioned to do a piece of work. I know some people say you shouldn't check your emails after 6pm or something, but that's just crazy - I'd have missed so much paid work if I'd done that.\""
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 15,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "Which of the following situation can probably be classified as an appropriate example for work-life balance?"
+        ],
+        [
+          "a) Working one week-one weekend and working in the following week too.b) Working 12 days straight and taking no breaks in between.c) Working in between 48 to 70 hours on an average per week.d) Working less than 48 hours per week on an average.e) All of the above",
+          "",
+          "a)",
+          "Working one week-one weekend and working in the following week too.",
+          "",
+          "b)",
+          "Working 12 days straight and taking no breaks in between.",
+          "",
+          "c)",
+          "Working in between 48 to 70 hours on an average per week.",
+          "",
+          "d)",
+          "Working less than 48 hours per week on an average.",
+          "",
+          "e)",
+          "All of the above"
+        ],
+        [
+          "",
+          "a)",
+          "Working one week-one weekend and working in the following week too."
+        ],
+        [
+          "",
+          "b)",
+          "Working 12 days straight and taking no breaks in between."
+        ],
+        [
+          "",
+          "c)",
+          "Working in between 48 to 70 hours on an average per week."
+        ],
+        [
+          "",
+          "d)",
+          "Working less than 48 hours per week on an average."
+        ],
+        [
+          "",
+          "e)",
+          "All of the above"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 16,
+      "id": "rightpane-answer1004",
+      "className": "opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "Working one week-one weekend and working in the following week too."
+        ],
+        [
+          "",
+          "b)",
+          "Working 12 days straight and taking no breaks in between."
+        ],
+        [
+          "",
+          "c)",
+          "Working in between 48 to 70 hours on an average per week."
+        ],
+        [
+          "",
+          "d)",
+          "Working less than 48 hours per week on an average."
+        ],
+        [
+          "",
+          "e)",
+          "All of the above"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 17,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 1,
+      "rows": [
+        [
+          "Directions : Read the passage carefully and answer the questions that follow.\"I wouldn't say I have a work-life balance,\" a junior doctor recently told me. \"I have a work-life imbalance. I often work 12 days straight, which means I work one week and the weekend and then the following week too. On average I work 48 hours a week, but some weeks it's more like 70.\"Junior doctors, of course, have long been the paradigm of overworked, underpaid, overstressed, under-appreciated Britons. What many more workers are experiencing now, though, is a grisly new order, a working day that is never done, because phones and emails enable bosses to pester staff at all hours. As a result, one third of us feel unhappy about the time we devote to work and 40% of us are neglecting other parts of our lives because of work demands - which is likely to increase mental health problems.\"I think of work as an overbearing fascist country that's invading its nice neighbour to establish more lebensraum,\" says an economist who declines to be named or even reveal his or her gender (\"It would be career death,\" he or she says). \"Work and leisure used to have a border, and the Republic of Leisure used to be so peaceful. Now it's just 24/7 anxiety. You never know when you're going to get a text or an email commissioning you to do some work. Or just have your line manager on the phone wanting to discuss something that, in the past, could have waited until the following morning.\"\"Many's the time I've been nodding off in bed, then I get a text from a commissioning editor, \" says one staff journalist. \"It's like a midnight call from Stalin or something. Next thing I know I'm sitting at my computer in my pyjamas working.\" Having compared his boss to the Soviet Union's leading tyrant, he, perhaps understandably, also asks for his name to be kept secret.What is happening is not just a/an ___________ shift that enables bosses to contact you outside working hours. \"I think there's been a shift in the mentality of working Britons because of the insecurity of employment since the economic downturn of 2008,\" argues Jenny, a freelance radio journalist. \"If you don't do the work in what was once your leisure time, you risk your job. A few years ago, when I was on staff, I'd happily tell a boss to get stuffed if they asked me to do some work on a day I wasn't on the rota. The ethos changed round about 2008/9: I didn't feel as though I could say no because there were compulsory redundancies. When I went self-employed, I thought that anxiety would go away; I thought I'd be able to ringfence my personal time from work time. But in reality, it's not like that: nowadays I never turn my phone off and I'm always checking my emails and texts just in case I get commissioned to do a piece of work. I know some people say you shouldn't check your emails after 6pm or something, but that's just crazy - I'd have missed so much paid work if I'd done that.\""
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 18,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "Which of the following would fit grammatically and contextually in the blank given in the passage?"
+        ],
+        [
+          "a) technologyb) technologicalc) technologicallyd) techniquee) None of the above",
+          "",
+          "a)",
+          "technology",
+          "",
+          "b)",
+          "technological",
+          "",
+          "c)",
+          "technologically",
+          "",
+          "d)",
+          "technique",
+          "",
+          "e)",
+          "None of the above"
+        ],
+        [
+          "",
+          "a)",
+          "technology"
+        ],
+        [
+          "",
+          "b)",
+          "technological"
+        ],
+        [
+          "",
+          "c)",
+          "technologically"
+        ],
+        [
+          "",
+          "d)",
+          "technique"
+        ],
+        [
+          "",
+          "e)",
+          "None of the above"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 19,
+      "id": "rightpane-answer1005",
+      "className": "opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "technology"
+        ],
+        [
+          "",
+          "b)",
+          "technological"
+        ],
+        [
+          "",
+          "c)",
+          "technologically"
+        ],
+        [
+          "",
+          "d)",
+          "technique"
+        ],
+        [
+          "",
+          "e)",
+          "None of the above"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 20,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 1,
+      "rows": [
+        [
+          "Directions : Read the passage carefully and answer the questions that follow.\"I wouldn't say I have a work-life balance,\" a junior doctor recently told me. \"I have a work-life imbalance. I often work 12 days straight, which means I work one week and the weekend and then the following week too. On average I work 48 hours a week, but some weeks it's more like 70.\"Junior doctors, of course, have long been the paradigm of overworked, underpaid, overstressed, under-appreciated Britons. What many more workers are experiencing now, though, is a grisly new order, a working day that is never done, because phones and emails enable bosses to pester staff at all hours. As a result, one third of us feel unhappy about the time we devote to work and 40% of us are neglecting other parts of our lives because of work demands - which is likely to increase mental health problems.\"I think of work as an overbearing fascist country that's invading its nice neighbour to establish more lebensraum,\" says an economist who declines to be named or even reveal his or her gender (\"It would be career death,\" he or she says). \"Work and leisure used to have a border, and the Republic of Leisure used to be so peaceful. Now it's just 24/7 anxiety. You never know when you're going to get a text or an email commissioning you to do some work. Or just have your line manager on the phone wanting to discuss something that, in the past, could have waited until the following morning.\"\"Many's the time I've been nodding off in bed, then I get a text from a commissioning editor, \" says one staff journalist. \"It's like a midnight call from Stalin or something. Next thing I know I'm sitting at my computer in my pyjamas working.\" Having compared his boss to the Soviet Union's leading tyrant, he, perhaps understandably, also asks for his name to be kept secret.What is happening is not just a/an ___________ shift that enables bosses to contact you outside working hours. \"I think there's been a shift in the mentality of working Britons because of the insecurity of employment since the economic downturn of 2008,\" argues Jenny, a freelance radio journalist. \"If you don't do the work in what was once your leisure time, you risk your job. A few years ago, when I was on staff, I'd happily tell a boss to get stuffed if they asked me to do some work on a day I wasn't on the rota. The ethos changed round about 2008/9: I didn't feel as though I could say no because there were compulsory redundancies. When I went self-employed, I thought that anxiety would go away; I thought I'd be able to ringfence my personal time from work time. But in reality, it's not like that: nowadays I never turn my phone off and I'm always checking my emails and texts just in case I get commissioned to do a piece of work. I know some people say you shouldn't check your emails after 6pm or something, but that's just crazy - I'd have missed so much paid work if I'd done that.\""
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 21,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "Which of the following point would the author disagree with, as mentioned in the passage?"
+        ],
+        [
+          "a) No change of ethos was observed in 2008/09.b) More risk-taking abilities are required from job perspective.c) None of thesed) Few years back, telling the boss to get stuffed if asked to do some work when not on the rota was easier.e) Author is always checking texts and emails to do a piece of work.",
+          "",
+          "a)",
+          "No change of ethos was observed in 2008/09.",
+          "",
+          "b)",
+          "More risk-taking abilities are required from job perspective.",
+          "",
+          "c)",
+          "None of these",
+          "",
+          "d)",
+          "Few years back, telling the boss to get stuffed if asked to do some work when not on the rota was easier.",
+          "",
+          "e)",
+          "Author is always checking texts and emails to do a piece of work."
+        ],
+        [
+          "",
+          "a)",
+          "No change of ethos was observed in 2008/09."
+        ],
+        [
+          "",
+          "b)",
+          "More risk-taking abilities are required from job perspective."
+        ],
+        [
+          "",
+          "c)",
+          "None of these"
+        ],
+        [
+          "",
+          "d)",
+          "Few years back, telling the boss to get stuffed if asked to do some work when not on the rota was easier."
+        ],
+        [
+          "",
+          "e)",
+          "Author is always checking texts and emails to do a piece of work."
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 22,
+      "id": "rightpane-answer1006",
+      "className": "opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "No change of ethos was observed in 2008/09."
+        ],
+        [
+          "",
+          "b)",
+          "More risk-taking abilities are required from job perspective."
+        ],
+        [
+          "",
+          "c)",
+          "None of these"
+        ],
+        [
+          "",
+          "d)",
+          "Few years back, telling the boss to get stuffed if asked to do some work when not on the rota was easier."
+        ],
+        [
+          "",
+          "e)",
+          "Author is always checking texts and emails to do a piece of work."
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 23,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 1,
+      "rows": [
+        [
+          "Directions : Read the passage carefully and answer the questions that follow.\"I wouldn't say I have a work-life balance,\" a junior doctor recently told me. \"I have a work-life imbalance. I often work 12 days straight, which means I work one week and the weekend and then the following week too. On average I work 48 hours a week, but some weeks it's more like 70.\"Junior doctors, of course, have long been the paradigm of overworked, underpaid, overstressed, under-appreciated Britons. What many more workers are experiencing now, though, is a grisly new order, a working day that is never done, because phones and emails enable bosses to pester staff at all hours. As a result, one third of us feel unhappy about the time we devote to work and 40% of us are neglecting other parts of our lives because of work demands - which is likely to increase mental health problems.\"I think of work as an overbearing fascist country that's invading its nice neighbour to establish more lebensraum,\" says an economist who declines to be named or even reveal his or her gender (\"It would be career death,\" he or she says). \"Work and leisure used to have a border, and the Republic of Leisure used to be so peaceful. Now it's just 24/7 anxiety. You never know when you're going to get a text or an email commissioning you to do some work. Or just have your line manager on the phone wanting to discuss something that, in the past, could have waited until the following morning.\"\"Many's the time I've been nodding off in bed, then I get a text from a commissioning editor, \" says one staff journalist. \"It's like a midnight call from Stalin or something. Next thing I know I'm sitting at my computer in my pyjamas working.\" Having compared his boss to the Soviet Union's leading tyrant, he, perhaps understandably, also asks for his name to be kept secret.What is happening is not just a/an ___________ shift that enables bosses to contact you outside working hours. \"I think there's been a shift in the mentality of working Britons because of the insecurity of employment since the economic downturn of 2008,\" argues Jenny, a freelance radio journalist. \"If you don't do the work in what was once your leisure time, you risk your job. A few years ago, when I was on staff, I'd happily tell a boss to get stuffed if they asked me to do some work on a day I wasn't on the rota. The ethos changed round about 2008/9: I didn't feel as though I could say no because there were compulsory redundancies. When I went self-employed, I thought that anxiety would go away; I thought I'd be able to ringfence my personal time from work time. But in reality, it's not like that: nowadays I never turn my phone off and I'm always checking my emails and texts just in case I get commissioned to do a piece of work. I know some people say you shouldn't check your emails after 6pm or something, but that's just crazy - I'd have missed so much paid work if I'd done that.\""
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 24,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "According to the passage, why did the author say that 'a working day is never done'?"
+        ],
+        [
+          "a) One-third of us feel unhappy about the time we devote to workb) Two-fifth of us are neglecting other parts of our lives because of work demandsc) Phones and emails enable bosses to pester staff at all hours.d) There is no such thing as work-life balance, in reality.e) Insecurity of employment since the economic downturn of 2008.",
+          "",
+          "a)",
+          "One-third of us feel unhappy about the time we devote to work",
+          "",
+          "b)",
+          "Two-fifth of us are neglecting other parts of our lives because of work demands",
+          "",
+          "c)",
+          "Phones and emails enable bosses to pester staff at all hours.",
+          "",
+          "d)",
+          "There is no such thing as work-life balance, in reality.",
+          "",
+          "e)",
+          "Insecurity of employment since the economic downturn of 2008."
+        ],
+        [
+          "",
+          "a)",
+          "One-third of us feel unhappy about the time we devote to work"
+        ],
+        [
+          "",
+          "b)",
+          "Two-fifth of us are neglecting other parts of our lives because of work demands"
+        ],
+        [
+          "",
+          "c)",
+          "Phones and emails enable bosses to pester staff at all hours."
+        ],
+        [
+          "",
+          "d)",
+          "There is no such thing as work-life balance, in reality."
+        ],
+        [
+          "",
+          "e)",
+          "Insecurity of employment since the economic downturn of 2008."
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 25,
+      "id": "rightpane-answer1007",
+      "className": "opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "One-third of us feel unhappy about the time we devote to work"
+        ],
+        [
+          "",
+          "b)",
+          "Two-fifth of us are neglecting other parts of our lives because of work demands"
+        ],
+        [
+          "",
+          "c)",
+          "Phones and emails enable bosses to pester staff at all hours."
+        ],
+        [
+          "",
+          "d)",
+          "There is no such thing as work-life balance, in reality."
+        ],
+        [
+          "",
+          "e)",
+          "Insecurity of employment since the economic downturn of 2008."
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 26,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 1,
+      "rows": [
+        [
+          "Directions : Read the passage carefully and answer the questions that follow.\"I wouldn't say I have a work-life balance,\" a junior doctor recently told me. \"I have a work-life imbalance. I often work 12 days straight, which means I work one week and the weekend and then the following week too. On average I work 48 hours a week, but some weeks it's more like 70.\"Junior doctors, of course, have long been the paradigm of overworked, underpaid, overstressed, under-appreciated Britons. What many more workers are experiencing now, though, is a grisly new order, a working day that is never done, because phones and emails enable bosses to pester staff at all hours. As a result, one third of us feel unhappy about the time we devote to work and 40% of us are neglecting other parts of our lives because of work demands - which is likely to increase mental health problems.\"I think of work as an overbearing fascist country that's invading its nice neighbour to establish more lebensraum,\" says an economist who declines to be named or even reveal his or her gender (\"It would be career death,\" he or she says). \"Work and leisure used to have a border, and the Republic of Leisure used to be so peaceful. Now it's just 24/7 anxiety. You never know when you're going to get a text or an email commissioning you to do some work. Or just have your line manager on the phone wanting to discuss something that, in the past, could have waited until the following morning.\"\"Many's the time I've been nodding off in bed, then I get a text from a commissioning editor, \" says one staff journalist. \"It's like a midnight call from Stalin or something. Next thing I know I'm sitting at my computer in my pyjamas working.\" Having compared his boss to the Soviet Union's leading tyrant, he, perhaps understandably, also asks for his name to be kept secret.What is happening is not just a/an ___________ shift that enables bosses to contact you outside working hours. \"I think there's been a shift in the mentality of working Britons because of the insecurity of employment since the economic downturn of 2008,\" argues Jenny, a freelance radio journalist. \"If you don't do the work in what was once your leisure time, you risk your job. A few years ago, when I was on staff, I'd happily tell a boss to get stuffed if they asked me to do some work on a day I wasn't on the rota. The ethos changed round about 2008/9: I didn't feel as though I could say no because there were compulsory redundancies. When I went self-employed, I thought that anxiety would go away; I thought I'd be able to ringfence my personal time from work time. But in reality, it's not like that: nowadays I never turn my phone off and I'm always checking my emails and texts just in case I get commissioned to do a piece of work. I know some people say you shouldn't check your emails after 6pm or something, but that's just crazy - I'd have missed so much paid work if I'd done that.\""
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 27,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "According to the passage, why the author, nowadays, keeps checking emails and never turns the phone off?"
+        ],
+        [
+          "a) He is a workaholicb) To check in case, he gets commissioned to do a piece of workc) He finds people, who do not check their texts and emails, crazy.d) He doesn't believe in the concept of 'work-life balance'e) All of the above",
+          "",
+          "a)",
+          "He is a workaholic",
+          "",
+          "b)",
+          "To check in case, he gets commissioned to do a piece of work",
+          "",
+          "c)",
+          "He finds people, who do not check their texts and emails, crazy.",
+          "",
+          "d)",
+          "He doesn't believe in the concept of 'work-life balance'",
+          "",
+          "e)",
+          "All of the above"
+        ],
+        [
+          "",
+          "a)",
+          "He is a workaholic"
+        ],
+        [
+          "",
+          "b)",
+          "To check in case, he gets commissioned to do a piece of work"
+        ],
+        [
+          "",
+          "c)",
+          "He finds people, who do not check their texts and emails, crazy."
+        ],
+        [
+          "",
+          "d)",
+          "He doesn't believe in the concept of 'work-life balance'"
+        ],
+        [
+          "",
+          "e)",
+          "All of the above"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 28,
+      "id": "rightpane-answer1008",
+      "className": "opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "He is a workaholic"
+        ],
+        [
+          "",
+          "b)",
+          "To check in case, he gets commissioned to do a piece of work"
+        ],
+        [
+          "",
+          "c)",
+          "He finds people, who do not check their texts and emails, crazy."
+        ],
+        [
+          "",
+          "d)",
+          "He doesn't believe in the concept of 'work-life balance'"
+        ],
+        [
+          "",
+          "e)",
+          "All of the above"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 29,
+      "id": "myquestion1009",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In each of the questions given below, a sentence is given with a part highlighted in bold. From the answer choices, select the option that replaces the phrase in bold. In the case that the sentence is correct as it is, choose the 'No Improvement' option.Companies like Safi Organics are at the forefront of a larger movement to equip Kenyan small-scale farmers with the tools they badly need to cope up global warming."
+        ],
+        [
+          "a) need to coping with b) needs to cope with c) need to cope by d) need to cope with e) No Improvement",
+          "",
+          "a)",
+          "need to coping with",
+          "",
+          "b)",
+          "needs to cope with",
+          "",
+          "c)",
+          "need to cope by",
+          "",
+          "d)",
+          "need to cope with",
+          "",
+          "e)",
+          "No Improvement"
+        ],
+        [
+          "",
+          "a)",
+          "need to coping with"
+        ],
+        [
+          "",
+          "b)",
+          "needs to cope with"
+        ],
+        [
+          "",
+          "c)",
+          "need to cope by"
+        ],
+        [
+          "",
+          "d)",
+          "need to cope with"
+        ],
+        [
+          "",
+          "e)",
+          "No Improvement"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 30,
+      "id": "myanswer1009",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "need to coping with"
+        ],
+        [
+          "",
+          "b)",
+          "needs to cope with"
+        ],
+        [
+          "",
+          "c)",
+          "need to cope by"
+        ],
+        [
+          "",
+          "d)",
+          "need to cope with"
+        ],
+        [
+          "",
+          "e)",
+          "No Improvement"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 31,
+      "id": "myquestion1010",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the following question, a word has been given and there are four ways in which the word has been used, in similar or different forms. Choose the sentence in which the word is correctly used and mark that as your answer. If the word is used correctly in all sentences, then mark (e) as your answer.CONCEPT"
+        ],
+        [
+          "a) Ram saw his excellent results with joy and concept. b) She regularly failed at performing her tasks on a concept basis. c) It is necessary in times of joy, to be concept to God. d) She said that the concept of arranged marriages is not spoken about in America. e) All options are correct.",
+          "",
+          "a)",
+          "Ram saw his excellent results with joy and concept.",
+          "",
+          "b)",
+          "She regularly failed at performing her tasks on a concept basis.",
+          "",
+          "c)",
+          "It is necessary in times of joy, to be concept to God.",
+          "",
+          "d)",
+          "She said that the concept of arranged marriages is not spoken about in America.",
+          "",
+          "e)",
+          "All options are correct."
+        ],
+        [
+          "",
+          "a)",
+          "Ram saw his excellent results with joy and concept."
+        ],
+        [
+          "",
+          "b)",
+          "She regularly failed at performing her tasks on a concept basis."
+        ],
+        [
+          "",
+          "c)",
+          "It is necessary in times of joy, to be concept to God."
+        ],
+        [
+          "",
+          "d)",
+          "She said that the concept of arranged marriages is not spoken about in America."
+        ],
+        [
+          "",
+          "e)",
+          "All options are correct."
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 32,
+      "id": "myanswer1010",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "Ram saw his excellent results with joy and concept."
+        ],
+        [
+          "",
+          "b)",
+          "She regularly failed at performing her tasks on a concept basis."
+        ],
+        [
+          "",
+          "c)",
+          "It is necessary in times of joy, to be concept to God."
+        ],
+        [
+          "",
+          "d)",
+          "She said that the concept of arranged marriages is not spoken about in America."
+        ],
+        [
+          "",
+          "e)",
+          "All options are correct."
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 33,
+      "id": "myquestion1011",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the following question, a word has been given and there are four ways in which the word has been used, in similar or different forms. Choose the sentence in which the word is correctly used and mark that as your answer. If the word is used correctly in all sentences, then mark (e) as your answer.LEVEL"
+        ],
+        [
+          "a) Some people need all the levels and figures before they do something. b) His biggest fear in life was that people would level him after his death. c) Only last month did the men's and women's monthly salaries reach the same level. d) It was a level beach, filled with trees and the sound of waves. e) All options are correct.",
+          "",
+          "a)",
+          "Some people need all the levels and figures before they do something.",
+          "",
+          "b)",
+          "His biggest fear in life was that people would level him after his death.",
+          "",
+          "c)",
+          "Only last month did the men's and women's monthly salaries reach the same level.",
+          "",
+          "d)",
+          "It was a level beach, filled with trees and the sound of waves.",
+          "",
+          "e)",
+          "All options are correct."
+        ],
+        [
+          "",
+          "a)",
+          "Some people need all the levels and figures before they do something."
+        ],
+        [
+          "",
+          "b)",
+          "His biggest fear in life was that people would level him after his death."
+        ],
+        [
+          "",
+          "c)",
+          "Only last month did the men's and women's monthly salaries reach the same level."
+        ],
+        [
+          "",
+          "d)",
+          "It was a level beach, filled with trees and the sound of waves."
+        ],
+        [
+          "",
+          "e)",
+          "All options are correct."
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 34,
+      "id": "myanswer1011",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "Some people need all the levels and figures before they do something."
+        ],
+        [
+          "",
+          "b)",
+          "His biggest fear in life was that people would level him after his death."
+        ],
+        [
+          "",
+          "c)",
+          "Only last month did the men's and women's monthly salaries reach the same level."
+        ],
+        [
+          "",
+          "d)",
+          "It was a level beach, filled with trees and the sound of waves."
+        ],
+        [
+          "",
+          "e)",
+          "All options are correct."
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 35,
+      "id": "myquestion1012",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the following question, a part of the sentence has been highlighted. You need to identify which of the given options can replace the highlighted part and make the sentence grammatically and contextually correct. In case the highlighted part is correct, mark option E as your answer.Only two women applied to become the next governor of the Bank of England, despite the fact the Treasury hired a specialist headhunting firm aimed at diversifying its list of candidates."
+        ],
+        [
+          "a) hire a specialist headhunting b) hire a special headhunting c) hired a specialist headhunt d) hired a special headhunt e) No correction required",
+          "",
+          "a)",
+          "hire a specialist headhunting",
+          "",
+          "b)",
+          "hire a special headhunting",
+          "",
+          "c)",
+          "hired a specialist headhunt",
+          "",
+          "d)",
+          "hired a special headhunt",
+          "",
+          "e)",
+          "No correction required"
+        ],
+        [
+          "",
+          "a)",
+          "hire a specialist headhunting"
+        ],
+        [
+          "",
+          "b)",
+          "hire a special headhunting"
+        ],
+        [
+          "",
+          "c)",
+          "hired a specialist headhunt"
+        ],
+        [
+          "",
+          "d)",
+          "hired a special headhunt"
+        ],
+        [
+          "",
+          "e)",
+          "No correction required"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 36,
+      "id": "myanswer1012",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "hire a specialist headhunting"
+        ],
+        [
+          "",
+          "b)",
+          "hire a special headhunting"
+        ],
+        [
+          "",
+          "c)",
+          "hired a specialist headhunt"
+        ],
+        [
+          "",
+          "d)",
+          "hired a special headhunt"
+        ],
+        [
+          "",
+          "e)",
+          "No correction required"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 37,
+      "id": "myquestion1013",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the following question, a part of the sentence has been highlighted. You need to identify which of the given options can replace the highlighted part and make the sentence grammatically and contextually correct. In case the highlighted part is correct, mark option E as your answer.The World Bank, many governments and large NGOs now insist on randomising controls methods wherever feasible."
+        ],
+        [
+          "a) insists on randomised control b) insist on randomise control c) insist on randomised control d) insist on randomised controls e) No replacement required",
+          "",
+          "a)",
+          "insists on randomised control",
+          "",
+          "b)",
+          "insist on randomise control",
+          "",
+          "c)",
+          "insist on randomised control",
+          "",
+          "d)",
+          "insist on randomised controls",
+          "",
+          "e)",
+          "No replacement required"
+        ],
+        [
+          "",
+          "a)",
+          "insists on randomised control"
+        ],
+        [
+          "",
+          "b)",
+          "insist on randomise control"
+        ],
+        [
+          "",
+          "c)",
+          "insist on randomised control"
+        ],
+        [
+          "",
+          "d)",
+          "insist on randomised controls"
+        ],
+        [
+          "",
+          "e)",
+          "No replacement required"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 38,
+      "id": "myanswer1013",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "insists on randomised control"
+        ],
+        [
+          "",
+          "b)",
+          "insist on randomise control"
+        ],
+        [
+          "",
+          "c)",
+          "insist on randomised control"
+        ],
+        [
+          "",
+          "d)",
+          "insist on randomised controls"
+        ],
+        [
+          "",
+          "e)",
+          "No replacement required"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 39,
+      "id": "myquestion1014",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the question below, a sentence is given with four words highlighted in bold. One of these four words may be either wrongly spelt or inappropriate in the context of the sentence. Find out the word, which is wrongly spelt or inappropriate, if any. If all the words are correctly spelt and appropriate in the context of the sentence, mark (E) as your answer.Managing animal waist(A) can reduce(B) methane emissions(C) and increase the amount of carbon stored away in pasture(D) lands."
+        ],
+        [
+          "a) A b) B c) C d) D e) All are correct",
+          "",
+          "a)",
+          "A",
+          "",
+          "b)",
+          "B",
+          "",
+          "c)",
+          "C",
+          "",
+          "d)",
+          "D",
+          "",
+          "e)",
+          "All are correct"
+        ],
+        [
+          "",
+          "a)",
+          "A"
+        ],
+        [
+          "",
+          "b)",
+          "B"
+        ],
+        [
+          "",
+          "c)",
+          "C"
+        ],
+        [
+          "",
+          "d)",
+          "D"
+        ],
+        [
+          "",
+          "e)",
+          "All are correct"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 40,
+      "id": "myanswer1014",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "A"
+        ],
+        [
+          "",
+          "b)",
+          "B"
+        ],
+        [
+          "",
+          "c)",
+          "C"
+        ],
+        [
+          "",
+          "d)",
+          "D"
+        ],
+        [
+          "",
+          "e)",
+          "All are correct"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 41,
+      "id": "myquestion1015",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the question below, a sentence is given with four words highlighted in bold. One of these four words may be either wrongly spelt or inappropriate in the context of the sentence. Find out the word, which is wrongly spelt or inappropriate, if any. If all the words are correctly spelt and appropriate in the context of the sentence, mark (E) as your answer.Forest fires are uncontrolled(A) fires occurring in nature, accidental(B) disasters which pause(C) a challenge to forest ecosystems(D) globally."
+        ],
+        [
+          "a) A b) C c) D d) B e) All are correct",
+          "",
+          "a)",
+          "A",
+          "",
+          "b)",
+          "C",
+          "",
+          "c)",
+          "D",
+          "",
+          "d)",
+          "B",
+          "",
+          "e)",
+          "All are correct"
+        ],
+        [
+          "",
+          "a)",
+          "A"
+        ],
+        [
+          "",
+          "b)",
+          "C"
+        ],
+        [
+          "",
+          "c)",
+          "D"
+        ],
+        [
+          "",
+          "d)",
+          "B"
+        ],
+        [
+          "",
+          "e)",
+          "All are correct"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 42,
+      "id": "myanswer1015",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "A"
+        ],
+        [
+          "",
+          "b)",
+          "C"
+        ],
+        [
+          "",
+          "c)",
+          "D"
+        ],
+        [
+          "",
+          "d)",
+          "B"
+        ],
+        [
+          "",
+          "e)",
+          "All are correct"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 43,
+      "id": "myquestion1016",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the question below, a sentence is given with four words highlighted in bold. One of these four words may be either wrongly spelt or inappropriate in the context of the sentence. Find out the word, which is wrongly spelt or inappropriate, if any. If all the words are correctly spelt and appropriate in the context of the sentence, mark (E) as your answer.Though(A) the dust storm had begun to vacate(B) the region(C), its short presence made for some eereily(D) beautiful imagery."
+        ],
+        [
+          "a) D b) C c) A d) B e) All are correct",
+          "",
+          "a)",
+          "D",
+          "",
+          "b)",
+          "C",
+          "",
+          "c)",
+          "A",
+          "",
+          "d)",
+          "B",
+          "",
+          "e)",
+          "All are correct"
+        ],
+        [
+          "",
+          "a)",
+          "D"
+        ],
+        [
+          "",
+          "b)",
+          "C"
+        ],
+        [
+          "",
+          "c)",
+          "A"
+        ],
+        [
+          "",
+          "d)",
+          "B"
+        ],
+        [
+          "",
+          "e)",
+          "All are correct"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 44,
+      "id": "myanswer1016",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "D"
+        ],
+        [
+          "",
+          "b)",
+          "C"
+        ],
+        [
+          "",
+          "c)",
+          "A"
+        ],
+        [
+          "",
+          "d)",
+          "B"
+        ],
+        [
+          "",
+          "e)",
+          "All are correct"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 45,
+      "id": "myquestion1017",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the following question, one part of the sentence may have an error. Find out which part of the sentence has an error and select the appropriate option. If the sentence is free from error, select 'No Error'. Ignore errors of punctuation, if any.When people experience adversity, (A) / the worst thing that can happen (B) / is for them to return (C) / to their usual way on coping. (D)"
+        ],
+        [
+          "a) A b) B c) C d) No error e) D",
+          "",
+          "a)",
+          "A",
+          "",
+          "b)",
+          "B",
+          "",
+          "c)",
+          "C",
+          "",
+          "d)",
+          "No error",
+          "",
+          "e)",
+          "D"
+        ],
+        [
+          "",
+          "a)",
+          "A"
+        ],
+        [
+          "",
+          "b)",
+          "B"
+        ],
+        [
+          "",
+          "c)",
+          "C"
+        ],
+        [
+          "",
+          "d)",
+          "No error"
+        ],
+        [
+          "",
+          "e)",
+          "D"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 46,
+      "id": "myanswer1017",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "A"
+        ],
+        [
+          "",
+          "b)",
+          "B"
+        ],
+        [
+          "",
+          "c)",
+          "C"
+        ],
+        [
+          "",
+          "d)",
+          "No error"
+        ],
+        [
+          "",
+          "e)",
+          "D"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 47,
+      "id": "myquestion1018",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the following question, one part of the sentence may have an error. Find out which part of the sentence has an error and select the appropriate option. If the sentence is free from error, select 'No Error'. Ignore errors of punctuation, if any.Research into whether memories (A) /could be traumatised from one (B)/ individual to another is rooted in (C)/ the study of flatworms known as planarians (D)."
+        ],
+        [
+          "a) B b) D c) C d) A e) No error",
+          "",
+          "a)",
+          "B",
+          "",
+          "b)",
+          "D",
+          "",
+          "c)",
+          "C",
+          "",
+          "d)",
+          "A",
+          "",
+          "e)",
+          "No error"
+        ],
+        [
+          "",
+          "a)",
+          "B"
+        ],
+        [
+          "",
+          "b)",
+          "D"
+        ],
+        [
+          "",
+          "c)",
+          "C"
+        ],
+        [
+          "",
+          "d)",
+          "A"
+        ],
+        [
+          "",
+          "e)",
+          "No error"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 48,
+      "id": "myanswer1018",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "B"
+        ],
+        [
+          "",
+          "b)",
+          "D"
+        ],
+        [
+          "",
+          "c)",
+          "C"
+        ],
+        [
+          "",
+          "d)",
+          "A"
+        ],
+        [
+          "",
+          "e)",
+          "No error"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 49,
+      "id": "myquestion1019",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the following question, one part of the sentence may have an error. Find out which part of the sentence has an error and select the appropriate option. If the sentence is free from error, select 'No Error'. Ignore errors of punctuation, if any.The management made the all-rounder to (A)/ travel to Australia along with (B)/ his fellow pacers to join the national squad (C)/ for the upcoming tournament. (D)"
+        ],
+        [
+          "a) A b) B c) C d) D e) No error",
+          "",
+          "a)",
+          "A",
+          "",
+          "b)",
+          "B",
+          "",
+          "c)",
+          "C",
+          "",
+          "d)",
+          "D",
+          "",
+          "e)",
+          "No error"
+        ],
+        [
+          "",
+          "a)",
+          "A"
+        ],
+        [
+          "",
+          "b)",
+          "B"
+        ],
+        [
+          "",
+          "c)",
+          "C"
+        ],
+        [
+          "",
+          "d)",
+          "D"
+        ],
+        [
+          "",
+          "e)",
+          "No error"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 50,
+      "id": "myanswer1019",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "A"
+        ],
+        [
+          "",
+          "b)",
+          "B"
+        ],
+        [
+          "",
+          "c)",
+          "C"
+        ],
+        [
+          "",
+          "d)",
+          "D"
+        ],
+        [
+          "",
+          "e)",
+          "No error"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 51,
+      "id": "myquestion1020",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "A sentence is given with two blanks. From the given options, choose the one that gives the correct combination of words that fit in the blanks.As per a report, \"demonetization failed to do what it was supposed to do, and although the immediate _________ it caused was less severe than feared at first, the policy's impact is turning out to be more __________ than initially expected.\""
+        ],
+        [
+          "a) Enjoin, Prorogated b) Edict, Portentous c) Mayhem, Prolegomenous d) Disruption, Protracted e) Intrusion, Procryptic",
+          "",
+          "a)",
+          "Enjoin, Prorogated",
+          "",
+          "b)",
+          "Edict, Portentous",
+          "",
+          "c)",
+          "Mayhem, Prolegomenous",
+          "",
+          "d)",
+          "Disruption, Protracted",
+          "",
+          "e)",
+          "Intrusion, Procryptic"
+        ],
+        [
+          "",
+          "a)",
+          "Enjoin, Prorogated"
+        ],
+        [
+          "",
+          "b)",
+          "Edict, Portentous"
+        ],
+        [
+          "",
+          "c)",
+          "Mayhem, Prolegomenous"
+        ],
+        [
+          "",
+          "d)",
+          "Disruption, Protracted"
+        ],
+        [
+          "",
+          "e)",
+          "Intrusion, Procryptic"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 52,
+      "id": "myanswer1020",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "Enjoin, Prorogated"
+        ],
+        [
+          "",
+          "b)",
+          "Edict, Portentous"
+        ],
+        [
+          "",
+          "c)",
+          "Mayhem, Prolegomenous"
+        ],
+        [
+          "",
+          "d)",
+          "Disruption, Protracted"
+        ],
+        [
+          "",
+          "e)",
+          "Intrusion, Procryptic"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 53,
+      "id": "myquestion1021",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "A sentence is given with two blanks. From the given options, choose the one that gives the correct combination of words that fit in the blanks.Though, after decades of failed attempts and ________ claims about earthquake prediction, a certain scepticism is _________."
+        ],
+        [
+          "a) Compelling, justified b) Unsubstantiated, warranted c) Corroborated, merited d) Credible, appropriate e) Invalid, unjustified",
+          "",
+          "a)",
+          "Compelling, justified",
+          "",
+          "b)",
+          "Unsubstantiated, warranted",
+          "",
+          "c)",
+          "Corroborated, merited",
+          "",
+          "d)",
+          "Credible, appropriate",
+          "",
+          "e)",
+          "Invalid, unjustified"
+        ],
+        [
+          "",
+          "a)",
+          "Compelling, justified"
+        ],
+        [
+          "",
+          "b)",
+          "Unsubstantiated, warranted"
+        ],
+        [
+          "",
+          "c)",
+          "Corroborated, merited"
+        ],
+        [
+          "",
+          "d)",
+          "Credible, appropriate"
+        ],
+        [
+          "",
+          "e)",
+          "Invalid, unjustified"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 54,
+      "id": "myanswer1021",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "Compelling, justified"
+        ],
+        [
+          "",
+          "b)",
+          "Unsubstantiated, warranted"
+        ],
+        [
+          "",
+          "c)",
+          "Corroborated, merited"
+        ],
+        [
+          "",
+          "d)",
+          "Credible, appropriate"
+        ],
+        [
+          "",
+          "e)",
+          "Invalid, unjustified"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 55,
+      "id": "myquestion1022",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "A sentence is given with two blanks. From the given options, choose the one that gives the correct combination of words that fit in the blanks.Sid is a greedy man who does not _____ his wealth with anyone, not even ______ family members and he also does not pay his workers well."
+        ],
+        [
+          "a) Adept, he b) Shares, his c) Proficient, he d) Skill, him e) Share, his",
+          "",
+          "a)",
+          "Adept, he",
+          "",
+          "b)",
+          "Shares, his",
+          "",
+          "c)",
+          "Proficient, he",
+          "",
+          "d)",
+          "Skill, him",
+          "",
+          "e)",
+          "Share, his"
+        ],
+        [
+          "",
+          "a)",
+          "Adept, he"
+        ],
+        [
+          "",
+          "b)",
+          "Shares, his"
+        ],
+        [
+          "",
+          "c)",
+          "Proficient, he"
+        ],
+        [
+          "",
+          "d)",
+          "Skill, him"
+        ],
+        [
+          "",
+          "e)",
+          "Share, his"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 56,
+      "id": "myanswer1022",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "Adept, he"
+        ],
+        [
+          "",
+          "b)",
+          "Shares, his"
+        ],
+        [
+          "",
+          "c)",
+          "Proficient, he"
+        ],
+        [
+          "",
+          "d)",
+          "Skill, him"
+        ],
+        [
+          "",
+          "e)",
+          "Share, his"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 57,
+      "id": "myquestion1023",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "The following question consists of five sentences labelled A, B, C, D, and E which when logically arranged form a coherent paragraph. Choose the option that gives the correct order.A. In such contests, people attempt to consume large amounts of water.B. Water intoxication is a potentially fatal disturbance in brain function.C. Under normal circumstances, accidentally consuming too much water is exceptionally rare.D. It results because of excessive water intake.E. Nearly all deaths related to it have resulted from water-drinking contests."
+        ],
+        [
+          "a) BDCEA b) EDACB c) EADBC d) AEDBC e) ADBEC",
+          "",
+          "a)",
+          "BDCEA",
+          "",
+          "b)",
+          "EDACB",
+          "",
+          "c)",
+          "EADBC",
+          "",
+          "d)",
+          "AEDBC",
+          "",
+          "e)",
+          "ADBEC"
+        ],
+        [
+          "",
+          "a)",
+          "BDCEA"
+        ],
+        [
+          "",
+          "b)",
+          "EDACB"
+        ],
+        [
+          "",
+          "c)",
+          "EADBC"
+        ],
+        [
+          "",
+          "d)",
+          "AEDBC"
+        ],
+        [
+          "",
+          "e)",
+          "ADBEC"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 58,
+      "id": "myanswer1023",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "BDCEA"
+        ],
+        [
+          "",
+          "b)",
+          "EDACB"
+        ],
+        [
+          "",
+          "c)",
+          "EADBC"
+        ],
+        [
+          "",
+          "d)",
+          "AEDBC"
+        ],
+        [
+          "",
+          "e)",
+          "ADBEC"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 59,
+      "id": "myquestion1024",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "In the question given below, a set of sentences is given, which when properly sequenced, form a coherent paragraph. Arrange the sentences in the correct sequence and answer the questions that follow.A. It is a preoccupation with viewing all experiences even those that are unavoidably tragic in a positive light.B. Or the one who says, in response to the news of a serious illness, \"Everything happens for a reason.\"C. People, who subscribe to the notion that positivity cures everything, are likely to tell you to focus on the good things in your life.D. Consider the person who responds to the news that a neighbour has lost their house by saying \"It could be worse.\"E. Operationally, toxic positivity has been defined as avoiding or denying \"any acknowledgement of stress, negativity, and possible disabling features of trauma.\""
+        ],
+        [
+          "a) EADBC b) BDCAE c) ADCEB d) BDEAC e) EDACB",
+          "",
+          "a)",
+          "EADBC",
+          "",
+          "b)",
+          "BDCAE",
+          "",
+          "c)",
+          "ADCEB",
+          "",
+          "d)",
+          "BDEAC",
+          "",
+          "e)",
+          "EDACB"
+        ],
+        [
+          "",
+          "a)",
+          "EADBC"
+        ],
+        [
+          "",
+          "b)",
+          "BDCAE"
+        ],
+        [
+          "",
+          "c)",
+          "ADCEB"
+        ],
+        [
+          "",
+          "d)",
+          "BDEAC"
+        ],
+        [
+          "",
+          "e)",
+          "EDACB"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 60,
+      "id": "myanswer1024",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "EADBC"
+        ],
+        [
+          "",
+          "b)",
+          "BDCAE"
+        ],
+        [
+          "",
+          "c)",
+          "ADCEB"
+        ],
+        [
+          "",
+          "d)",
+          "BDEAC"
+        ],
+        [
+          "",
+          "e)",
+          "EDACB"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 61,
+      "id": "myquestion1025",
+      "className": "",
+      "headers": [],
+      "rowCount": 7,
+      "rows": [
+        [
+          "The following question consists of five sentences labelled A, B, C, D, and E which when logically arranged form a coherent paragraph. Choose the option that gives the correct order.A. We are wealthier, healthier, happier, kinder, cleaner, more peaceful, more equal and longer-lived than any previous generation.B. This is thanks to the unique human habits of exchange and specialisation that our species has found innovative solutions to every obstacle it has faced so far.C. Based on this assertion, acclaimed science writer Matt Ridley, in his book 'The Rational Optimist', comprehensively refutes the doom-mongers of our times.D. He reaches back into the past to give a rational explanation for why we can  -  and will  -  overcome the challenges of the future, such as climate change and the population boom.E. Bold and controversial, it is a brilliantly confident assertion that the 21st century will be the best for humankind yet."
+        ],
+        [
+          "a) DCBAE b) CBDAE c) ADCBE d) ABEDC e) ABCDE",
+          "",
+          "a)",
+          "DCBAE",
+          "",
+          "b)",
+          "CBDAE",
+          "",
+          "c)",
+          "ADCBE",
+          "",
+          "d)",
+          "ABEDC",
+          "",
+          "e)",
+          "ABCDE"
+        ],
+        [
+          "",
+          "a)",
+          "DCBAE"
+        ],
+        [
+          "",
+          "b)",
+          "CBDAE"
+        ],
+        [
+          "",
+          "c)",
+          "ADCBE"
+        ],
+        [
+          "",
+          "d)",
+          "ABEDC"
+        ],
+        [
+          "",
+          "e)",
+          "ABCDE"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 62,
+      "id": "myanswer1025",
+      "className": "answer-outer-div opts-table",
+      "headers": [],
+      "rowCount": 5,
+      "rows": [
+        [
+          "",
+          "a)",
+          "DCBAE"
+        ],
+        [
+          "",
+          "b)",
+          "CBDAE"
+        ],
+        [
+          "",
+          "c)",
+          "ADCBE"
+        ],
+        [
+          "",
+          "d)",
+          "ABEDC"
+        ],
+        [
+          "",
+          "e)",
+          "ABCDE"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 63,
+      "id": "giant-candidate",
+      "className": "",
+      "headers": [],
+      "rowCount": 3,
+      "rows": [
+        [
+          "User ID",
+          ":"
+        ],
+        [
+          "Name",
+          ":"
+        ],
+        [
+          "D.O.B (Date Of Birth)",
+          ":"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 64,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 3,
+      "rows": [
+        [
+          "0 Answered",
+          "1 Not Answered"
+        ],
+        [
+          "0 Marked",
+          "24 Not Visited"
+        ],
+        [
+          "0Answered Marked"
+        ]
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 65,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 14,
+      "rows": [
+        [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        [],
+        [
+          "5",
+          "6",
+          "7",
+          "8"
+        ],
+        [],
+        [
+          "9",
+          "10",
+          "11",
+          "12"
+        ],
+        [],
+        [
+          "13",
+          "14",
+          "15",
+          "16"
+        ],
+        [],
+        [
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        [],
+        [
+          "21",
+          "22",
+          "23",
+          "24"
+        ],
+        [],
+        [
+          "25"
+        ],
+        []
+      ],
+      "structuredRows": []
+    },
+    {
+      "tableIndex": 66,
+      "id": "",
+      "className": "",
+      "headers": [],
+      "rowCount": 2,
+      "rows": [
+        [
+          "Question Paper",
+          "Instructions"
+        ],
+        [
+          "Profile",
+          "Next Section"
+        ]
+      ],
+      "structuredRows": []
+    }
+  ],
+  "globals": {
+    "quesAnswer": [
+      null,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "testQpid": "IBPS SO Prelims [IT] - 1"
+  },
+  "storage": {
+    "localStorage": {
+      "63c7d81e44e23b010a37d4d8.clientId": "4d59c57b10c4472a83c072db4004fed1",
+      "WZRK_L": "%7B%7D",
+      "_gcl_ls": "{\"schema\":\"gcl\",\"version\":1,\"gcl_ctr\":{\"value\":{\"value\":0,\"timeouts\":0,\"errors\":0,\"eopCount\":0,\"creationTimeMs\":1792765723163},\"expires\":1800541723163},\"gsid_dc\":{\"value\":{\"joinId\":\"ECdPD4P0R0CIj2Gylm8rT0XaJ90OeYmang\",\"lastJoinedTimeMs\":1792765786926},\"expires\":1792766086926}}",
+      "WZRK_K": "%7B%22flag%22%3Atrue%2C%22id%22%3A%22piyusholiveboard2%40gmail.com%22%7D",
+      "WZRK_FPU": "false",
+      "WZRK_ARP": "%7B%22k_n%22%3A%22DHgiIktFQlw4Njs9Mjg9KkBUA3QwNzMiO3QxJF8SbA%3D%3D%22%2C%22j_n%22%3A%22ZW9kcgAJAAM%3D%22%2C%22i_n%22%3A%22ZW9kfAsDBQI%3D%22%2C%22d_ts%22%3A0%2C%22dh%22%3A0%2C%22v%22%3A2%2C%22j_s%22%3A%22%7B%7D%22%2C%22id%22%3A%2265R-6K5-785Z%22%2C%22r_ts%22%3A1792765787%2C%22isOUL%22%3Atrue%7D",
+      "WZRK_META": "%7B%22ps%22%3A1792765724%2C%22cs%22%3A1792765724%2C%22sc%22%3A1%2C%22useIP%22%3Afalse%7D",
+      "ZD-suid": "{\"id\":\"5bce5b74cd7c440d86d9eb6389c2a486\",\"expiry\":1792766686737,\"tabs\":{\"count\":0,\"expiry\":1792765824138}}",
+      "WZRK_EV": "%7B%22Exam%20Viewed%22%3A%5B4%2C1792765723%2C1792765786%5D%7D",
+      "lastExternalReferrerTime": "1792765723969",
+      "ZD-buid": "4d59c57b10c4472a83c072db4004fed1",
+      "lastExternalReferrer": "other",
+      "WZRK_PR": "%7B%22Email%22%3A%22piyusholiveboard2%40gmail.com%22%2C%22Phone%22%3A918808455284%2C%22tz%22%3A%22GMT%2B0530%22%7D",
+      "WZRK_G": "%22deb513ab614e4e47966f4dc41d420e6b%22"
+    },
+    "sessionStorage": {},
+    "cookies": "__utmc=94392130; _gcl_au=1.1.2040535351.1792739205; _ga=GA1.1.955971716.1792739205; _fbp=fb.1.1792739204819.113613283652610449; susmid=3583b116MTM4Nzg3MjNeXnBpeXVzaG9saXZlYm9hcmQy4e5eae0d; obph=8808455284%2C+Regd+0+days+ago%2C+Prem%3A+; obem=piyusholiveboard2%40gmail.com; uauth=3583b1163ff3ea6d2d707fad4e5eae0d; luauth=3583b1163ff3ea6d2d707fad4e5eae0d; session=2K15edf96cef9d706a65c9adaf1fa871fd28; obctapinfo2=1; obwb=2000; obsession=RQD2H2TTMjMxMzg3ODcyMw%3D%3DVB6I102X; obctapinfo3=1; pupnt=0; offerimg=1; __utma=94392130.939627338.1792739205.1792757999.1792765723.3; __utmz=94392130.1792765723.3.2.utmcsr=oliveboard.in|utmccn=(referral)|utmcmd=referral|utmcct=/; __utmt=1; lcatv=banking; WZRK_G=deb513ab614e4e47966f4dc41d420e6b; oblpv=https%253A%252F%252Fu1.oliveboard.in%252Ftests%252F%253Fc%253Dibpssopreit%2526i%253Dbanking; __utmb=94392130.12.10.1792765723; _ga_M8DH7WJ9QL=GS2.1.s1792765720$o3$g1$t1792765786$j54$l0$h0; WZRK_S_65R-6K5-785Z=%7B%22p%22%3A4%2C%22s%22%3A1792765724%2C%22t%22%3A1792765787%7D"
+  },
+  "computedUI": {
+    "#header-top": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(52, 118, 187)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "",
+      "width": "1370.4px",
+      "height": "59.5125px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "fixed"
+    },
+    "#main-container": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "\"Times New Roman\"",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "1370.4px",
+      "height": "714.237px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "fixed"
+    },
+    "#left-container": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "\"Times New Roman\"",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "80%",
+      "height": "100%",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "none",
+      "position": "absolute"
+    },
+    "#right-container": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "\"Times New Roman\"",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "",
+      "width": "20%",
+      "height": "100%",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "none",
+      "position": "absolute"
+    },
+    "#left-container-post": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "\"Times New Roman\"",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "1068.9px",
+      "height": "714.237px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#right-container-post": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "\"Times New Roman\"",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "342.6px",
+      "height": "714.237px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#section-name-container": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "0.8px solid rgb(153, 153, 153)",
+      "width": "1015.45px",
+      "height": "39.0125px",
+      "padding": "5.3375px",
+      "margin": "10.6875px",
+      "display": "block",
+      "position": "absolute"
+    },
+    ".secgen": {
+      "tagName": "SPAN",
+      "backgroundColor": "rgb(52, 118, 187)",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "Arial, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "0.8px solid rgb(169, 208, 245)",
+      "width": "182.2px",
+      "height": "30px",
+      "padding": "0px",
+      "margin": "1.8125px 0px 0px",
+      "display": "inline-block",
+      "position": "relative"
+    },
+    ".currclass": {
+      "tagName": "SPAN",
+      "backgroundColor": "rgb(52, 118, 187)",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "Arial, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "0.8px solid rgb(169, 208, 245)",
+      "width": "182.2px",
+      "height": "30px",
+      "padding": "0px",
+      "margin": "1.8125px 0px 0px",
+      "display": "inline-block",
+      "position": "relative"
+    },
+    "#question-outer-pane": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "0.8px solid rgb(153, 153, 153)",
+      "width": "1015.45px",
+      "height": "592.812px",
+      "padding": "5.3375px",
+      "margin": "10.6875px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#question-no-bar": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "700",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "1026.12px",
+      "height": "48.275px",
+      "padding": "10.25px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#question-inner-pane": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "border": "",
+      "width": "1005.6px",
+      "height": "494.85px",
+      "padding": "0px",
+      "margin": "0px 0px 10.25px",
+      "display": "block",
+      "position": "absolute"
+    },
+    ".leftpane": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "487.6px",
+      "height": "470.1px",
+      "padding": "10.05px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    ".rightpane": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "",
+      "width": "452.513px",
+      "height": "470.1px",
+      "padding": "10.05px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#button-holder": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "",
+      "width": "1026.12px",
+      "height": "37.6px",
+      "padding": "7.175px 0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#mark": {
+      "tagName": "SPAN",
+      "backgroundColor": "rgb(199, 220, 240)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "1.6px solid rgb(169, 208, 245)",
+      "width": "180px",
+      "height": "18px",
+      "padding": "8.2px 5.125px",
+      "margin": "0px 0px 0px 7.175px",
+      "display": "inline-block",
+      "position": "static"
+    },
+    "#clear": {
+      "tagName": "SPAN",
+      "backgroundColor": "rgb(199, 220, 240)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "1.6px solid rgb(169, 208, 245)",
+      "width": "150px",
+      "height": "18px",
+      "padding": "8.2px 25.65px",
+      "margin": "0px 0px 0px 7.175px",
+      "display": "inline-block",
+      "position": "static"
+    },
+    "#next": {
+      "tagName": "SPAN",
+      "backgroundColor": "rgb(55, 120, 189)",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "1.6px solid rgb(169, 208, 245)",
+      "width": "150px",
+      "height": "18px",
+      "padding": "8.2px 25.65px",
+      "margin": "0px 7.175px 0px 0px",
+      "display": "block",
+      "position": "static"
+    },
+    "#cand-time-outer": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "\"Times New Roman\"",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "308.337px",
+      "height": "107.125px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#right-low-half-outer": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(228, 237, 247)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "291.2px",
+      "height": "571.388px",
+      "padding": "3.425px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#legend": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "274.237px",
+      "height": "121.425px",
+      "padding": "5.95px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#question-main-pallette": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(228, 237, 247)",
+      "color": "rgb(77, 77, 77)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "border": "0px none rgb(77, 77, 77)",
+      "width": "217.275px",
+      "height": "248.637px",
+      "padding": "2.975px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    ".sprite-butts": {
+      "tagName": "A",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "border": "0px none rgb(255, 255, 255)",
+      "width": "35px",
+      "height": "39px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "static"
+    },
+    "#button-bottom": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "298.05px",
+      "height": "92.5125px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "absolute"
+    },
+    "#b1": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(199, 220, 240)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "1.6px solid rgb(169, 208, 245)",
+      "width": "110px",
+      "height": "19px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "static"
+    },
+    "#b2": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(199, 220, 240)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "1.6px solid rgb(169, 208, 245)",
+      "width": "110px",
+      "height": "19px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "static"
+    },
+    "#b3": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(199, 220, 240)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "1.6px solid rgb(169, 208, 245)",
+      "width": "110px",
+      "height": "19px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "static"
+    },
+    "#b4": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(199, 220, 240)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "13px",
+      "fontWeight": "400",
+      "border": "1.6px solid rgb(169, 208, 245)",
+      "width": "110px",
+      "height": "19px",
+      "padding": "0px",
+      "margin": "0px",
+      "display": "block",
+      "position": "static"
+    },
+    "#submit-pane": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "auto",
+      "height": "auto",
+      "padding": "1%",
+      "margin": "0px",
+      "display": "none",
+      "position": "static"
+    },
+    "#sure": {
+      "tagName": "DIV",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "verdana, helvetica, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "0px none rgb(0, 0, 0)",
+      "width": "auto",
+      "height": "auto",
+      "padding": "0px",
+      "margin": "0px auto",
+      "display": "none",
+      "position": "absolute"
+    },
+    "#calert": {
+      "tagName": "DIV",
+      "backgroundColor": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)",
+      "fontFamily": "\"Times New Roman\"",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "border": "0.8px solid rgb(221, 221, 221)",
+      "width": "310px",
+      "height": "180px",
+      "padding": "0px",
+      "margin": "auto",
+      "display": "none",
+      "position": "absolute"
+    }
+  },
+  "decryptedQuestionsCount": 0,
+  "extractedSolutionsCount": 0,
+  "dashboardCardsCount": 0,
+  "verificationChecklist": {
+    "visualSnapshotCaptured": true,
+    "fullDomCaptured": true,
+    "reaEvidenceCaptured": true,
+    "modalsInspectedCount": 4,
+    "tablesInspectedCount": 67,
+    "questionsDecryptedCount": 0,
+    "solutionsExtractedCount": 0
+  }
+}

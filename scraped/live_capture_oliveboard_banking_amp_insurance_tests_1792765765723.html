@@ -1,0 +1,1831 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oliveboard | Banking &amp; Insurance Tests</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://s3-ap-southeast-1.amazonaws.com/sg2.oliveboard.in/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css?v=p17" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+
+<!-- CT -->
+
+</head>
+<body style="">
+        <header class="hdr-main" style="z-index: 1040;">
+
+        <!-- PROMO BANNER -->
+        <div class="hdr-promo-banner" onclick="window.open('https://www.oliveboard.in/myaccount/buypayu/100tests.php');">
+            <div class="hdr-promo-text">
+            <span class="hdr-text-mobile">Dussehra Dhamaka</span>
+                <span class="hdr-text-desktop">
+                    <span>🎉</span>
+                    <span>Dussehra Dhamaka</span>
+                </span>
+            </div>
+            <div class="hdr-timer-group">
+                <img class="web-wal" src="img/hd-clock.svg" alt="" data-no-lens="true" referrerpolicy="no-referrer">
+                <img class="mob-wal" src="img/red-wallet.svg" alt="" data-no-lens="true" referrerpolicy="no-referrer">
+                <span class="hdr-timer-label">Expires in:</span>
+                <div id="wexptimer" class="hdr-time-blocks"><span class="hdr-time-box">04</span> <span class="hdr-time-sep">:</span> <span class="hdr-time-box">00</span> <span class="hdr-time-sep">:</span> <span class="hdr-time-box">29</span> </div>
+                <img class="mob-wal" src="img/red-rightarr.svg" alt="" data-no-lens="true" referrerpolicy="no-referrer">
+                <img class="web-wal" src="img/rightarr.svg" alt="" data-no-lens="true" referrerpolicy="no-referrer">
+            </div>
+        </div>
+
+        <!-- BRAND AREA -->
+        <div class="hdr-brand-area">
+        <div class="hdr-logo-group">
+        <span id="mob-sidebar" style="font-size:24px;line-height: 0; margin-right: 6px;color: #6A7282; "><i class="fa-solid fa-bars"></i></span>
+        <img src="img/logo/tlogo-28.png" alt="Oliveboard">
+        </div>
+        <div class="hdr-divider"></div><span class="mob-wal mob-search"><img src="img/ic-search2.svg" alt=""></span><button data-toggle="modal" class="hdr-category-btn" data-target="#selcategoryModal">Banking &amp; Insurance<img src="img/dw-arr.svg" alt""=""></button></div>
+
+        <!-- SEARCH AREA -->
+        <div class="hdr-search-area">
+            <div class="hdr-search-box">
+                <img src="img/ic-search.svg" data-no-lens="true" referrerpolicy="no-referrer">
+                <input style="padding-left:8px;" type="text" class="hdr-search-input" id="searchbox" placeholder="Search">  
+                <!--<img src="img/m-search.svg" alt="" class="hdr-search-chevron-right">-->       
+            </div>
+        </div>
+
+        <!-- ACTION AREA -->
+        <div class="hdr-action-area">
+        <button class="btn-buy-nw" onclick="window.open('https://www.oliveboard.in/myaccount/buypayu/100tests.php');">Buy Now</button>
+<div class="upd-relative-wrapper">
+
+        <!--<button class="upd-trigger-btn" id="profileDropdownBtn">< ?php echo strtoupper($username[0]);?></button>-->
+
+        <!-- Dropdown Menu (Add 'is-open' class to show) -->
+        <div class="upd-menu-card" id="profileDropdownMenu">
+
+            <!-- Header -->
+            <div class="upd-header">
+            <div class="upd-avatar">P</div>
+                <div class="upd-user-details">
+                <span class="upd-name">piyusholiveboard2</span>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="upd-divider"></div>
+
+            <!-- Links -->
+            <nav class="upd-nav-list">
+
+            <a href="https://u1.oliveboard.in/exams/?c=bookmarksbanking&amp;i=banking" class="upd-nav-item">
+                    <div class="upd-icon">
+                        <!-- Bookmark Icon -->
+                        <img src="img/bm.svg" data-no-lens="true" referrerpolicy="no-referrer">
+                    </div>
+                    <span>My Bookmarks</span>
+                </a>
+
+                <!-- Active Item as shown in screenshot -->
+                <a href="https://www.oliveboard.in/myaccount/buypayu/validity.php?i=banking" target="_blank" class="upd-nav-item">
+                    <div class="upd-icon">
+                        <img src="img/brief.svg" data-no-lens="true" referrerpolicy="no-referrer">
+                    </div>
+                    <span>My Subscription</span>
+                </a>
+
+                <a href="logmeout.php?i=banking" class="upd-nav-item" style="margin-top: 4px;">
+                    <div class="upd-icon">
+                        <!-- Logout Icon -->
+                        <img src="img/newlogout.svg" data-no-lens="true" referrerpolicy="no-referrer">
+                    </div>
+                    <span>Log out</span>
+                </a>
+
+            </nav>
+        </div>
+    </div>
+        </div>
+    </header>
+   <nav class="sm-nav-container" style="top: 80px;">
+                <a href="index.php?c=dashboard&amp;i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/dashboard.svg">
+                <span class="sm-text-desk">Dashboard</span>
+                <span class="sm-text-mob">Dashboard</span>
+                </a>
+                
+                <a href="https://courses.oliveboard.in/exams/?c=dashboard&amp;i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/courses.svg?v=1">
+                <span class="sm-text-desk">Courses</span>
+                <span class="sm-text-mob">Courses</span>
+                </a>
+                
+                <a href="index.php?c=tests&amp;i=banking" class="plainanchor sm-nav-item active">
+                <img src="img/Tests_active.svg">
+                <span class="sm-text-desk">Tests</span>
+                <span class="sm-text-mob">Tests</span>
+                </a>
+                
+                <a href="index.php?c=pypbanking&amp;i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/Tests.svg">
+                <span class="sm-text-desk">PYPs + Past Live Tests</span>
+                <span class="sm-text-mob">PYPs</span>
+                </a>
+                
+                <a href="https://courses.oliveboard.in/exams/?c=2339&amp;i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/mentorship.svg">
+                <span class="sm-text-desk">Personalised<br>Mentorship</span>
+                <span class="sm-text-mob">Mentorship</span>
+                </a>
+                
+                <a href="index.php?c=bookmarksbanking&amp;i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/bm24.svg">
+                <span class="sm-text-desk">My Bookmarks</span>
+                <span class="sm-text-mob">Bookmarks</span>
+                </a>
+                
+                <a target="_blank" href="https://www.oliveboard.in/myaccount/buypayu/validity.php?i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/brief24.svg?v=1">
+                <span class="sm-text-desk">My Subscription</span>
+                <span class="sm-text-mob">Subscription</span>
+                </a>
+                
+                <a href="index.php?c=videolessons&amp;i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/videos.svg">
+                <span class="sm-text-desk">Concept<br>Videos</span>
+                <span class="sm-text-mob">Videos</span>
+                </a>
+                
+                <a target="_blank" href="https://discuss.oliveboard.in/ca2/?i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/expert.svg">
+                <span class="sm-text-desk">Current Affairs</span>
+                <span class="sm-text-mob">Current Affairs</span>
+                </a>
+                
+                <a href="https://discuss.oliveboard.in/caquiz2/?i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/gk.svg">
+                <span class="sm-text-desk">Current Affairs Quiz</span>
+                <span class="sm-text-mob">Current Affairs Quiz</span>
+                </a>
+                
+                <a target="_blank" href="https://www.oliveboard.in/air-1-toppers/" class="plainanchor sm-nav-item ">
+                <img src="img/social.svg">
+                <span class="sm-text-desk">Success Stories</span>
+                <span class="sm-text-mob">Success Stories</span>
+                </a>
+                
+                <a href="https://courses.oliveboard.in/edge/logmeout.php?i=banking" class="plainanchor sm-nav-item ">
+                <img src="img/logout.svg">
+                <span class="sm-text-desk">Logout</span>
+                <span class="sm-text-mob">Logout</span>
+                </a>
+                </nav>
+            <div class="mobile-menu-overlay" id="mobileMenu">
+            <button class="mobile-menu-close" id="closeMenu">×</button>
+            <nav class="mobile-menu-nav">
+            
+                <a href="index.php?c=dashboard&amp;i=banking" class="mobile-menu-item ">
+                Dashboard
+                </a>
+                
+                <a href="https://courses.oliveboard.in/exams/?c=dashboard&amp;i=banking" class="mobile-menu-item ">
+                Courses
+                </a>
+                
+                <a href="index.php?c=tests&amp;i=banking" class="mobile-menu-item active">
+                Tests
+                </a>
+                
+                <a href="index.php?c=pypbanking&amp;i=banking" class="mobile-menu-item ">
+                PYPs
+                </a>
+                
+                <a href="https://courses.oliveboard.in/exams/?c=2339&amp;i=banking" class="mobile-menu-item ">
+                Mentorship
+                </a>
+                
+                <a href="index.php?c=bookmarksbanking&amp;i=banking" class="mobile-menu-item ">
+                Bookmarks
+                </a>
+                
+                <a target="_blank" href="https://www.oliveboard.in/myaccount/buypayu/validity.php?i=banking" class="mobile-menu-item ">
+                Subscription
+                </a>
+                
+                <a href="index.php?c=videolessons&amp;i=banking" class="mobile-menu-item ">
+                Videos
+                </a>
+                
+                <a target="_blank" href="https://discuss.oliveboard.in/ca2/?i=banking" class="mobile-menu-item ">
+                Current Affairs
+                </a>
+                
+                <a href="https://discuss.oliveboard.in/caquiz2/?i=banking" class="mobile-menu-item ">
+                Current Affairs Quiz
+                </a>
+                
+                <a target="_blank" href="https://www.oliveboard.in/air-1-toppers/" class="mobile-menu-item ">
+                Success Stories
+                </a>
+                
+                <a href="https://courses.oliveboard.in/edge/logmeout.php?i=banking" class="mobile-menu-item ">
+                Logout
+                </a>
+                
+            </nav>
+            </div>
+        
+    <div class="main-wrapper">
+            <!-- 1. Top Tabs Row -->
+            <div class="tabs-wrapper">
+            <span class="scroll-arrow left-arrow">❮</span>
+            <div class="fltr-tabs-row">
+            
+            </div>
+            <span class="scroll-arrow right-arrow">❯</span>
+            </div>
+            
+        <div class="crs-main-wrapper" style="padding-top:0;">
+        <section class="alltabs undefined" id="section-undefined">
+        <div class="mpt-header">
+        <h2 class="mpt-title">Banking &amp; Insurance</h2>
+        </div>
+
+        <div class="mpt-card-bg">
+        <div class="mpt-items-container crs-card-row" id="card-row-undefined">
+        
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=sbiclerkpre2020';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/SBI.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="SBI Clerk">
+                SBI Clerk
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=ibpsclerkprelim';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="IBPS Clerk">
+                IBPS Clerk
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=ibpsrrbscp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="IBPS RRB Officer">
+                IBPS RRB Officer
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=ibpsrrbasp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="IBPS RRB Assistant">
+                IBPS RRB Assistant
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=sbipopre19';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/SBI.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="SBI PO">
+                SBI PO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=ibpsprelim';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="IBPS PO">
+                IBPS PO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=ibpssopre';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="IBPS SO">
+                IBPS SO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=uiicao';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/uiic.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="UIIC AO">
+                UIIC AO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=cwcp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/cwc.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="CWC JE">
+                CWC JE
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=cwcasst';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/cwc.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="CWC Asst. Manager">
+                CWC Asst. Manager
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=niclasst';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/nicl.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="NICL Assistant">
+                NICL Assistant
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=rbiassistantp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/RBI.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="RBI Assistant">
+                RBI Assistant
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=bob';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/BOB-Bank.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="BoB LBO">
+                BoB LBO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=ioblbo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/iob.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="IOB LBO">
+                IOB LBO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=pnblbo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/pnb.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="PNB LBO">
+                PNB LBO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=pnbsindlbo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/punsind.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Punjab and Sind Bank LBO">
+                Punjab and Sind Bank LBO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=rrbscale2offit';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="RRB Scale2 Officer IT">
+                RRB Scale2 Officer IT
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=rrbscale2offle';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="RRB Scale2 Officer Legal">
+                RRB Scale2 Officer Legal
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=rrbscale2offen';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="RRB Scale2 Officer [Eng]">
+                RRB Scale2 Officer [Eng]
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=rrbscale2offhi';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="RRB Scale2 Officer [Hin]">
+                RRB Scale2 Officer [Hin]
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=rrbscale3offen';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="RRB Scale3 Officer [Eng]">
+                RRB Scale3 Officer [Eng]
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=rrbscale3offhi';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IBPS.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="RRB Scale3 Officer [Hin]">
+                RRB Scale3 Officer [Hin]
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=mscoop';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/mscoop.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Maharashtra Co-Op Bank">
+                Maharashtra Co-Op Bank
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=nabasst';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/NABARD.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="NABARD DA">
+                NABARD DA
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=nainmt';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/nain.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Nainital Bank PO">
+                Nainital Bank PO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=naincl';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/nain.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Nainital Bank Clerk">
+                Nainital Bank Clerk
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=mpcbpom';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/mpcoop1.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="MP Coop Bank Manager">
+                MP Coop Bank Manager
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=mpcbclm';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/mpcoop1.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="MP Coop Staff Asst.">
+                MP Coop Staff Asst.
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=oiclao';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/icons/oicl.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="OICL AO">
+                OICL AO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=licap';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/licaao.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="LIC AAO">
+                LIC AAO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=oiclasst';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/icons/oicl.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="OICL Assistant">
+                OICL Assistant
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=niacl';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/niacl.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="NIACL AO">
+                NIACL AO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=repco';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/repco.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Repco Bank">
+                Repco Bank
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=nicl';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/nicl.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="NICL AO">
+                NICL AO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=sbicbo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/SBI.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="SBI CBO">
+                SBI CBO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=bscbpop';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/bscb.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Bihar Coop Asst Mgr">
+                Bihar Coop Asst Mgr
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=bscbclp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/bscb.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Bihar CoOp Asst ">
+                Bihar CoOp Asst 
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=boicroff';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/boi.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Bank of India Credit Officer">
+                Bank of India Credit Officer
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=unionsoit';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/union.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Union Bank SO IT">
+                Union Bank SO IT
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=unioncr';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/union.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Union Bank Credit Officer">
+                Union Bank Credit Officer
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=idbiasst';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IDBI-BANK.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="IDBI Jr. Asst. Manager Grade O">
+                IDBI Jr. Asst. Manager Grade O
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=ucolbo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/uco.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="UCO Bank LBO">
+                UCO Bank LBO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=tmb';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/tmb.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Tamilnad Mercantile Bank">
+                Tamilnad Mercantile Bank
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=cbipgdbf';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/cbi.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Central Bank of India PGDBF">
+                Central Bank of India PGDBF
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=idbiex';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/IDBI-BANK.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="IDBI JAM PGDBF">
+                IDBI JAM PGDBF
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=niaclasstpre';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/niacl.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="NIACL Assistant">
+                NIACL Assistant
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=rbiattendant';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/RBI.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="RBI Office Attendant">
+                RBI Office Attendant
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=aic';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/aic.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="AIC MT">
+                AIC MT
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=aicit';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/aic.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="AIC IT">
+                AIC IT
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=gic';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/gic1.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="GIC">
+                GIC
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=sbiso';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/SBI.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="SBI SO">
+                SBI SO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=unlbo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/union.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Union Bank LBO">
+                Union Bank LBO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=ecgc';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/ecgc.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="ECGC PO">
+                ECGC PO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=indlbo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/indpo.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Indian Bank LBO">
+                Indian Bank LBO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=epfopa';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/epfo.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="EPFO Personal Asst.">
+                EPFO Personal Asst.
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=hpcooppre';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/hpcoop.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="HP Coop Bank Jr. Clerk">
+                HP Coop Bank Jr. Clerk
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=pnbcroff';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/pnb.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="PNB SO Credit Officer">
+                PNB SO Credit Officer
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=licase';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/licaao.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="LIC Asst.">
+                LIC Asst.
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=lichfl';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/lichfl.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="LIC HFL Asst.">
+                LIC HFL Asst.
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=nhb';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/nhb.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="NHB">
+                NHB
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=epfsp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/epfo.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="EPFO SSA">
+                EPFO SSA
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=uiicasst';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/uiic.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="UIIC Asst.">
+                UIIC Asst.
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=csir1';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/csir.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="CSIR">
+                CSIR
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=fcip';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/fci.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Food Corp. of India">
+                Food Corp. of India
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=fcim3';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/fci.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="FCI Category III">
+                FCI Category III
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=licadp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/licaao.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="LIC ADO">
+                LIC ADO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=suprcrt';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/scja1.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Supreme Court Junior Court Assistant">
+                Supreme Court Junior Court Assistant
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=lichflam';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/lichfl.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="LIC HFL Asst. Manager">
+                LIC HFL Asst. Manager
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=sibcl';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/sib.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="South Indian Bank Clerk">
+                South Indian Bank Clerk
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=icarasst';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/icar1.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="ICAR IARI Assistant">
+                ICAR IARI Assistant
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=esicpre';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/esic.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="ESIC SSO">
+                ESIC SSO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=esmts';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/esic.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="ESIC MTS">
+                ESIC MTS
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=tscbpo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/tscoop.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Telangana CoOp Asst Mgr">
+                Telangana CoOp Asst Mgr
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=tscbclm';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/tscoop.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Telangana CoOp Staff Asst">
+                Telangana CoOp Staff Asst
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=pscb';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/pscb.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Punjab State Cooperative Bank">
+                Punjab State Cooperative Bank
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=esudp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/esic.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="ESIC UDC">
+                ESIC UDC
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=licjem';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/licaao.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="LIC AE/AAO SO(IT) Mains">
+                LIC AE/AAO SO(IT) Mains
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=oscbpop';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/oscb.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Odisha CoOp Asst Mgr">
+                Odisha CoOp Asst Mgr
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=oscbclp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/oscb.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Odisha CoOp Asst Grade II">
+                Odisha CoOp Asst Grade II
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=sibpo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/sib.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="South Indian Bank PO">
+                South Indian Bank PO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=sbiappr';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/SBI.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="SBI Apprentice">
+                SBI Apprentice
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=indpopre';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/indpo.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Indian Bank PO">
+                Indian Bank PO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=fcimp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/fci.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Food Corp. of India Manager">
+                Food Corp. of India Manager
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=epfp';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/epfo.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="EPFO Assistant">
+                EPFO Assistant
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=pnbit';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/pnb.jpg" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="PNB IT Officer">
+                PNB IT Officer
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=canara';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/Canara-bank.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Canara PO">
+                Canara PO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=synpo';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/Synd.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="Syndicate PO">
+                Syndicate PO
+                </div>
+
+                </div>
+                
+                <div class="mpt-item" style="cursor:pointer;" onclick="window.location.href='?c=licjep';">
+
+                <div class="mpt-icon-circle mpt-color-1">
+                <img src="https://images.oliveboard.in/mockstart/licaao.png" width="32" height="32">
+                </div>
+
+                <div class="mpt-item-text" title="LIC AE/AAO SO">
+                LIC AE/AAO SO
+                </div>
+
+                </div>
+                
+        </div>
+        </div>
+        </section>
+        </div>
+    </div>
+
+ <div class="msm-overlay" id="mobileSearchModal">
+        
+        <div class="msm-container" id="mobileSearchContainer">
+            
+            <!-- Header: Search Input -->
+            <div class="msm-header">
+                <div class="msm-input-box">
+                    <img src="img/ic-search.svg" class="msm-icon-search" alt="" data-no-lens="true" referrerpolicy="no-referrer">
+                    <input type="text" class="msm-input" placeholder="Search exams, courses, topics...">
+                </div>
+                <button class="msm-close-btn" id="closeMobileSearch">
+                    <img src="img/cls.svg" class="" alt="" data-no-lens="true" referrerpolicy="no-referrer">
+                </button>
+            </div>
+
+            <!-- Body: Lists -->
+            <div class="msm-body">
+                
+                <!-- Section 1: Recent Searches -->
+                <div class="msm-section">
+                    <div class="msm-sec-title">
+                        <!-- Clock Icon -->
+                        <img src="img/hd-clock.svg" class="msm-sec-icon" alt="" data-no-lens="true" referrerpolicy="no-referrer">
+                        Recent Searches
+                    </div>
+                    <ul class="msm-list">
+                        <li class="msm-list-item">SBI PO 2026</li>
+                        <li class="msm-list-item">IBPS Clerk</li>
+                        <li class="msm-list-item">RBI Assistant</li>
+                        <li class="msm-list-item">SSC CGL</li>
+                    </ul>
+                </div>
+
+                <!-- Section 2: Trending Searches -->
+                <div class="msm-section">
+                    <div class="msm-sec-title">
+                        <!-- Trending Icon -->
+                        <img src="img/ic-report.svg" class="msm-sec-icon" alt="" data-no-lens="true" referrerpolicy="no-referrer">
+                        Trending Searches
+                    </div>
+                    <ul class="msm-list">
+                        <li class="msm-list-item">Banking Foundation Course</li>
+                        <li class="msm-list-item">Quantitative Aptitude</li>
+                        <li class="msm-list-item">English Grammar</li>
+                        <li class="msm-list-item">Current Affairs 2026</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+                        <img class="totop" src="img/ic-moveup.svg" data-no-lens="true" referrerpolicy="no-referrer" style="display: none;">
+    <!--Test Details -->
+<div class="mrp-mobile-container">
+
+        <!-- Header -->
+        <div class="mrp-header">
+            <button class="mrp-back-btn">
+                <img src="img/backbutton.svg" data-no-lens="true" referrerpolicy="no-referrer">
+            </button>
+            <h1 class="mrp-header-title"></h1>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <main class="mrp-content">
+
+            <!-- SECTION 1: Recommended Actions -->
+            <section class="mrp-section">
+                <h2 class="mrp-section-title">Recommended Actions</h2>
+
+                <div class="mrp-actions-list">
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+ <!-- buy modal box -->
+<div class="modal fade buyModal" id="buyModal" tabindex="-1" role="dialog" aria-hidden="false" style="z-index:9000;">
+              <div class="modal-dialog buydialog" role="document">
+                <div class="modal-content" id="buyContent">
+                  <div class="modal-header buy-header">
+                    <button type="button" class="close buyclose" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">×</span>
+                    </button>
+                  </div> <!-- modal-header -->
+                  <div id="buyBody" class="modal-body buy-body">
+                        <div class="iconsbox">
+                            <span class="ic_buy"></span>
+                        </div>
+                        <h5 id="buymodaltitle" class="modal-title">Please make a purchase to access the remaining classes</h5>
+                        <div class="btngroup"><button onclick="window.open('https://www.oliveboard.in/myaccount/buypayu/100tests.php?testid=popup','_blank');" type="button" class="btn-upgrade">Buy Now</button></div>
+                    </div> <!-- buyBody -->
+                  </div> <!-- modal-content -->
+                </div> <!-- modal-dialog -->
+            </div>
+    <!-- /.modal box -->
+<!-- modalbox -->
+        <!-- modalbox -->
+<div class="modal" id="callreqmodal" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" style="margin-top:-16px;" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" style="font-size:28px;">×</span>
+        </button>
+      </div>
+      <div class="modal-body" style="padding:0px;">
+            <iframe id="modalIframe" src="" frameborder="0" style="width: 100%; height: 640px;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" id="videoModal" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Course Overview</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:-22px; font-size: -26px;">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <iframe id="oviewmodalIframe" width="100%" height="256" src="" allowfullscreen=""></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- modalbox -->
+        <div class="modal" id="modal-reporterror" style="width:75%;margin-left:15%;">
+          <div id="ermodalbg" class="modal-background"></div>
+          <div class="modal-card">
+            <header class="modal-card-head">
+              <p class="modal-card-title">Ask Doubt</p>
+              <button class="delete delete-remodal" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body modalpostclick">
+              <p>Please describe your doubt below.</p><p>
+              <textarea maxlength="800" class="textarea" placeholder="Type in your doubts..." id="edesc"></textarea>
+            </p></section>
+            <footer class="modal-card-foot">
+              <button id="smtbtn" class="button is-success modalpostclick" onclick="submitDoubt();">Submit</button>
+              <button class="button delete-remodal modalpostclick">Cancel</button>
+              <p class="success-re">Submitted successfully</p>
+            </footer>
+          </div>
+        </div>
+        <!-- modalbox -->
+
+<!-- Summary Modal -->
+			<div class="modal fade summaryModal bd-example-modal-lg" id="summaryModal" tabindex="-1" role="dialog" aria-labelledby="summaryModalLabel" aria-hidden="true">
+			  <div class="modal-dialog  modal-lg" role="document">
+			  	<button type="button" class="sumclose" data-dismiss="modal" aria-label="Close">
+			          <i aria-hidden="true">×</i>
+			    </button>
+			    <div class="modal-content" id="summaryContent">
+			      <div id="analysisBody" class="modal-body sumt-body" style="padding:0;">
+			      		
+			      	</div>
+			      </div>
+			    </div>
+			</div><!-- Summary Modal -->
+    <script src="https://connect.facebook.net/signals/config/1167247020436969?v=2.9.427&amp;r=stable&amp;domain=u1.oliveboard.in&amp;hme=766752a074f0cb0756dd3275a46fdecbcfe3de1ab8f573546734b619e44d384f&amp;ex_m=118%2C241%2C171%2C27%2C82%2C83%2C162%2C78%2C77%2C11%2C181%2C102%2C20%2C153%2C141%2C46%2C85%2C90%2C149%2C176%2C183%2C8%2C4%2C5%2C7%2C6%2C3%2C103%2C115%2C32%2C17%2C31%2C18%2C33%2C34%2C35%2C37%2C55%2C163%2C87%2C126%2C22%2C24%2C51%2C47%2C49%2C48%2C95%2C104%2C108%2C124%2C160%2C164%2C53%2C125%2C29%2C26%2C133%2C79%2C43%2C166%2C165%2C167%2C157%2C155%2C30%2C42%2C66%2C123%2C178%2C80%2C21%2C128%2C93%2C76%2C23%2C97%2C98%2C130%2C96%2C151%2C150%2C154%2C109%2C177%2C180%2C41%2C56%2C127%2C54%2C161%2C72%2C185%2C110%2C184%2C210%2C255%2C84%2C274%2C273%2C272%2C14%2C25%2C28%2C40%2C62%2C117%2C68%2C10%2C73%2C111%2C112%2C113%2C119%2C144%2C38%2C36%2C146%2C147%2C148%2C143%2C142%2C172%2C86%2C175%2C173%2C174%2C57%2C69%2C67%2C137%2C19%2C179%2C52%2C324%2C325%2C326%2C323%2C340%2C362%2C248%2C237%2C70%2C238%2C236%2C365%2C356%2C59%2C249%2C121%2C145%2C92%2C135%2C61%2C134%2C140%2C139%2C65%2C74%2C168%2C88%2C89%2C129%2C44%2C39%2C60%2C63%2C114%2C182%2C1%2C138%2C16%2C136%2C12%2C2%2C64%2C105%2C15%2C75%2C71%2C132%2C101%2C100%2C187%2C188%2C106%2C107%2C9%2C116%2C186%2C58%2C158%2C99%2C91%2C81%2C131%2C120%2C169%2C50%2C159%2C0%2C94%2C152%2C156%2C170%2C45%2C122%2C13%2C189" async=""></script><script async="" src="https://connect.facebook.net/en_US/fbevents.js"></script><script type="text/javascript" async="" src="https://www.googletagmanager.com/gtag/js?id=G-M8DH7WJ9QL&amp;cx=c&amp;gtm=4e6al1"></script><script type="text/javascript" async="" src="https://ssl.google-analytics.com/ga.js"></script><script async="" src="https://www.googletagmanager.com/gtm.js?id=GTM-WBBTFF6"></script><script type="text/javascript" async="" src="https://ssl.google-analytics.com/ga.js"></script><script src="https://s3-ap-southeast-1.amazonaws.com/sg2.oliveboard.in/static/js/jquery.js"></script>
+    <script>
+        var susmid = '3583b116MTM4Nzg3MjNeXnBpeXVzaG9saXZlYm9hcmQy4e5eae0d';
+        var wbtext = 'Dussehra Dhamaka';
+    </script>
+
+        <script type="text/javascript">
+/* <![CDATA[ */
+var google_conversion_id = 988819829;
+var google_custom_params = window.google_tag_params;
+var google_remarketing_only = true;
+/* ]]> */
+</script>
+<script type="text/javascript" src="//www.googleadservices.com/pagead/conversion.js">
+</script><script type="text/javascript" async="" src="https://googleads.g.doubleclick.net/pagead/viewthroughconversion/988819829/?random=1792765756159&amp;cv=9&amp;fst=1792765756159&amp;num=1&amp;guid=ON&amp;resp=GooglemKTybQhCsO&amp;eid=375603260%2C466465926%2C512247839%2C658953495&amp;u_h=864&amp;u_w=1536&amp;ig=1&amp;frm=0&amp;url=https%3A%2F%2Fu1.oliveboard.in%2Ftests%2Findex.php%3Fc%3Dtests%26i%3Dbanking&amp;ref=https%3A%2F%2Fu1.oliveboard.in%2Ftests%2F%3Fc%3Dsbipopre19%26i%3Dbanking&amp;tiba=Oliveboard&amp;hn=www.googleadservices.com&amp;rfmt=3&amp;fmt=4"></script>
+<noscript>
+<div style="display:inline;">
+<img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/988819829/?guid=ON&amp;script=0"/>
+</div>
+</noscript>
+
+<script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-33831595-1']);
+    _gaq.push(['_setDomainName', 'oliveboard.in']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+</script>
+
+            <div style="z-index:1050 !important;" id="modal-offerimg" class="modal fade offerimg-modal" tabindex="-1" role="dialog" aria-labelledby="offerimg-header" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+             <div class="modal-dialog"><!--modal dialog -->
+                <div class="modal-content"><!--modal content -->
+                    <div id="offerimg-header" class="modal-header" style="border-bottom: 0px;"><!--modal header -->
+                        <button type="button" class="close" id="popupdismiss" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+
+                    </div><!--/.modal header -->
+                    <div id="offerimg-body" class="modal-body"><!--modal body -->
+                       <a href="https://www.oliveboard.in/myaccount/buypayu/100tests.php?testid=popup"><img src="https://images.oliveboard.in/apppopup/2026-10-duss-et-bank-mobile.jpg" class="img-responsive" alt="Eid Offers" data-no-lens="true" referrerpolicy="no-referrer"></a>
+                    </div><!--/.modal body -->
+                </div><!--/.modal content -->
+            </div><!--/.modal dialog -->
+         </div>	
+
+
+<script src="https://s3-ap-southeast-1.amazonaws.com/sg2.oliveboard.in/static/js/bootstrap.min.js"></script>
+<script>
+
+var coursename = 'tests';
+var categoryname = 'banking';
+var buyurl = 'https://www.oliveboard.in/myaccount/buypayu/100tests.php?testid=popup';
+var diffSeconds = 14443;
+var dtab = '';
+</script>
+<script src="js/wallet.js?v=3"></script>
+<script src="js/course.js?v=p21"></script>
+<script src="js/facinfo.js?v=p03"></script>
+
+<!-- Google Tag Manager --> 
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-WBBTFF6');</script> 
+<!-- End Google Tag Manager --> 
+ 
+<!-- Zopim -->
+<!-- Start of oliveboard7078 Zendesk Widget script -->
+<script id="ze-snippet" src="https://static.zdassets.com/ekr/snippet.js?key=9572915f-4ca8-4444-81fc-11d36da916ef"> </script>
+<!-- End of oliveboard7078 Zendesk Widget script -->
+
+
+<script>
+$zopim(function() {
+    $zopim.livechat.setLanguage('en');
+    $zopim.livechat.setName('piyusholiveboard2@gmail.com');
+    $zopim.livechat.setEmail('piyusholiveboard2@gmail.com');
+    $zopim.livechat.setNotes('Phone Number: 8808455284, Regd 0 days ago, Prem: ');
+
+});
+
+
+</script>
+<!-- GA -->
+<script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-33831595-1']);
+    _gaq.push(['_setDomainName', 'oliveboard.in']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+</script>
+
+<!-- GA -->
+
+
+
+<!-- Zopim -->
+<script type="text/javascript">
+function showoffermodal(){
+    $('.modal-backdrop').show();
+    $('.modal-backdrop').addClass('in');
+    $('.hdr-main').css('z-index','1040');
+    $('#modal-offerimg').modal('show');
+    setCookiehours('offerimg','1',1);
+}
+    $('.modal-backdrop').removeClass('in');
+    $('.modal-backdrop').hide();
+    $('.hdr-main').css('z-index','1040');
+    $("#popupdismiss").on("click", function(){
+        $('.modal-backdrop').removeClass('in');
+        $('.modal-backdrop').hide();
+    $('.hdr-main').css('z-index','1040');
+    });
+</script>
+
+<script>
+var tags = [];
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll("img").forEach(function(img) {
+    img.setAttribute("data-no-lens", "true");
+    img.setAttribute("referrerpolicy", "no-referrer"); // prevents referrer leaking to Google     
+  });
+});
+</script>
+
+
+
+<iframe data-product="web_widget" title="No content" role="presentation" tabindex="-1" allow="microphone *" aria-hidden="true" src="about:blank" style="width: 0px; height: 0px; border: 0px; position: absolute; top: -9999px;"></iframe>
+        <!--Category Modal -->
+        <div class="modal fade in" id="selcategoryModal" tabindex="-1" role="dialog" aria-labelledby="selcategoryModalLabel" aria-hidden="false">
+        <div id="catselmodal" class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title" id="selcategoryModalLabel">You can always switch to other exam categories anytime.</h5>
+        <p class="modal-subtitle">You can always switch to other exam categories anytime.</p>
+        <button type="button" class="close sc-close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+        </div>
+        <div class="modal-body">
+        <div class="category-group"><a onclick="window.location.href='?c=dashboard&amp;i=jaiib';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/jaiib.png" alt=""></span>
+            <h3>JAIIB/CAIIB</h3>
+            <p>JAIIB, CAIIB, Bank Promotion Exams</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=ssc';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/ssc22-01.png" alt=""></span>
+            <h3>SSC</h3>
+            <p>CGL, CHSL, IB ACIO, CPO, MTS, Steno &amp; More</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=railways';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/RRB.png" alt=""></span>
+            <h3>Railways RRB</h3>
+            <p>RRB NTPC, JE, ALP, Group D</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=regulatory';">
+            <div class="card category-card">
+            <span><img src="img/003_banker.svg" alt=""></span>
+            <h3>Regulatory</h3>
+            <p>RBI Grade B, NABARD, NPS, SEBI, IRDAI, SIDBI, IFSCA</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=epfoeo';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/epfo.jpg" alt=""></span>
+            <h3>UPSC EPFO</h3>
+            <p>UPSC EPFO EO/AO, APFC, SSA</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=teaching';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/ugc.jpg" alt=""></span>
+            <h3>UGC NET</h3>
+            <p>UGC NET</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=apexam';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/apexam.jpg" alt=""></span>
+            <h3>Andhra Pradesh Exams</h3>
+            <p>AP State Level Exams</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=jkexam';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/jkssb1.jpg" alt=""></span>
+            <h3>J&amp;K + Ladakh Exams</h3>
+            <p>JK Bank, JKSSB, JK Panchayat etc.</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=upsi';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/upsssc.jpg" alt=""></span>
+            <h3>Uttar Pradesh Exams</h3>
+            <p>UP Police SI, UPSSSC Lekhpal, Steno</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=biharpol';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/biharpsc.png" alt=""></span>
+            <h3>Bihar Exams</h3>
+            <p>Bihar Police, AEDO, Teaching Exams</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=odisha';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/odisha.jpg" alt=""></span>
+            <h3>Odisha State Exams</h3>
+            <p>Odisha State Level Exams</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=mppol';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/mppol.jpg" alt=""></span>
+            <h3>Madhya Pradesh Exams</h3>
+            <p>MP Jail Prahari, Group Exams</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=goaexam';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/goa.jpg" alt=""></span>
+            <h3>Goa State Exams</h3>
+            <p>Goa State Level Exams</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=icar';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/icar1.jpg" alt=""></span>
+            <h3>Agriculture Exams</h3>
+            <p>IBPS SO Agri, DSSSB, ICAR, BoM AFO</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=mba';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/mba.png" alt=""></span>
+            <h3>MBA</h3>
+            <p>CAT, XAT, NMAT, MHCET, TISS, SNAP, IIFT , CMAT</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=civils';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in//skholar/upsc.png" alt=""></span>
+            <h3>Civil Services</h3>
+            <p>UPSC Exam, Bihar PSC, TNPSC &amp; UP PSC</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=karn';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/karn1.jpg" alt=""></span>
+            <h3>Karnataka Exams</h3>
+            <p>Karnataka PSI, PWD, KAS</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=intr';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/interview.png" alt=""></span>
+            <h3>Interview Prep &amp; Spoken English</h3>
+            <p>Interview Prep for all Exams</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=tnex';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/skholar/tnpsc.png" alt=""></span>
+            <h3>Tamil Nadu Exams</h3>
+            <p>TNPSC Group 2, 4, VAO, TNUSRB SI</p>
+            </div>
+            </a><a onclick="window.location.href='?c=dashboard&amp;i=judi';">
+            <div class="card category-card">
+            <span><img src="https://images.oliveboard.in/mockstart/judi.png" alt=""></span>
+            <h3>Judiciary Exams</h3>
+            <p>Rajasthan, Haryana, Delhi, UP, MP, Bihar</p>
+            </div>
+            </a>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div><div style="visibility: visible;"><div></div><div><div style="display: flex; flex-direction: column; z-index: 999999; bottom: 87px; position: fixed; right: 60px; direction: ltr; align-items: end; gap: 8px;"><div style="display: flex; gap: 8px;"><iframe title="Close message" style="color-scheme: light; height: 40px; width: 40px; border: 0px; background-color: transparent; box-shadow: rgba(23, 73, 77, 0.15) 0px 20px 30px; border-radius: 100%; vertical-align: unset; opacity: 1; align-self: end;"></iframe><iframe title="Message from company" style="color-scheme: light; width: 185.762px; height: 44px; max-width: 280px; overflow: auto; border: 0px; background-color: transparent; box-shadow: rgba(23, 73, 77, 0.15) 0px 20px 30px; border-radius: 20px; display: inline-block; vertical-align: unset; transform-origin: right bottom; opacity: 1; transform: scale(1);"></iframe></div></div><style>
+        @-webkit-keyframes ww-5bde8458-7723-4bb8-be52-c1d3141e8a7f-launcherOnOpen {
+          0% {
+            -webkit-transform: translateY(0px) rotate(0deg);
+                    transform: translateY(0px) rotate(0deg);
+          }
+
+          30% {
+            -webkit-transform: translateY(-5px) rotate(2deg);
+                    transform: translateY(-5px) rotate(2deg);
+          }
+
+          60% {
+            -webkit-transform: translateY(0px) rotate(0deg);
+                    transform: translateY(0px) rotate(0deg);
+          }
+
+
+          90% {
+            -webkit-transform: translateY(-1px) rotate(0deg);
+                    transform: translateY(-1px) rotate(0deg);
+
+          }
+
+          100% {
+            -webkit-transform: translateY(-0px) rotate(0deg);
+                    transform: translateY(-0px) rotate(0deg);
+          }
+        }
+        @keyframes ww-5bde8458-7723-4bb8-be52-c1d3141e8a7f-launcherOnOpen {
+          0% {
+            -webkit-transform: translateY(0px) rotate(0deg);
+                    transform: translateY(0px) rotate(0deg);
+          }
+
+          30% {
+            -webkit-transform: translateY(-5px) rotate(2deg);
+                    transform: translateY(-5px) rotate(2deg);
+          }
+
+          60% {
+            -webkit-transform: translateY(0px) rotate(0deg);
+                    transform: translateY(0px) rotate(0deg);
+          }
+
+
+          90% {
+            -webkit-transform: translateY(-1px) rotate(0deg);
+                    transform: translateY(-1px) rotate(0deg);
+
+          }
+
+          100% {
+            -webkit-transform: translateY(-0px) rotate(0deg);
+                    transform: translateY(-0px) rotate(0deg);
+          }
+        }
+
+        @keyframes ww-5bde8458-7723-4bb8-be52-c1d3141e8a7f-widgetOnLoad {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+
+        @-webkit-keyframes ww-5bde8458-7723-4bb8-be52-c1d3141e8a7f-widgetOnLoad {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+      </style><iframe title="Button to launch messaging window" id="launcher" style="color-scheme: light; height: 64px; width: 64px; position: fixed; bottom: 15px; right: 60px; border: 0px; margin-top: 0px; opacity: 0; box-shadow: rgba(23, 73, 77, 0.15) 0px 20px 30px; animation: 0.2s ease-in 0.5s 1 normal forwards running ww-5bde8458-7723-4bb8-be52-c1d3141e8a7f-widgetOnLoad; z-index: 999999; border-radius: 50%;"></iframe></div></div>
+<script type="text/javascript" id="" charset="">!function(b,e,f,g,a,c,d){b.fbq||(a=b.fbq=function(){a.callMethod?a.callMethod.apply(a,arguments):a.queue.push(arguments)},b._fbq||(b._fbq=a),a.push=a,a.loaded=!0,a.version="2.0",a.queue=[],c=e.createElement(f),c.async=!0,c.src=g,d=e.getElementsByTagName(f)[0],d.parentNode.insertBefore(c,d))}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");fbq("init","1167247020436969");fbq("track","PageView");</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1167247020436969&amp;ev=PageView&amp;noscript=1"></noscript>
+<script type="text/javascript" id="gtm-jq-ajax-listen" charset="">(function(){function h(b){"undefined"!==typeof jQuery?(k=jQuery,n()):20>b&&setTimeout(h,500)}function n(){k(document).bind("ajaxComplete",function(b,a,f){var c=document.createElement("a");c.href=f.url;var g="/"===c.pathname[0]?c.pathname:"/"+c.pathname,d="?"===c.search[0]?c.search.slice(1):c.search;d=l(d,"\x26","\x3d",!0);var e=l(a.getAllResponseHeaders(),"\n",":");dataLayer.push({event:"All_Ajax_Forms",attributes:{type:f.type||"",url:c.href||"",queryParameters:d,pathname:g||"",hostname:c.hostname||
+"",protocol:c.protocol||"",fragment:c.hash||"",statusCode:a.status||"",statusText:a.statusText||"",headers:e,timestamp:b.timeStamp||"",contentType:f.contentType||"",response:a.responseJSON||a.responseXML||a.responseText||""}})})}function l(b,a,f,c){var g={};if(!b||!a||!f)return{};if(b=b.split(a))for(a=0;a<b.length;a++){var d=c?decodeURIComponent(b[a]):b[a],e=d.split(f);d=m(e[0]);e=m(e[1]);d&&e&&(g[d]=e)}return g}function m(b){if(b)return b.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,"")}var k;h()})();</script><script type="text/javascript" async="" src="https://googleads.g.doubleclick.net/pagead/viewthroughconversion/988819829/?random=1792765756701&amp;cv=11&amp;fst=1792765756701&amp;bg=ffffff&amp;guid=ON&amp;async=1&amp;en=gtag.config&amp;gtm=45je6al1v887670554za20ozb831846604zd831846604xecxf1&amp;gcd=13l3l3l3l1l1&amp;dma=0&amp;tag_exp=115616986~115938465~115938468~118897920~118897930~120213116~120385422~120469145~120469153~121246026~121246034&amp;u_w=1536&amp;u_h=864&amp;url=https%3A%2F%2Fu1.oliveboard.in%2Ftests%2Findex.php%3Fc%3Dtests%26i%3Dbanking&amp;ref=https%3A%2F%2Fu1.oliveboard.in%2Ftests%2F%3Fc%3Dsbipopre19%26i%3Dbanking&amp;rcb=2&amp;frm=0&amp;tiba=Oliveboard%20%7C%20Banking%20%26%20Insurance%20Tests&amp;hn=www.googleadservices.com&amp;npa=0&amp;pscdl=noapi&amp;auid=2040535351.1792739205&amp;uaa=x86&amp;uab=64&amp;uafvl=Google%2520Chrome%3B155.0.8059.85%7CChromium%3B155.0.8059.85%7CNot(A%253ABrand%3B24.0.0.0&amp;uamb=0&amp;uam=&amp;uap=Windows&amp;uapv=19.0.0&amp;uaw=0&amp;data=event%3Dgtag.config&amp;ept=9&amp;rfmt=3&amp;fmt=4"></script></body></html>

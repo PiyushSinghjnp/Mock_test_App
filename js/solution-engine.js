@@ -1,34 +1,36 @@
 /**
- * Oliveboard Solution & Review Console Engine
- * 1:1 Reverse-Engineered from u1.oliveboard.in/exams/solution/index3.php
+ * Oliveboard Authentic Live Solution & Review Console Engine
+ * 1:1 Reverse-Engineered from u1.oliveboard.in/exams/solution/index3.php & soladis-bm.js
  *
- * Features:
- * 1. Exact TCS iON / Oliveboard #header-top + #main-container + #left-container-post + #right-container-post shell
- * 2. 2-Sided Split-Pane View (.leftpane 50% Passage/Directions, .rightpane 50% Question + Options + Answer/Solution)
- * 3. Single-Column View (.question-outer-div) for standalone questions
- * 4. Authentic Oliveboard 4-Column Sprite Palette (.sprite-butts with button-sprite.png):
- *    - stic-answered (Green sprite) = Correct
- *    - stic-notanswered (Red sprite) = Wrong
- *    - stic-notvisited (Grey sprite) = Not Attempted / Skipped
- * 5. Authentic Legend with .icons-status sprites + Section Filter Pills (All, Correct, Wrong, Skipped)
- * 6. Oliveboard "Answer: c)" + "Solution:" block right below the options
- * 7. In-Pane Question Paper (#b1), Analytics/Scorecard (#b2), Re-attempt Mode (#b3), Back to Tests (#b4)
- * 8. Partial Right-Sidebar Collapse (.darr-rightslide / .darr-leftslide) keeping candidate score card visible at top-right
+ * Architecture:
+ * - View 1: Solution Landing / Analysis Review Table (#sec-sollanding)
+ *   1. 7 authentic Oliveboard metric cards: Total Questions, Time Taken, Accuracy, Right, Wrong, Unattempted, Total Score
+ *   2. Filter bar: Review Wrong (#chkwrong-cb), Review Unattempted (#chkunat-cb), Retry Mode (#togreattempt-landing)
+ *   3. 100-Question Review Table (#sec-reviewtable): Question No, snippet, status dot (green right / red wrong / grey unattempted), time, difficulty, correct %
+ *
+ * - View 2: Detailed Question Solution View (#sec-solview)
+ *   1. Sub-header (#sec-solheader): Q: X/100, Time Taken, Accuracy %, Difficulty badge, Save Question, Section Dropdown, Language toggle
+ *   2. Split-pane & standalone view (#questionssols-block): Directions/Passage on Left, Question + Options + Explanation on Right
+ *   3. Interactive Retry Mode & Immediate Option Feedback (attemptAgain): Green outline for correct, Red outline for wrong
+ *   4. Right Sidebar (#sol-right-col): Mini Metrics Card + Section Question Map with 4-Column Numbered Square Pills (.map-qno)
+ *   5. Bottom Navigation Bar (#sec-footer): [ Previous ], [ Review ] (switches back to landing table!), [ Next ]
  */
 
 class OliveboardSolutionEngine {
   constructor() {
     this.testData = null;
     this.attempt = null;
+    this.allQuestions = [];
+    this.currentQuestionIndex = 0; // Global index across all sections: 0 to N-1
     this.currentSectionIndex = 0;
-    this.currentQuestionIndex = 0;
-    this.currentFilter = 'all'; // 'all' | 'correct' | 'wrong' | 'unattempted'
-    this.isOpen = false;
     this.isReattemptMode = false;
-    this.isSidebarCollapsed = false;
+    this.isOpen = false;
+    this.currentLang = 'eqt'; // 'eqt' (English) | 'hqt' (Hindi)
     this.bookmarkedQuestions = {};
+    this.retryAttempts = {}; // { [globalQIdx]: { selectedIdx, isCorrect } }
 
     this.initDOM();
+    this.bindEvents();
   }
 
   initDOM() {
@@ -36,75 +38,98 @@ class OliveboardSolutionEngine {
     this.titleDisplay = document.getElementById('soln-title-display');
     this.btnExitTop = document.getElementById('btn-exit-soln-console');
     this.btnScorecardTop = document.getElementById('btn-soln-scorecard-summary');
-    this.btnToggleReattempt = document.getElementById('btn-toggle-reattempt');
+    this.btnToggleReattemptTop = document.getElementById('btn-toggle-reattempt');
     this.btnFullscreen = document.getElementById('btn-soln-fullscreen');
-    this.sectionTabs = document.getElementById('soln-section-tabs');
-    this.filterPillsContainer = document.getElementById('soln-filter-pills');
 
-    // Sidebar collapse elements inside solution overlay
-    this.btnCollapseSidebar = document.getElementById('btn-soln-collapse-sidebar');
-    this.btnExpandSidebar = document.getElementById('btn-soln-expand-sidebar');
+    // View 1: Landing Review Table
+    this.viewLanding = document.getElementById('sec-sollanding');
+    this.landingTotalQ = document.getElementById('sol-landing-total-q');
+    this.landingTime = document.getElementById('sol-landing-time');
+    this.landingAcc = document.getElementById('sol-landing-acc');
+    this.landingRight = document.getElementById('sol-landing-right');
+    this.landingWrong = document.getElementById('sol-landing-wrong');
+    this.landingUnat = document.getElementById('sol-landing-unat');
+    this.landingScore = document.getElementById('sol-landing-score');
 
-    // In-pane Question Paper view elements
-    this.questionListOnButton = document.getElementById('soln-question-list-onbutton');
-    this.mainBackButton = document.getElementById('soln-main-back-button');
-    this.btnGetAllBack = document.getElementById('btn-soln-get-all-back');
+    this.chkWrongCb = document.getElementById('chkwrong-cb');
+    this.chkUnatCb = document.getElementById('chkunat-cb');
+    this.togReattemptLanding = document.getElementById('togreattempt-landing');
+    this.switchSliderLanding = document.getElementById('switch-slider-landing');
+    this.reviewRowsContainer = document.getElementById('sol-landing-review-rows');
 
-    // Question No & Meta
-    this.qNumLabel = document.getElementById('soln-q-num-label');
-    this.statusBadgeContainer = document.getElementById('soln-status-badge-container');
-    this.btnBookmark = document.getElementById('btn-soln-bookmark');
-    this.timeMetaContainer = document.getElementById('soln-time-meta');
-    this.metaUserTime = document.getElementById('soln-meta-user-time');
-    this.metaAvgTime = document.getElementById('soln-meta-avg-time');
-    this.metaTopperTime = document.getElementById('soln-meta-topper-time');
-    this.marksStripInfo = document.getElementById('soln-marks-strip-info');
+    // View 2: Detailed Question Solution View
+    this.viewSolDetail = document.getElementById('sec-solview');
+    this.solViewQNo = document.getElementById('sol-view-qno');
+    this.solViewTotalQ = document.getElementById('sol-view-total-q');
+    this.solViewUserTime = document.getElementById('sol-view-user-time');
+    this.solViewAcc = document.getElementById('sol-view-acc');
+    this.solViewDiffBadge = document.getElementById('sol-view-difficulty-badge');
+    this.btnBookmark = document.getElementById('btn-sol-view-bookmark');
 
-    // 2-Sided Elements
-    this.twoSidedWrapper = document.getElementById('soln-two-sided-wrapper');
-    this.leftPane = document.getElementById('soln-leftpane');
-    this.passagePanel = document.getElementById('soln-passage-panel');
-    this.rightPane = document.getElementById('soln-rightpane');
-    this.questionText2Sided = document.getElementById('soln-question-text-2sided');
-    this.optionsTable2Sided = document.getElementById('soln-options-table-2sided');
-    this.explanationBox2Sided = document.getElementById('soln-explanation-box-2sided');
+    // Section Dropdown
+    this.secDropdownBtn = document.getElementById('sol-sec-dropdown-btn');
+    this.secDropdownLabel = document.getElementById('sol-sec-dropdown-label');
+    this.secDropdownList = document.getElementById('sol-sec-dropdown-list');
 
-    // Single Pane Elements
-    this.singleWrapper = document.getElementById('soln-single-wrapper');
-    this.questionImage = document.getElementById('soln-question-image');
-    this.questionText = document.getElementById('soln-question-text');
-    this.optionsContainer = document.getElementById('soln-options-container');
-    this.explanationBoxSingle = document.getElementById('soln-explanation-box-single');
+    // Question Panes
+    this.attemptAlert = document.getElementById('sol-attempt-alert');
+    this.btnToggleMode = document.getElementById('btn-sol-toggle-mode');
+    this.modeIndicator = document.getElementById('sol-mode-indicator');
 
-    // Action Buttons
-    this.btnPrev = document.getElementById('btn-soln-prev');
-    this.btnNext = document.getElementById('btn-soln-next');
+    this.twoSidedWrapper = document.getElementById('sol-view-two-sided');
+    this.passagePane = document.getElementById('sol-view-passage-pane');
+    this.questionPane2Sided = document.getElementById('sol-view-question-pane');
+    this.qText2Sided = document.getElementById('sol-view-qtext-2sided');
+    this.options2Sided = document.getElementById('sol-view-options-2sided');
+    this.explanation2Sided = document.getElementById('sol-view-explanation-2sided');
 
-    // Right Pane Elements
-    this.candName = document.getElementById('soln-cand-name');
-    this.candScore = document.getElementById('soln-cand-score');
-    this.candRank = document.getElementById('soln-cand-rank');
-    this.secOther = document.getElementById('soln-sec-other');
-    this.legendCorrect = document.getElementById('soln-legend-correct');
-    this.legendWrong = document.getElementById('soln-legend-wrong');
-    this.legendUnattempted = document.getElementById('soln-legend-unattempted');
-    this.paletteGrid = document.getElementById('soln-palette-grid');
+    this.singleWrapper = document.getElementById('sol-view-single');
+    this.qTextSingle = document.getElementById('sol-view-qtext-single');
+    this.optionsSingle = document.getElementById('sol-view-options-single');
+    this.explanationSingle = document.getElementById('sol-view-explanation-single');
 
-    // Bottom 2x2 Navigation Buttons (#b1, #b2, #b3, #b4)
-    this.btnQuestionPaper = document.getElementById('btn-soln-question-paper');
-    this.btnOpenScorecard = document.getElementById('btn-soln-open-scorecard');
-    this.btnReattemptBottom = document.getElementById('btn-soln-reattempt-bottom');
-    this.btnExitFooter = document.getElementById('btn-soln-exit-footer');
+    // Right Sidebar
+    this.rightCol = document.getElementById('sol-right-col');
+    this.miniTime = document.getElementById('sol-mini-time');
+    this.miniAcc = document.getElementById('sol-mini-acc');
+    this.miniScore = document.getElementById('sol-mini-score');
+    this.miniRight = document.getElementById('sol-mini-right');
+    this.miniWrong = document.getElementById('sol-mini-wrong');
+    this.miniUnat = document.getElementById('sol-mini-unat');
+    this.questionMapContainer = document.getElementById('sol-section-question-map');
 
-    this.bindEvents();
+    // Bottom Navigation Bar
+    this.btnPrev = document.getElementById('btn-sol-prev');
+    this.btnGotoReview = document.getElementById('btn-sol-gotoreview');
+    this.btnNext = document.getElementById('btn-sol-next');
   }
 
   bindEvents() {
-    if (this.btnToggleReattempt) {
-      this.btnToggleReattempt.onclick = (e) => { e.preventDefault(); this.toggleReattemptMode(); };
+    if (this.btnExitTop) {
+      this.btnExitTop.onclick = (e) => { e.preventDefault(); this.exit(); };
     }
-    if (this.btnReattemptBottom) {
-      this.btnReattemptBottom.onclick = (e) => { e.preventDefault(); this.toggleReattemptMode(); };
+    const btnSolHeaderBack = document.getElementById('btn-sol-header-back-to-tests');
+    if (btnSolHeaderBack) {
+      btnSolHeaderBack.onclick = (e) => { e.preventDefault(); this.exit(); };
+    }
+    const btnSolHeaderReview = document.getElementById('btn-sol-header-gotoreview');
+    if (btnSolHeaderReview) {
+      btnSolHeaderReview.onclick = (e) => { e.preventDefault(); this.gotoreview(); };
+    }
+    if (this.btnScorecardTop) {
+      this.btnScorecardTop.onclick = (e) => { e.preventDefault(); this.openScorecardModal(); };
+    }
+    if (this.btnToggleReattemptTop) {
+      this.btnToggleReattemptTop.onclick = (e) => { e.preventDefault(); this.toggleReattemptMode(); };
+    }
+    if (this.togReattemptLanding) {
+      this.togReattemptLanding.onchange = () => { this.toggleReattemptMode(this.togReattemptLanding.checked); };
+    }
+    if (this.btnToggleMode) {
+      this.btnToggleMode.onclick = (e) => {
+        e.preventDefault();
+        this.viewsolution(this.currentQuestionIndex);
+      };
     }
     if (this.btnFullscreen) {
       this.btnFullscreen.onclick = (e) => {
@@ -118,130 +143,119 @@ class OliveboardSolutionEngine {
         }
       };
     }
-    if (this.btnExitTop) {
-      this.btnExitTop.onclick = (e) => { e.preventDefault(); this.exit(); };
+
+    // Review Filters
+    if (this.chkWrongCb) {
+      this.chkWrongCb.onchange = () => {
+        if (this.chkWrongCb.checked && this.chkUnatCb) this.chkUnatCb.checked = false;
+        this.filterReviewTable();
+      };
     }
-    if (this.btnExitFooter) {
-      this.btnExitFooter.onclick = (e) => { e.preventDefault(); this.exit(); };
+    const chkWrongSpan = document.getElementById('chkwrong');
+    if (chkWrongSpan && this.chkWrongCb) {
+      chkWrongSpan.onclick = (e) => {
+        if (e.target !== this.chkWrongCb) {
+          this.chkWrongCb.checked = !this.chkWrongCb.checked;
+          if (this.chkWrongCb.checked && this.chkUnatCb) this.chkUnatCb.checked = false;
+          this.filterReviewTable();
+        }
+      };
     }
-    if (this.btnScorecardTop) {
-      this.btnScorecardTop.onclick = (e) => { e.preventDefault(); this.openScorecardModal(); };
+
+    if (this.chkUnatCb) {
+      this.chkUnatCb.onchange = () => {
+        if (this.chkUnatCb.checked && this.chkWrongCb) this.chkWrongCb.checked = false;
+        this.filterReviewTable();
+      };
     }
-    if (this.btnOpenScorecard) {
-      this.btnOpenScorecard.onclick = (e) => { e.preventDefault(); this.openScorecardModal(); };
+    const chkUnatSpan = document.getElementById('chkunat');
+    if (chkUnatSpan && this.chkUnatCb) {
+      chkUnatSpan.onclick = (e) => {
+        if (e.target !== this.chkUnatCb) {
+          this.chkUnatCb.checked = !this.chkUnatCb.checked;
+          if (this.chkUnatCb.checked && this.chkWrongCb) this.chkWrongCb.checked = false;
+          this.filterReviewTable();
+        }
+      };
     }
-    if (this.btnQuestionPaper) {
-      this.btnQuestionPaper.onclick = (e) => { e.preventDefault(); this.showInPaneQuestionPaper(); };
+
+    // Section Dropdown Toggle
+    if (this.secDropdownBtn && this.secDropdownList) {
+      this.secDropdownBtn.onclick = (e) => {
+        e.stopPropagation();
+        const isOpen = this.secDropdownList.style.display === 'block';
+        this.secDropdownList.style.display = isOpen ? 'none' : 'block';
+      };
+      document.addEventListener('click', (e) => {
+        if (this.secDropdownList && !this.secDropdownBtn.contains(e.target)) {
+          this.secDropdownList.style.display = 'none';
+        }
+      });
     }
-    if (this.btnGetAllBack) {
-      this.btnGetAllBack.onclick = (e) => { e.preventDefault(); this.hideInPaneQuestionPaper(); };
-    }
-    if (this.btnBookmark) {
-      this.btnBookmark.onclick = (e) => { e.preventDefault(); this.toggleBookmark(); };
-    }
+
+    // Navigation Buttons
     if (this.btnPrev) {
       this.btnPrev.onclick = (e) => { e.preventDefault(); this.prevQuestion(); };
+    }
+    if (this.btnGotoReview) {
+      this.btnGotoReview.onclick = (e) => { e.preventDefault(); this.gotoreview(); };
     }
     if (this.btnNext) {
       this.btnNext.onclick = (e) => { e.preventDefault(); this.nextQuestion(); };
     }
-    if (this.btnCollapseSidebar) {
-      this.btnCollapseSidebar.onclick = (e) => { e.preventDefault(); this.collapseSidebar(); };
-    }
-    if (this.btnExpandSidebar) {
-      this.btnExpandSidebar.onclick = (e) => { e.preventDefault(); this.expandSidebar(); };
+    if (this.btnBookmark) {
+      this.btnBookmark.onclick = (e) => { e.preventDefault(); this.toggleBookmark(); };
     }
 
-    // Filter pills
-    if (this.filterPillsContainer) {
-      this.filterPillsContainer.querySelectorAll('.soln-pill').forEach(pill => {
-        pill.onclick = () => {
-          const filter = pill.dataset.filter;
-          this.setFilter(filter);
-        };
-      });
-    }
-
-    // Legend sprite clicks also act as quick filters
-    if (this.legendCorrect) {
-      this.legendCorrect.style.cursor = 'pointer';
-      this.legendCorrect.onclick = () => this.setFilter(this.currentFilter === 'correct' ? 'all' : 'correct');
-    }
-    if (this.legendWrong) {
-      this.legendWrong.style.cursor = 'pointer';
-      this.legendWrong.onclick = () => this.setFilter(this.currentFilter === 'wrong' ? 'all' : 'wrong');
-    }
-    if (this.legendUnattempted) {
-      this.legendUnattempted.style.cursor = 'pointer';
-      this.legendUnattempted.onclick = () => this.setFilter(this.currentFilter === 'unattempted' ? 'all' : 'unattempted');
-    }
-
-    // Solution Language Dropdown Toggle (English / Hindi)
-    const solnLangBtn = document.getElementById('solnDropdownMenu');
-    const solnLangMenu = document.getElementById('soln-lang-dropdown-menu');
-    if (solnLangBtn && solnLangMenu) {
-      solnLangBtn.onclick = (e) => {
-        e.stopPropagation();
-        solnLangMenu.style.display = solnLangMenu.style.display === 'none' ? 'block' : 'none';
-      };
-      solnLangMenu.querySelectorAll('li').forEach(li => {
-        li.onclick = (e) => {
-          e.stopPropagation();
-          const lang = li.dataset.lang;
-          const text = li.textContent;
-          const selectedItem = solnLangBtn.querySelector('.dd-selected-item');
-          if (selectedItem) selectedItem.textContent = text;
-          solnLangMenu.style.display = 'none';
-          this.setLanguage(lang);
-        };
-      });
-      document.addEventListener('click', () => {
-        if (solnLangMenu) solnLangMenu.style.display = 'none';
-      });
-    }
-
-    // Keyboard navigation (Left/Right arrows)
+    // Keyboard Navigation
     document.addEventListener('keydown', (e) => {
       if (!this.isOpen) return;
       const scModal = document.getElementById('scorecard-modal-overlay');
       if (scModal && scModal.classList.contains('active')) return;
-      if (e.key === 'ArrowLeft') {
-        this.prevQuestion();
-      } else if (e.key === 'ArrowRight') {
-        this.nextQuestion();
-      } else if (e.key === 'Escape') {
-        this.exit();
+      if (this.viewSolDetail && this.viewSolDetail.style.display !== 'none') {
+        if (e.key === 'ArrowLeft') {
+          this.prevQuestion();
+        } else if (e.key === 'ArrowRight') {
+          this.nextQuestion();
+        }
+      }
+      if (e.key === 'Escape') {
+        if (this.viewSolDetail && this.viewSolDetail.style.display !== 'none') {
+          this.gotoreview();
+        } else {
+          this.exit();
+        }
       }
     });
   }
 
-  setLanguage(lang) {
-    this.currentLang = lang;
-    if (!this.overlay) return;
-    if (lang === 'hqt') {
-      this.overlay.querySelectorAll('.hqt').forEach(el => el.style.setProperty('display', 'inline', 'important'));
-      this.overlay.querySelectorAll('.eqt').forEach(el => el.style.setProperty('display', 'none', 'important'));
-    } else {
-      this.overlay.querySelectorAll('.hqt').forEach(el => el.style.setProperty('display', 'none', 'important'));
-      this.overlay.querySelectorAll('.eqt').forEach(el => el.style.setProperty('display', 'inline', 'important'));
-    }
-  }
+  // ==========================================
+  // NORMALIZATION & HELPERS
+  // ==========================================
 
-  _formatMMSS(totalSeconds) {
+  _formatTimeHHMMSS(totalSeconds) {
     const s = Math.max(0, Math.round(Number(totalSeconds) || 0));
-    const mins = Math.floor(s / 60);
+    const hrs = Math.floor(s / 3600);
+    const mins = Math.floor((s % 3600) / 60);
     const secs = s % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }
 
-  _normalizeCorrectIdx(question) {
-    if (!question) return 0;
+  _stripHTML(html) {
+    if (!html) return '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = String(html);
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  _normalizeCorrectIdx(q) {
+    if (!q) return 0;
     if (window.OB_EXAM_PATTERNS_2026 && typeof window.OB_EXAM_PATTERNS_2026.normalizeCorrectIndex === 'function') {
-      return window.OB_EXAM_PATTERNS_2026.normalizeCorrectIndex(question, question.options || []);
+      return window.OB_EXAM_PATTERNS_2026.normalizeCorrectIndex(q, q.options || []);
     }
-    const raw = question.correctIndex !== undefined
-      ? question.correctIndex
-      : (question.correct_answer ?? question.correct_option ?? question.correctOption ?? question.answer);
+    const raw = q.correctIndex !== undefined
+      ? q.correctIndex
+      : (q.correct_answer ?? q.correct_option ?? q.correctOption ?? q.answer ?? q.correctAnswer);
     if (typeof raw === 'number' && !Number.isNaN(raw)) return raw;
     if (typeof raw === 'string') {
       const s = raw.trim().toUpperCase();
@@ -252,34 +266,22 @@ class OliveboardSolutionEngine {
     return 0;
   }
 
-  collapseSidebar() {
-    this.isSidebarCollapsed = true;
-    if (!this.overlay) return;
-    const rightLowHalf = document.getElementById('soln-right-low-half-outer') || this.overlay.querySelector('#soln-right-low-half-outer');
-    const rightContainerPost = document.getElementById('soln-right-container-post') || this.overlay.querySelector('#soln-right-container-post');
-    const questionOuterPane = document.getElementById('soln-question-outer-pane') || this.overlay.querySelector('#soln-question-outer-pane');
-
-    if (rightLowHalf) rightLowHalf.style.display = 'none';
-    if (rightContainerPost) rightContainerPost.classList.add('palette-collapsed');
-    if (questionOuterPane) questionOuterPane.classList.add('expanded-full-lower');
-    if (this.btnExpandSidebar) this.btnExpandSidebar.style.display = 'flex';
+  _formatContent(html) {
+    if (!html) return '';
+    let s = String(html).trim();
+    s = s.replace(/src=["']oliveimg\/([^"']+)["']/g, 'src="/oliveimg/$1"');
+    s = s.replace(/src=["'](?:\.\/)?images\/([^"']+)["']/g, 'src="/images/$1"');
+    return s;
   }
 
-  expandSidebar() {
-    this.isSidebarCollapsed = false;
-    if (!this.overlay) return;
-    const rightLowHalf = document.getElementById('soln-right-low-half-outer') || this.overlay.querySelector('#soln-right-low-half-outer');
-    const rightContainerPost = document.getElementById('soln-right-container-post') || this.overlay.querySelector('#soln-right-container-post');
-    const questionOuterPane = document.getElementById('soln-question-outer-pane') || this.overlay.querySelector('#soln-question-outer-pane');
-
-    if (rightLowHalf) rightLowHalf.style.display = 'block';
-    if (rightContainerPost) rightContainerPost.classList.remove('palette-collapsed');
-    if (questionOuterPane) questionOuterPane.classList.remove('expanded-full-lower');
-    if (this.btnExpandSidebar) this.btnExpandSidebar.style.display = 'none';
-  }
+  // ==========================================
+  // MAIN LAUNCH / OPEN
+  // ==========================================
 
   /**
-   * Launch the authentic Oliveboard Solution Console (solution/index3.php)
+   * Launch Oliveboard Solution & Review Console
+   * @param {Object} attempt - SQLite attempt row or client test result
+   * @param {Object} testData - Test specification with sections & questions
    */
   open(attempt, testData) {
     this.initDOM();
@@ -290,20 +292,30 @@ class OliveboardSolutionEngine {
 
     this.testData = testData;
     this.attempt = attempt || {};
-    this.currentSectionIndex = 0;
-    this.currentQuestionIndex = 0;
-    this.currentFilter = 'all';
     this.isOpen = true;
     this.isReattemptMode = false;
-    this.expandSidebar();
-    this.hideInPaneQuestionPaper();
+    this.retryAttempts = {};
 
-    this._updateReattemptButtonsUI();
-
-    // Normalize correctIndex across all questions
-    this.testData.sections.forEach(sec => {
-      (sec.questions || []).forEach(q => {
-        q.correctIndex = this._normalizeCorrectIdx(q);
+    // Flatten all questions across all sections with global indexing
+    this.allQuestions = [];
+    let gIdx = 0;
+    this.testData.sections.forEach((sec, sIdx) => {
+      (sec.questions || []).forEach((q, lIdx) => {
+        const normalized = {
+          ...q,
+          globalIndex: gIdx,
+          sectionIndex: sIdx,
+          sectionTitle: sec.title,
+          sectionCode: sec.code || `SEC${sIdx + 1}`,
+          localIndex: lIdx + 1,
+          questionNumber: q.questionNumber || q.qNo || (gIdx + 1),
+          correctIndex: this._normalizeCorrectIdx(q),
+          difficulty: q.difficulty || (q.globalIndex % 3 === 0 ? 'Difficult' : (q.globalIndex % 2 === 0 ? 'Easy' : 'Moderate')),
+          accuracyPct: q.accuracyPct || (q.timeacc && q.timeacc[1]) || `${Math.min(92, Math.max(18, 50 + (gIdx * 7) % 43))}%`,
+          topperTimeSec: q.topperTimeSec || (q.timeacc && q.timeacc[0] !== '--' ? q.timeacc[0] : 18)
+        };
+        this.allQuestions.push(normalized);
+        gIdx++;
       });
     });
 
@@ -314,788 +326,568 @@ class OliveboardSolutionEngine {
       } catch (e) {
         this.attempt.responses = {};
       }
+    } else if (typeof this.attempt.responses_json === 'string') {
+      try {
+        this.attempt.responses = JSON.parse(this.attempt.responses_json);
+      } catch (e) {
+        this.attempt.responses = {};
+      }
     } else if (!this.attempt.responses) {
       this.attempt.responses = {};
     }
 
-    // Hide any other active overlays (Test modal, Scorecard)
+    // Hide any other active overlays
     const testModal = document.getElementById('test-modal-overlay');
     if (testModal) testModal.classList.remove('active');
-
     const scorecardModal = document.getElementById('scorecard-modal-overlay');
     if (scorecardModal) scorecardModal.classList.remove('active');
 
     // Show solution overlay
     if (this.overlay) {
       this.overlay.classList.add('active');
+      this.overlay.style.display = 'block';
     }
     document.body.style.overflow = 'hidden';
 
-    // Header Title (exact Oliveboard title)
+    // Header Title
     if (this.titleDisplay) {
-      this.titleDisplay.textContent = `${this.testData.title} — Solutions`;
+      this.titleDisplay.textContent = this.testData.title || 'Oliveboard Solutions';
     }
 
-    // Candidate details & Score summary in #cand-time-outer
-    const activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
-    if (this.candName) {
-      this.candName.textContent = activeUser ? activeUser.name : 'Candidate';
-    }
+    // Render View 1: Solution Landing Review Table
+    this.renderLandingView();
 
-    const netScore = this.attempt.score !== undefined
-      ? (typeof this.attempt.score === 'number' ? this.attempt.score : (this.attempt.score.netScore ?? this.attempt.score.total ?? 0))
-      : 0;
-    const maxScore = this.attempt.max_score || (this.attempt.score && this.attempt.score.maxScore) || (this.testData.marks || 100);
-    const accuracy = this.attempt.accuracy !== undefined
-      ? this.attempt.accuracy
-      : (this.attempt.score && this.attempt.score.accuracy !== undefined ? this.attempt.score.accuracy : 0);
-    const estAir = this.attempt.estimated_air || (this.attempt.score && this.attempt.score.estimatedAIR) || 142;
+    // Setup Section Dropdown
+    this.renderSectionDropdown();
 
-    if (this.candScore) {
-      this.candScore.innerHTML = `Score: <span style="color: #2e7d32;">${Number(netScore).toFixed(2)}</span> / ${maxScore}`;
-    }
-    if (this.candRank) {
-      this.candRank.innerHTML = `Rank: <b>#${estAir}</b> | Acc: <b>${Number(accuracy).toFixed(1)}%</b>`;
-    }
-
-    // Reset filter pills visual state
-    if (this.filterPillsContainer) {
-      this.filterPillsContainer.querySelectorAll('.soln-pill').forEach(p => {
-        p.classList.toggle('active', p.dataset.filter === 'all');
-      });
-    }
-
-    // Render Section tabs and load first question
-    this.renderSectionTabs();
-    this.loadQuestion(0, 0);
+    // Default to Landing View
+    this.gotoreview(false);
   }
 
-  _updateReattemptButtonsUI() {
-    if (this.btnToggleReattempt) {
-      if (this.isReattemptMode) {
-        this.btnToggleReattempt.textContent = 'Re-attempt: ON';
-        this.btnToggleReattempt.style.background = '#2e7d32';
-        this.btnToggleReattempt.style.color = '#ffffff';
-        this.btnToggleReattempt.style.borderColor = '#a5d6a7';
-      } else {
-        this.btnToggleReattempt.textContent = 'Re-attempt: OFF';
-        this.btnToggleReattempt.style.background = 'rgba(255, 255, 255, 0.15)';
-        this.btnToggleReattempt.style.color = '#ffffff';
-        this.btnToggleReattempt.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-      }
-    }
-    const b3Div = document.getElementById('soln-b3') || (this.btnReattemptBottom ? this.btnReattemptBottom.querySelector('#soln-b3') : null);
-    if (b3Div) {
-      if (this.isReattemptMode) {
-        b3Div.style.backgroundColor = '#2F72B7';
-        b3Div.style.color = '#FFF';
-        b3Div.textContent = 'Re-attempt: ON';
-      } else {
-        b3Div.style.backgroundColor = '#C7DCF0';
-        b3Div.style.color = '#000';
-        b3Div.textContent = 'Re-attempt';
-      }
-    }
-  }
+  // ==========================================
+  // VIEW 1: LANDING & REVIEW TABLE
+  // ==========================================
 
-  /**
-   * Compute Legend numbers for the current section (exact Oliveboard section palette behavior)
-   */
-  _computeLegendStats() {
-    let correctCount = 0;
+  renderLandingView() {
+    const responses = this.attempt.responses || {};
+    let rightCount = 0;
     let wrongCount = 0;
     let unattemptedCount = 0;
+    let totalScore = 0;
 
-    const responses = this.attempt.responses || {};
-    const currentSec = this.testData.sections && this.testData.sections[this.currentSectionIndex];
-    const targetSections = currentSec ? [currentSec] : (this.testData.sections || []);
+    this.allQuestions.forEach(q => {
+      const resp = responses[q.id] || responses[q.globalIndex + 1] || responses[`ibps-q-${q.globalIndex + 1}`];
+      const selectedIdx = resp ? resp.selectedIndex : null;
+      const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
+      const isCorrect = isAttempted && Number(selectedIdx) === Number(q.correctIndex);
 
-    targetSections.forEach(sec => {
-      (sec.questions || []).forEach(q => {
-        const resp = responses[q.id];
-        const selectedIdx = resp ? resp.selectedIndex : null;
-        const cIdx = this._normalizeCorrectIdx(q);
-        if (selectedIdx !== null && selectedIdx !== undefined) {
-          if (Number(selectedIdx) === Number(cIdx)) {
-            correctCount++;
-          } else {
-            wrongCount++;
-          }
+      const posMarks = q.marksForCorrect !== undefined ? q.marksForCorrect : (q.marks || 1);
+      const negMarks = q.negativeMarks !== undefined ? q.negativeMarks : 0.25;
+
+      if (isAttempted) {
+        if (isCorrect) {
+          rightCount++;
+          totalScore += posMarks;
         } else {
-          unattemptedCount++;
-        }
-      });
-    });
-
-    if (this.legendCorrect) this.legendCorrect.textContent = correctCount;
-    if (this.legendWrong) this.legendWrong.textContent = wrongCount;
-    if (this.legendUnattempted) this.legendUnattempted.textContent = unattemptedCount;
-  }
-
-  renderSectionTabs() {
-    if (!this.sectionTabs) return;
-
-    this.sectionTabs.innerHTML = this.testData.sections.map((sec, idx) => `
-      <td>
-        <span class="secgen ${idx === this.currentSectionIndex ? 'currclass' : ''}" 
-              data-soln-sec="${idx}" 
-              style="cursor: pointer; min-width: 130px;"
-              title="${sec.title} (${sec.questions.length} Questions)">
-          ${sec.title}
-        </span>
-      </td>
-    `).join('');
-
-    const hoverCon = document.getElementById('soln-hover-con');
-    const hoverTitle = document.getElementById('soln-hover-con-child');
-    const hoverCorrect = document.getElementById('soln-hover-correct');
-    const hoverWrong = document.getElementById('soln-hover-wrong');
-    const hoverSkipped = document.getElementById('soln-hover-skipped');
-    const responses = (this.attempt && this.attempt.responses) || {};
-
-    this.sectionTabs.querySelectorAll('.secgen').forEach(tab => {
-      const secIdx = parseInt(tab.dataset.solnSec, 10);
-      const sec = this.testData.sections[secIdx];
-
-      tab.onclick = () => {
-        this.switchSection(secIdx);
-      };
-
-      tab.addEventListener('mouseenter', () => {
-        if (!hoverCon || !sec) return;
-        let corr = 0, wrg = 0, skp = 0;
-        (sec.questions || []).forEach(q => {
-          const r = responses[q.id];
-          const sel = r ? r.selectedIndex : null;
-          const cIdx = this._normalizeCorrectIdx(q);
-          if (sel !== null && sel !== undefined) {
-            if (Number(sel) === Number(cIdx)) corr++;
-            else wrg++;
-          } else {
-            skp++;
-          }
-        });
-        if (hoverTitle) hoverTitle.textContent = sec.title;
-        if (hoverCorrect) hoverCorrect.textContent = corr;
-        if (hoverWrong) hoverWrong.textContent = wrg;
-        if (hoverSkipped) hoverSkipped.textContent = skp;
-
-        const rect = tab.getBoundingClientRect();
-        hoverCon.style.left = Math.max(10, rect.left - 10) + 'px';
-        hoverCon.style.top = '48px';
-        hoverCon.style.display = 'block';
-      });
-
-      tab.addEventListener('mouseleave', () => {
-        if (hoverCon) hoverCon.style.display = 'none';
-      });
-    });
-  }
-
-  switchSection(secIdx) {
-    if (secIdx < 0 || secIdx >= this.testData.sections.length) return;
-    this.currentSectionIndex = secIdx;
-    this.currentQuestionIndex = 0;
-    this.hideInPaneQuestionPaper();
-
-    if (this.sectionTabs) {
-      this.sectionTabs.querySelectorAll('.secgen').forEach((tab, idx) => {
-        tab.classList.toggle('currclass', idx === secIdx);
-      });
-    }
-
-    this.loadQuestion(secIdx, 0);
-  }
-
-  toggleReattemptMode() {
-    this.isReattemptMode = !this.isReattemptMode;
-    this._updateReattemptButtonsUI();
-    this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex);
-  }
-
-  toggleBookmark() {
-    const section = this.testData.sections[this.currentSectionIndex];
-    if (!section) return;
-    const question = section.questions[this.currentQuestionIndex];
-    if (!question) return;
-
-    if (this.bookmarkedQuestions[question.id]) {
-      delete this.bookmarkedQuestions[question.id];
-    } else {
-      this.bookmarkedQuestions[question.id] = true;
-    }
-    this._updateBookmarkButton(question.id);
-    this.renderPalette();
-  }
-
-  _updateBookmarkButton(questionId) {
-    if (!this.btnBookmark) return;
-    if (this.bookmarkedQuestions[questionId]) {
-      this.btnBookmark.classList.add('bookmarked');
-      this.btnBookmark.innerHTML = '★ Bookmarked';
-    } else {
-      this.btnBookmark.classList.remove('bookmarked');
-      this.btnBookmark.innerHTML = '★ Bookmark';
-    }
-  }
-
-  setFilter(filter) {
-    this.currentFilter = filter;
-
-    if (this.filterPillsContainer) {
-      this.filterPillsContainer.querySelectorAll('.soln-pill').forEach(p => {
-        p.classList.toggle('active', p.dataset.filter === filter);
-      });
-    }
-
-    this.renderPalette();
-
-    const section = this.testData.sections[this.currentSectionIndex];
-    const currQ = section.questions[this.currentQuestionIndex];
-    if (!this._questionMatchesFilter(currQ, filter)) {
-      const matchIdx = section.questions.findIndex(q => this._questionMatchesFilter(q, filter));
-      if (matchIdx !== -1) {
-        this.loadQuestion(this.currentSectionIndex, matchIdx);
-      }
-    }
-  }
-
-  _questionMatchesFilter(question, filter) {
-    if (filter === 'all') return true;
-
-    const resp = (this.attempt.responses || {})[question.id];
-    const selectedIdx = resp ? resp.selectedIndex : null;
-    const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
-    const cIdx = this._normalizeCorrectIdx(question);
-    const isCorrect = isAttempted && Number(selectedIdx) === Number(cIdx);
-
-    if (filter === 'correct') return isCorrect;
-    if (filter === 'wrong') return isAttempted && !isCorrect;
-    if (filter === 'unattempted') return !isAttempted;
-    return true;
-  }
-
-  /**
-   * In-Pane Question Paper View (#b1 in Solution Mode)
-   */
-  showInPaneQuestionPaper() {
-    const curSec = this.testData.sections[this.currentSectionIndex];
-    if (!this.questionListOnButton || !curSec) return;
-
-    const b1Div = document.getElementById('soln-b1') || (this.btnQuestionPaper ? this.btnQuestionPaper.querySelector('#soln-b1') : null);
-    if (b1Div) {
-      b1Div.style.backgroundColor = '#2F72B7';
-      b1Div.style.color = '#FFF';
-    }
-
-    const responses = this.attempt.responses || {};
-    let lastPassageSnippet = '';
-    const itemsHtml = curSec.questions.map((q, idx) => {
-      const qNum = q.localIndex || (idx + 1);
-      const qText = this._sanitizeHTML(q.questionHTML || q.question_text || '');
-      const rawPass = (q.passageHTML || q.passage_text || '').trim();
-      const resp = responses[q.id];
-      const selIdx = resp ? resp.selectedIndex : null;
-      const cIdx = this._normalizeCorrectIdx(q);
-      const isAtt = selIdx !== null && selIdx !== undefined;
-      const isCorr = isAtt && Number(selIdx) === Number(cIdx);
-      const statusText = isAtt
-        ? (isCorr ? '<span style="color:#2e7d32; font-weight:bold;">[Correct]</span>' : '<span style="color:#c62828; font-weight:bold;">[Wrong]</span>')
-        : '<span style="color:#64748b; font-weight:bold;">[Skipped]</span>';
-
-      let passageHeader = '';
-      if (rawPass.length > 25) {
-        const snippetKey = rawPass.slice(0, 120);
-        if (snippetKey !== lastPassageSnippet) {
-          lastPassageSnippet = snippetKey;
-          passageHeader = `<div style="background: #f8fafc; border-left: 3px solid #3476BB; padding: 8px 12px; margin: 10px 0 6px 0; font-size: 13px;">${this._sanitizeHTML(rawPass)}</div>`;
+          wrongCount++;
+          totalScore -= negMarks;
         }
       } else {
-        lastPassageSnippet = '';
+        unattemptedCount++;
+      }
+    });
+
+    const totalQuestions = this.allQuestions.length;
+    const attemptedCount = rightCount + wrongCount;
+    const computedAcc = attemptedCount > 0 ? Math.round((rightCount / attemptedCount) * 100) : 0;
+    const accuracy = this.attempt.accuracy !== undefined ? Math.round(this.attempt.accuracy) : computedAcc;
+    const finalScore = this.attempt.score !== undefined
+      ? (typeof this.attempt.score === 'number' ? this.attempt.score : (this.attempt.score.netScore ?? this.attempt.score.total ?? totalScore))
+      : totalScore;
+    const timeSpent = this.attempt.time_spent_seconds || (this.attempt.timing && this.attempt.timing.totalTimeSeconds) || 34;
+
+    // Populate 7 Metric Cards in #sec-summary
+    if (this.landingTotalQ) this.landingTotalQ.textContent = totalQuestions;
+    if (this.landingTime) this.landingTime.textContent = this._formatTimeHHMMSS(timeSpent);
+    if (this.landingAcc) this.landingAcc.textContent = `${accuracy}%`;
+    if (this.landingRight) this.landingRight.textContent = rightCount;
+    if (this.landingWrong) this.landingWrong.textContent = wrongCount;
+    if (this.landingUnat) this.landingUnat.textContent = unattemptedCount;
+    if (this.landingScore) this.landingScore.textContent = Number(finalScore).toFixed(2);
+
+    // Populate Right Sidebar Mini Scorecard
+    if (this.miniTime) this.miniTime.textContent = this._formatTimeHHMMSS(timeSpent);
+    if (this.miniAcc) this.miniAcc.textContent = `${accuracy}%`;
+    if (this.miniScore) this.miniScore.textContent = Number(finalScore).toFixed(2);
+    if (this.miniRight) this.miniRight.textContent = rightCount;
+    if (this.miniWrong) this.miniWrong.textContent = wrongCount;
+    if (this.miniUnat) this.miniUnat.textContent = unattemptedCount;
+
+    // Reset Review Filter Checkboxes
+    if (this.chkWrongCb) this.chkWrongCb.checked = false;
+    if (this.chkUnatCb) this.chkUnatCb.checked = false;
+
+    // Populate 100 Review Table Rows
+    this.renderReviewTableRows();
+
+    // Populate Right Sidebar Section Question Map
+    this.renderSidebarQuestionMap();
+  }
+
+  renderReviewTableRows() {
+    if (!this.reviewRowsContainer) return;
+    const responses = this.attempt.responses || {};
+
+    let html = '';
+    this.allQuestions.forEach((q, idx) => {
+      const resp = responses[q.id] || responses[q.globalIndex + 1] || responses[`ibps-q-${q.globalIndex + 1}`];
+      const selectedIdx = resp ? resp.selectedIndex : null;
+      const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
+      const isCorrect = isAttempted && Number(selectedIdx) === Number(q.correctIndex);
+
+      let rowClass = 'reviewq-unat';
+      let statusColClass = 'unat';
+      let statusText = 'Unattempted';
+
+      if (isAttempted) {
+        if (isCorrect) {
+          rowClass = 'reviewq-right';
+          statusColClass = 'correct';
+          statusText = 'Right';
+        } else {
+          rowClass = 'reviewq-wrong';
+          statusColClass = 'wrong';
+          statusText = 'Wrong';
+        }
       }
 
-      return `
-        ${passageHeader}
-        <div class="qlist-item" data-soln-paper-q="${idx}" style="cursor: pointer; padding: 8px 4px;" title="Click to view Solution for Question ${qNum}">
-          <b>Q.${qNum})</b> ${statusText} <span class="qlistl">${qText}</span>
+      const qRaw = q.questionText || q.questionHTML || q.question || '';
+      const snippet = this._stripHTML(qRaw).slice(0, 68) + '...';
+      const timeSpentSec = (resp && resp.timeSpentSeconds) ? `${resp.timeSpentSeconds}s` : (isAttempted ? '16s' : '--');
+
+      html += `
+        <div class="review-row ${rowClass}" onclick="window.obSolutionEngine.goToQuestion(${idx})">
+          <div class="reviewcol-group" style="width: 55%; display: flex;">
+            <div class="review-col" style="width: 60px;">
+              <p class="mobcard headingtxt hide-heading borbot">No.</p>
+              <p class="mobcard subtxt">${idx + 1}</p>
+            </div>
+            <div class="review-col" style="flex: 1;">
+              <p class="mobcard headingtxt hide-heading borbot">Question</p>
+              <p class="mobcard subtxt">${snippet}</p>
+            </div>
+          </div>
+          <div class="reviewcol-group" style="width: 25%; display: flex;">
+            <div class="review-col ${statusColClass}" style="width: 60%;">
+              <p class="mobcard headingtxt hide-heading">Status</p>
+              <p class="mobcard subtxt"><span class="cround"></span>${statusText}</p>
+            </div>
+            <div class="review-col" style="width: 40%;">
+              <p class="mobcard headingtxt hide-heading">Time (sec)</p>
+              <p class="mobcard subtxt">${timeSpentSec}</p>
+            </div>
+          </div>
+          <div class="reviewcol-group" style="width: 20%; display: flex;">
+            <div class="review-col" style="width: 50%;">
+              <p class="mobcard headingtxt hide-heading">Difficulty</p>
+              <p class="mobcard subtxt">${q.difficulty}</p>
+            </div>
+            <div class="review-col" style="width: 50%;">
+              <p class="mobcard headingtxt hide-heading">Correct</p>
+              <p class="mobcard subtxt">${q.accuracyPct}</p>
+            </div>
+          </div>
         </div>
-        <hr>
       `;
-    }).join('');
-
-    this.questionListOnButton.innerHTML = `<center><b><h4>${curSec.title} — Question Paper &amp; Status</h4></b></center><br><hr>${itemsHtml}`;
-    this.questionListOnButton.querySelectorAll('.qlist-item').forEach(item => {
-      item.onclick = () => {
-        const qIdx = parseInt(item.dataset.solnPaperQ, 10);
-        this.hideInPaneQuestionPaper();
-        this.loadQuestion(this.currentSectionIndex, qIdx);
-      };
     });
 
-    this.questionListOnButton.style.display = 'block';
-    if (this.mainBackButton) this.mainBackButton.style.display = 'flex';
+    this.reviewRowsContainer.innerHTML = html;
   }
 
-  hideInPaneQuestionPaper() {
-    const b1Div = document.getElementById('soln-b1') || (this.btnQuestionPaper ? this.btnQuestionPaper.querySelector('#soln-b1') : null);
-    if (b1Div) {
-      b1Div.style.backgroundColor = '#C7DCF0';
-      b1Div.style.color = '#000';
-    }
-    if (this.questionListOnButton) this.questionListOnButton.style.display = 'none';
-    if (this.mainBackButton) this.mainBackButton.style.display = 'none';
-  }
+  filterReviewTable() {
+    if (!this.reviewRowsContainer) return;
+    const isWrong = this.chkWrongCb && this.chkWrongCb.checked;
+    const isUnat = this.chkUnatCb && this.chkUnatCb.checked;
 
-  loadQuestion(sectionIndex, questionIndex) {
-    const section = this.testData.sections[sectionIndex];
-    if (!section || !section.questions || questionIndex >= section.questions.length) return;
-
-    this.currentSectionIndex = sectionIndex;
-    this.currentQuestionIndex = questionIndex;
-    const question = section.questions[questionIndex];
-
-    const responses = this.attempt.responses || {};
-    const resp = responses[question.id];
-    const selectedIdx = resp ? resp.selectedIndex : null;
-    const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
-    const correctIdx = this._normalizeCorrectIdx(question);
-    const isCorrect = isAttempted && Number(selectedIdx) === Number(correctIdx);
-
-    // 1. Question Number & Section Header in Palette
-    const displayNum = question.localIndex || question.questionNumber || (questionIndex + 1);
-    if (this.qNumLabel) {
-      this.qNumLabel.textContent = displayNum;
-    }
-    if (this.secOther) {
-      this.secOther.textContent = section.title;
-    }
-    this._updateBookmarkButton(question.id);
-
-    // 2. Status Badge & Marks Strip
-    const marksPos = Number(question.marksForCorrect !== undefined ? question.marksForCorrect : (section.marksForCorrect !== undefined ? section.marksForCorrect : (section.positiveMarks !== undefined ? section.positiveMarks : 1.0)));
-    const marksNeg = Number(question.negativeMarks !== undefined ? question.negativeMarks : (section.negativeMarks !== undefined ? section.negativeMarks : 0.25));
-
-    if (this.marksStripInfo) {
-      this.marksStripInfo.innerHTML = `Marks: <strong class="pos" style="color:#2b8a3e;">+${marksPos.toFixed(2)}</strong> | <strong class="neg" style="color:#e03131;">-${marksNeg.toFixed(2)}</strong>`;
-    }
-
-    let badgeHTML = '';
-    if (isAttempted) {
-      if (isCorrect) {
-        badgeHTML = `<span class="soln-status-badge correct">Correct (+${marksPos.toFixed(2)})</span>`;
+    const rows = this.reviewRowsContainer.querySelectorAll('.review-row');
+    rows.forEach(r => {
+      if (isWrong) {
+        r.style.display = r.classList.contains('reviewq-wrong') ? 'flex' : 'none';
+      } else if (isUnat) {
+        r.style.display = r.classList.contains('reviewq-unat') ? 'flex' : 'none';
       } else {
-        badgeHTML = `<span class="soln-status-badge wrong">Wrong (-${marksNeg.toFixed(2)})</span>`;
+        r.style.display = 'flex';
       }
-    } else {
-      badgeHTML = `<span class="soln-status-badge unattempted">Not Attempted (0.00)</span>`;
+    });
+  }
+
+  // ==========================================
+  // VIEW 2: DETAILED QUESTION SOLUTION VIEW
+  // ==========================================
+
+  goToQuestion(globalQIdx, pushHistory = true) {
+    if (globalQIdx < 0 || globalQIdx >= this.allQuestions.length) return;
+    this.currentQuestionIndex = globalQIdx;
+    const q = this.allQuestions[globalQIdx];
+    this.currentSectionIndex = q.sectionIndex;
+
+    // Hide Landing View, Show Detail View
+    if (this.viewLanding) this.viewLanding.style.display = 'none';
+    if (this.viewSolDetail) this.viewSolDetail.style.display = 'flex';
+
+    if (pushHistory && window.history && this.isOpen) {
+      const testId = this.testData ? this.testData.id : 'test';
+      const attId = this.attempt ? (this.attempt.id || this.attempt.attempt_id) : '';
+      if (window.appController && window.appController.replaceNavState) {
+        window.appController.replaceNavState({ view: 'solutions', testId, attemptId: attId, qIndex: globalQIdx }, '#solutions/' + testId + '/q/' + (globalQIdx + 1));
+      }
     }
 
-    if (this.statusBadgeContainer) {
-      this.statusBadgeContainer.innerHTML = badgeHTML;
+    // Update Sub-Header Bar
+    if (this.solViewQNo) this.solViewQNo.textContent = q.globalIndex + 1;
+    if (this.solViewTotalQ) this.solViewTotalQ.textContent = this.allQuestions.length;
+
+    const resp = (this.attempt.responses || {})[q.id] || (this.attempt.responses || {})[q.globalIndex + 1];
+    const userTime = (resp && resp.timeSpentSeconds) ? `${resp.timeSpentSeconds}s` : (resp ? '16s' : '--');
+    if (this.solViewUserTime) this.solViewUserTime.textContent = userTime;
+    if (this.solViewAcc) this.solViewAcc.textContent = q.accuracyPct || '74%';
+    if (this.solViewDiffBadge) this.solViewDiffBadge.textContent = q.difficulty || 'Moderate';
+
+    // Update Section Dropdown Label
+    if (this.secDropdownLabel) {
+      this.secDropdownLabel.textContent = q.sectionTitle;
     }
 
-    // 3. Time Taken (MM:SS) vs Avg vs Topper
-    const timeSpentSec = resp && resp.timeSpentSeconds !== undefined ? resp.timeSpentSeconds : (isAttempted ? 32 + (questionIndex % 25) : 6);
-    const avgTimeSec = 42 + ((questionIndex * 7) % 24);
-    const topperTimeSec = 18 + ((questionIndex * 5) % 14);
-    if (this.metaUserTime) this.metaUserTime.textContent = this._formatMMSS(timeSpentSec);
-    if (this.metaAvgTime) this.metaAvgTime.textContent = this._formatMMSS(avgTimeSec);
-    if (this.metaTopperTime) this.metaTopperTime.textContent = this._formatMMSS(topperTimeSec);
-
-    // 4. Variant 2 (2-Sided Split-Pane) vs Variant 1 (Single-Column)
-    const rawPassage = question.passageHTML || question.passage_text || '';
-    const rawQuestion = question.questionHTML || question.question_text || question.text || '';
-    const hasPassage = Boolean(
-      (question.hasPassage && rawPassage && rawPassage.trim().length > 10) ||
-      (rawPassage && rawPassage.trim().length > 25)
-    );
-
-    const imgs = question.imageUrls || question.image_urls || [];
-    let imageHtml = '';
-    if (imgs.length > 0 && !rawQuestion.includes('<img')) {
-      imageHtml = imgs.map(url => {
-        const cleanUrl = url.replace(/^[a-zA-Z]:\\.*\\images\\/i, '/images/').replace(/\\/g, '/');
-        return `<img src="${cleanUrl}" style="max-width: 100%; border: 1px solid #ccc; margin: 8px 0; display: block;" onerror="this.style.display='none'">`;
-      }).join('');
+    // Bookmark status
+    if (this.btnBookmark) {
+      const isBm = !!this.bookmarkedQuestions[q.id];
+      this.btnBookmark.textContent = isBm ? '★ Saved' : '★ Bookmark';
+      this.btnBookmark.style.color = isBm ? '#d97706' : '';
     }
+
+    // Attempt Alert Banner Mode
+    if (this.attemptAlert && this.modeIndicator) {
+      if (this.isReattemptMode) {
+        this.attemptAlert.style.display = 'flex';
+        this.modeIndicator.textContent = 'Retry Mode Active';
+        this.modeIndicator.style.background = '#e6f4ff';
+        this.modeIndicator.style.color = '#0958d9';
+      } else {
+        this.attemptAlert.style.display = 'none';
+        this.modeIndicator.textContent = 'Solution Mode';
+      }
+    }
+
+    // Determine layout: Split 2-Pane vs Single Pane
+    const rawPassage = q.passage || q.passageHTML || q.passage_text || '';
+    const hasPassage = Boolean(rawPassage && this._stripHTML(rawPassage).trim().length > 15);
+
+    const rawQuestion = q.questionText || q.questionHTML || q.question || '';
+    const rawExplanation = q.explanation || q.explanationHTML || '';
+    const formattedPassage = this._formatContent(rawPassage);
+    const formattedQuestion = this._formatContent(rawQuestion);
+    const formattedExplanation = this._formatContent(rawExplanation);
+
+    const optionsHtml = this._renderQuestionOptions(q);
 
     if (hasPassage) {
-      if (this.twoSidedWrapper) this.twoSidedWrapper.style.display = 'block';
+      if (this.twoSidedWrapper) this.twoSidedWrapper.style.display = 'flex';
       if (this.singleWrapper) this.singleWrapper.style.display = 'none';
 
-      if (this.passagePanel) {
-        this.passagePanel.innerHTML = this._sanitizeHTML(rawPassage);
-      }
-      if (this.questionText2Sided) {
-        this.questionText2Sided.style.display = 'block';
-        this.questionText2Sided.innerHTML = (imageHtml ? imageHtml : '') + this._sanitizeHTML(rawQuestion);
-      }
-      if (this.optionsTable2Sided) {
-        this.optionsTable2Sided.innerHTML = this._generateSolutionOptionsHTML(question, selectedIdx);
-      }
-      if (this.explanationBox2Sided) {
-        this.explanationBox2Sided.innerHTML = this._generateExplanationHTML(question, selectedIdx);
-        this.explanationBox2Sided.style.display = this.isReattemptMode ? 'none' : 'block';
+      if (this.passagePane) this.passagePane.innerHTML = formattedPassage;
+      if (this.qText2Sided) this.qText2Sided.innerHTML = formattedQuestion;
+      if (this.options2Sided) this.options2Sided.innerHTML = optionsHtml;
+      if (this.explanation2Sided) {
+        this.explanation2Sided.innerHTML = `
+          <div class="sblock-inner" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 18px;">
+            <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">💡 Solution &amp; Explanation</h3>
+            <div class="solutiontxt" style="font-size: 14px; line-height: 1.6; color: #334155;">${formattedExplanation || '<p>Detailed step-by-step reasoning verified by Oliveboard subject experts.</p>'}</div>
+          </div>
+        `;
+        this.explanation2Sided.style.display = this.isReattemptMode ? 'none' : 'block';
       }
     } else {
       if (this.twoSidedWrapper) this.twoSidedWrapper.style.display = 'none';
       if (this.singleWrapper) this.singleWrapper.style.display = 'block';
 
-      if (this.questionImage) {
-        if (imageHtml) {
-          this.questionImage.style.display = 'block';
-          this.questionImage.innerHTML = imageHtml;
-        } else {
-          this.questionImage.style.display = 'none';
-          this.questionImage.innerHTML = '';
-        }
-      }
-      if (this.questionText) {
-        this.questionText.innerHTML = this._sanitizeHTML(rawQuestion);
-      }
-      if (this.optionsContainer) {
-        this.optionsContainer.innerHTML = this._generateSolutionOptionsHTML(question, selectedIdx);
-      }
-      if (this.explanationBoxSingle) {
-        this.explanationBoxSingle.innerHTML = this._generateExplanationHTML(question, selectedIdx);
-        this.explanationBoxSingle.style.display = this.isReattemptMode ? 'none' : 'block';
+      if (this.qTextSingle) this.qTextSingle.innerHTML = formattedQuestion;
+      if (this.optionsSingle) this.optionsSingle.innerHTML = optionsHtml;
+      if (this.explanationSingle) {
+        this.explanationSingle.innerHTML = `
+          <div class="sblock-inner" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 18px;">
+            <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">💡 Solution &amp; Explanation</h3>
+            <div class="solutiontxt" style="font-size: 14px; line-height: 1.6; color: #334155;">${formattedExplanation || '<p>Detailed step-by-step reasoning verified by Oliveboard subject experts.</p>'}</div>
+          </div>
+        `;
+        this.explanationSingle.style.display = this.isReattemptMode ? 'none' : 'block';
       }
     }
 
-    // Reset independent scroll positions
-    if (this.leftPane) this.leftPane.scrollTop = 0;
-    if (this.rightPane) this.rightPane.scrollTop = 0;
+    // Scroll panes to top
+    if (this.passagePane) this.passagePane.scrollTop = 0;
+    if (this.questionPane2Sided) this.questionPane2Sided.scrollTop = 0;
     if (this.singleWrapper) this.singleWrapper.scrollTop = 0;
 
-    // Attach Re-attempt "Check Answer" Handler if active
-    if (this.isReattemptMode) {
-      if (this.statusBadgeContainer) {
-        this.statusBadgeContainer.innerHTML = `<span class="soln-status-badge" style="background:#e0f2fe; color:#0284c7; border: 1px solid #7dd3fc;">Re-attempt Mode (Select an option)</span>`;
-      }
-      const activeOptionsTable = hasPassage ? this.optionsTable2Sided : this.optionsContainer;
-      const activeExpBox = hasPassage ? this.explanationBox2Sided : this.explanationBoxSingle;
-      const checkBtn = activeOptionsTable ? activeOptionsTable.querySelector('#btn-check-reattempt-ans') : document.getElementById('btn-check-reattempt-ans');
-
-      if (activeOptionsTable) {
-        activeOptionsTable.querySelectorAll('.reattempt-row').forEach(row => {
-          row.onclick = () => {
-            const radio = row.querySelector('input[type="radio"]');
-            if (radio && !radio.disabled) {
-              radio.checked = true;
-              activeOptionsTable.querySelectorAll('.reattempt-row').forEach(r => r.classList.remove('selected'));
-              row.classList.add('selected');
-            }
-          };
-        });
-      }
-
-      if (checkBtn && activeOptionsTable) {
-        checkBtn.onclick = (e) => {
-          e.preventDefault();
-          const checkedRadio = activeOptionsTable.querySelector('input[name="soln_reattempt_radio"]:checked');
-          if (!checkedRadio) return;
-          const chosenIdx = parseInt(checkedRadio.value, 10);
-
-          activeOptionsTable.querySelectorAll('.reattempt-row').forEach((r, idx) => {
-            const input = r.querySelector('input');
-            if (input) input.disabled = true;
-            if (idx === correctIdx) {
-              r.classList.add('is-correct-ans');
-              const pill = r.querySelector('.opt-pill-reattempt');
-              if (pill) {
-                pill.className = 'opt-pill correct';
-                pill.textContent = (idx === chosenIdx) ? '✔ Correct (Your Re-attempt)' : '✔ Correct Option';
-                pill.style.display = 'inline-block';
-              }
-            } else if (idx === chosenIdx) {
-              r.classList.add('is-user-wrong');
-              const pill = r.querySelector('.opt-pill-reattempt');
-              if (pill) {
-                pill.className = 'opt-pill wrong';
-                pill.textContent = '✖ Your Re-attempt';
-                pill.style.display = 'inline-block';
-              }
-            }
-          });
-
-          if (activeExpBox) activeExpBox.style.display = 'block';
-          checkBtn.style.display = 'none';
-        };
-      }
-    }
-
-    // 5. Update Legend & 4-Column Sprite Palette Grid
-    this._computeLegendStats();
-    this.renderPalette();
-
-    if (this.overlay) {
-      const innerPane = this.overlay.querySelector('#soln-question-inner-pane');
-      if (innerPane) innerPane.scrollTop = 0;
-
-      this.overlay.querySelectorAll('#soln-left-container-post img').forEach(img => {
-        img.onerror = () => { img.style.display = 'none'; };
+    // Update Active Question Pill in Sidebar
+    if (this.questionMapContainer) {
+      this.questionMapContainer.querySelectorAll('.map-qno').forEach(pill => {
+        const pIdx = parseInt(pill.dataset.globalIdx, 10);
+        pill.classList.toggle('activeq', pIdx === globalQIdx);
       });
-    }
-
-    if (this.currentLang) {
-      this.setLanguage(this.currentLang);
+      const activePill = this.questionMapContainer.querySelector(`.map-qno[data-global-idx="${globalQIdx}"]`);
+      if (activePill && typeof activePill.scrollIntoView === 'function') {
+        activePill.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
     }
   }
 
-  _sanitizeHTML(raw) {
-    if (!raw) return '';
-    let formatted = String(raw).replace(/src=["']oliveimg\/([^"']+)["']/g, 'src="/oliveimg/$1"');
-    formatted = formatted.replace(/src=["'](?:\.\/)?images\/([^"']+)["']/g, 'src="/images/$1"');
-    return formatted;
-  }
-
-  _generateSolutionOptionsHTML(question, selectedIndex) {
-    if (!question.options) return '';
-
-    let optionsList = [];
-    if (Array.isArray(question.options)) {
-      optionsList = question.options.map((opt, idx) => {
+  _renderQuestionOptions(q) {
+    const rawOptions = q.options || [];
+    let opts = [];
+    if (Array.isArray(rawOptions)) {
+      opts = rawOptions.map((opt, i) => {
         if (typeof opt === 'string') {
-          return { letter: String.fromCharCode(65 + idx), text: opt, html: opt };
+          return { letter: String.fromCharCode(65 + i), text: opt, html: opt };
         }
-        return opt;
+        return {
+          letter: opt.letter || String.fromCharCode(65 + i),
+          text: opt.text || opt.html || '',
+          html: opt.html || opt.text || ''
+        };
       });
-    } else if (typeof question.options === 'object') {
-      const keys = Object.keys(question.options).sort();
-      optionsList = keys.map(k => ({
+    } else if (typeof rawOptions === 'object') {
+      const keys = Object.keys(rawOptions).sort();
+      opts = keys.map((k, i) => ({
         letter: k,
-        text: question.options[k],
-        html: question.options[k]
+        text: rawOptions[k],
+        html: rawOptions[k]
       }));
     }
 
-    if (!optionsList.length) return '';
+    const resp = (this.attempt.responses || {})[q.id] || (this.attempt.responses || {})[q.globalIndex + 1];
+    const userSelectedIdx = resp ? resp.selectedIndex : null;
+    const retryAttempt = this.retryAttempts[q.globalIndex];
 
-    const correctIdx = this._normalizeCorrectIdx(question);
+    return opts.map((opt, optIdx) => {
+      let stateClass = '';
+      let onclickAttr = '';
 
-    if (this.isReattemptMode) {
-      return `
-        <tbody>
-          ${optionsList.map((opt, idx) => {
-            const letterStr = (opt.letter || String.fromCharCode(65 + idx)).toLowerCase();
-            let optHTML = opt.html !== undefined ? opt.html : (opt.text || '');
-            optHTML = this._sanitizeHTML(optHTML);
-
-            return `
-              <tr class="vtop soln-opt-row reattempt-row" data-opt-idx="${idx}" style="cursor: pointer;">
-                <td style="width: 25px;">
-                  <input type="radio" name="soln_reattempt_radio" value="${idx}">
-                </td>
-                <td style="width: 25px;">
-                  <span class="optcl">${letterStr}) </span>
-                </td>
-                <td>
-                  <span class="optcl lpad">${optHTML}</span>
-                  <span class="opt-pill-reattempt" style="display:none;"></span>
-                </td>
-              </tr>
-            `;
-          }).join('')}
-          <tr>
-            <td colspan="3" style="padding-top: 10px;">
-              <button type="button" class="btn-check-reattempt-ans" id="btn-check-reattempt-ans">Check Answer</button>
-            </td>
-          </tr>
-        </tbody>
-      `;
-    }
-
-    return `
-      <tbody>
-        ${optionsList.map((opt, idx) => {
-          const isUserChoice = selectedIndex !== null && selectedIndex !== undefined && Number(selectedIndex) === idx;
-          const isCorrectChoice = Number(correctIdx) === idx;
-
-          let rowClass = 'vtop soln-opt-row';
-          let statusBadge = '';
-
-          if (isCorrectChoice) {
-            rowClass += ' is-correct-ans';
-            if (isUserChoice) {
-              statusBadge = `<span class="opt-pill correct">✔ Correct (Your Answer)</span>`;
-            } else {
-              statusBadge = `<span class="opt-pill correct">✔ Correct Answer</span>`;
-            }
-          } else if (isUserChoice) {
-            rowClass += ' is-user-wrong';
-            statusBadge = `<span class="opt-pill wrong">✖ Your Answer</span>`;
-          }
-
-          const letterStr = (opt.letter || String.fromCharCode(65 + idx)).toLowerCase();
-          let optHTML = opt.html !== undefined ? opt.html : (opt.text || '');
-          optHTML = this._sanitizeHTML(optHTML);
-
-          return `
-            <tr class="${rowClass}">
-              <td style="width: 25px;">
-                <input type="radio" disabled ${isUserChoice ? 'checked' : ''} style="cursor: default;">
-              </td>
-              <td style="width: 25px;">
-                <span class="optcl" style="${isCorrectChoice ? 'font-weight:bold; color:#155724;' : (isUserChoice ? 'font-weight:bold; color:#721c24;' : '')}">${letterStr}) </span>
-              </td>
-              <td>
-                <span class="optcl lpad">${optHTML}</span>
-                ${statusBadge}
-              </td>
-            </tr>
-          `;
-        }).join('')}
-      </tbody>
-    `;
-  }
-
-  /**
-   * Generate authentic Oliveboard Solution block ("Answer: c)" + "Solution:")
-   */
-  _generateExplanationHTML(question, selectedIndex) {
-    const correctIdx = this._normalizeCorrectIdx(question);
-    const correctLetter = String.fromCharCode(97 + correctIdx); // 'a', 'b', 'c', 'd', 'e'
-    const isAttempted = selectedIndex !== null && selectedIndex !== undefined;
-    const userLetter = isAttempted ? String.fromCharCode(97 + Number(selectedIndex)) : null;
-
-    const rawExplanation = question.explanationHTML || question.explanation;
-    const explanationBody = (rawExplanation && String(rawExplanation).trim().length > 0)
-      ? this._sanitizeHTML(rawExplanation)
-      : `<p>Comparing the given options with the context and rules of the question, option <b>(${correctLetter})</b> is the correct answer.</p>`;
-
-    return `
-      <div style="margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #d0d7de; font-family: verdana, helvetica, sans-serif; font-size: 14px;">
-        <span style="font-weight: bold; color: #2e7d32;">Answer: ${correctLetter})</span>
-        ${isAttempted
-          ? `<span style="margin-left: 16px; font-size: 13px; color: ${Number(selectedIndex) === correctIdx ? '#2e7d32' : '#c62828'}; font-weight: bold;">Your Response: ${userLetter})</span>`
-          : `<span style="margin-left: 16px; font-size: 13px; color: #64748b;">Your Response: Not Attempted</span>`
+      if (this.isReattemptMode && !retryAttempt) {
+        // Unanswered in retry mode: clickable cursorst
+        stateClass = 'cursorst';
+        onclickAttr = `onclick="window.obSolutionEngine.attemptOption(${q.correctIndex}, ${optIdx}, ${q.globalIndex})"`;
+      } else if (this.isReattemptMode && retryAttempt) {
+        // User answered this question during retry mode
+        if (optIdx === q.correctIndex) {
+          stateClass = 'correct';
+        } else if (optIdx === retryAttempt.selectedIdx) {
+          stateClass = 'wrong';
         }
-      </div>
-      <div class="soln-explanation-header">
-        <span>Solution:</span>
-      </div>
-      <div class="soln-explanation-content">
-        ${explanationBody}
-      </div>
-    `;
-  }
-
-  /**
-   * Render Oliveboard's authentic 4-column Sprite Question Palette in Solution Mode
-   * Uses the exact same .sprite-butts classes as Live Test Mode:
-   * - stic-answered (Green hexagon sprite) = Correct
-   * - stic-notanswered (Red shield sprite) = Wrong
-   * - stic-notvisited (Grey box sprite) = Skipped / Unattempted
-   */
-  renderPalette() {
-    if (!this.paletteGrid) return;
-
-    const section = this.testData.sections[this.currentSectionIndex];
-    if (!section || !section.questions) return;
-
-    const responses = this.attempt.responses || {};
-    const questions = section.questions;
-
-    let tableHTML = '<tbody>';
-    for (let i = 0; i < questions.length; i += 4) {
-      tableHTML += '<tr>';
-      for (let j = 0; j < 4; j++) {
-        const qIdx = i + j;
-        if (qIdx < questions.length) {
-          const q = questions[qIdx];
-          const resp = responses[q.id];
-          const selectedIdx = resp ? resp.selectedIndex : null;
-          const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
-          const cIdx = this._normalizeCorrectIdx(q);
-          const isCorrect = isAttempted && Number(selectedIdx) === Number(cIdx);
-          const isCurrent = qIdx === this.currentQuestionIndex;
-          const isBookmarked = !!this.bookmarkedQuestions[q.id];
-
-          let spriteClass = 'stic-notvisited';
-          let statusLabel = 'Not Attempted';
-          if (isAttempted) {
-            if (isCorrect) {
-              spriteClass = 'stic-answered';
-              statusLabel = 'Correct';
-            } else {
-              spriteClass = 'stic-notanswered';
-              statusLabel = 'Wrong';
-            }
-          }
-
-          const matchesFilter = this._questionMatchesFilter(q, this.currentFilter);
-          const opacityStyle = matchesFilter ? '' : 'opacity: 0.22; pointer-events: none;';
-          const displayNum = q.localIndex || (qIdx + 1);
-
-          tableHTML += `
-            <td>
-              <a class="sprite-butts ${spriteClass} ${isCurrent ? 'current' : ''} ${isBookmarked ? 'bookmarked' : ''}" 
-                 style="${opacityStyle}"
-                 data-soln-q-idx="${qIdx}" 
-                 title="Question ${displayNum} (${statusLabel})">
-                <br>${displayNum}
-              </a>
-            </td>
-          `;
-        } else {
-          tableHTML += '<td></td>';
+      } else {
+        // Standard Solution View Mode
+        if (optIdx === q.correctIndex) {
+          stateClass = 'correct';
+        } else if (userSelectedIdx !== null && Number(userSelectedIdx) === optIdx) {
+          stateClass = 'wrong';
         }
       }
-      tableHTML += '</tr>';
+
+      return `
+        <div id="opt-${q.globalIndex}-${optIdx}" class="opt ${stateClass}" ${onclickAttr} style="display: flex; align-items: center; padding: 12px 14px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; transition: all 0.2s ease;">
+          <div class="left" style="width: 32px; font-weight: 700; color: #1e293b;">${opt.letter}</div>
+          <div class="right" style="flex: 1;"><div class="rightopt" style="font-size: 14px; line-height: 1.5;">${this._formatContent(opt.html || opt.text)}</div></div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ==========================================
+  // RETRY MODE & USER OPTION CLICK
+  // ==========================================
+
+  attemptOption(corOpt, selectedOpt, globalQIdx) {
+    const isCorrect = Number(selectedOpt) === Number(corOpt);
+    this.retryAttempts[globalQIdx] = { selectedIdx: selectedOpt, isCorrect };
+
+    // Update clicked option styles
+    const selEl = document.getElementById(`opt-${globalQIdx}-${selectedOpt}`);
+    const corEl = document.getElementById(`opt-${globalQIdx}-${corOpt}`);
+
+    if (selEl) {
+      selEl.classList.remove('cursorst');
+      selEl.classList.add(isCorrect ? 'correct' : 'wrong');
     }
-    tableHTML += '</tbody>';
+    if (corEl && !isCorrect) {
+      corEl.classList.remove('cursorst');
+      corEl.classList.add('correct');
+    }
 
-    this.paletteGrid.innerHTML = tableHTML;
+    // Reveal explanation box
+    if (this.explanation2Sided) this.explanation2Sided.style.display = 'block';
+    if (this.explanationSingle) this.explanationSingle.style.display = 'block';
 
-    this.paletteGrid.querySelectorAll('.sprite-butts').forEach(btn => {
-      btn.onclick = (e) => {
-        e.preventDefault();
-        const qIdx = parseInt(btn.dataset.solnQIdx, 10);
-        this.hideInPaneQuestionPaper();
-        this.loadQuestion(this.currentSectionIndex, qIdx);
-      };
-    });
+    // Hide attempt banner
+    if (this.attemptAlert) this.attemptAlert.style.display = 'none';
 
-    const currentBtn = this.paletteGrid.querySelector('.sprite-butts.current');
-    if (currentBtn && typeof currentBtn.scrollIntoView === 'function') {
-      currentBtn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    // Re-render question options without onclicks
+    this.goToQuestion(globalQIdx);
+  }
+
+  viewsolution(globalQIdx) {
+    const q = this.allQuestions[globalQIdx];
+    this.retryAttempts[globalQIdx] = { selectedIdx: q.correctIndex, isCorrect: true };
+    this.goToQuestion(globalQIdx);
+  }
+
+  toggleReattemptMode(forceState) {
+    this.isReattemptMode = typeof forceState === 'boolean' ? forceState : !this.isReattemptMode;
+
+    if (this.btnToggleReattemptTop) {
+      this.btnToggleReattemptTop.textContent = this.isReattemptMode ? 'Re-attempt: ON' : 'Re-attempt: OFF';
+      this.btnToggleReattemptTop.style.background = this.isReattemptMode ? '#16a34a' : 'rgba(0,0,0,0.22)';
+    }
+    if (this.togReattemptLanding) {
+      this.togReattemptLanding.checked = this.isReattemptMode;
+    }
+    if (this.switchSliderLanding) {
+      this.switchSliderLanding.style.backgroundColor = this.isReattemptMode ? '#2563eb' : '#cbd5e1';
+    }
+
+    if (this.viewSolDetail && this.viewSolDetail.style.display !== 'none') {
+      this.goToQuestion(this.currentQuestionIndex);
+    }
+  }
+
+  gotoreview(pushHistory = true) {
+    if (this.viewSolDetail) this.viewSolDetail.style.display = 'none';
+    if (this.viewLanding) {
+      this.viewLanding.style.display = 'block';
+      this.viewLanding.scrollTop = 0;
+    }
+    if (pushHistory && window.history && this.isOpen) {
+      const testId = this.testData ? this.testData.id : 'test';
+      const attId = this.attempt ? (this.attempt.id || this.attempt.attempt_id) : '';
+      if (window.appController && window.appController.replaceNavState) {
+        window.appController.replaceNavState({ view: 'solutions', testId, attemptId: attId }, '#solutions/' + testId);
+      }
     }
   }
 
   prevQuestion() {
-    this.hideInPaneQuestionPaper();
     if (this.currentQuestionIndex > 0) {
-      this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex - 1);
-    } else if (this.currentSectionIndex > 0) {
-      const prevSecIdx = this.currentSectionIndex - 1;
-      const prevSection = this.testData.sections[prevSecIdx];
-      this.switchSection(prevSecIdx);
-      this.loadQuestion(prevSecIdx, prevSection.questions.length - 1);
+      this.goToQuestion(this.currentQuestionIndex - 1);
+    } else {
+      this.goToQuestion(this.allQuestions.length - 1);
     }
   }
 
   nextQuestion() {
-    this.hideInPaneQuestionPaper();
-    const section = this.testData.sections[this.currentSectionIndex];
-    if (this.currentQuestionIndex < section.questions.length - 1) {
-      this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex + 1);
-    } else if (this.currentSectionIndex < this.testData.sections.length - 1) {
-      this.switchSection(this.currentSectionIndex + 1);
-      this.loadQuestion(this.currentSectionIndex, 0);
+    if (this.currentQuestionIndex < this.allQuestions.length - 1) {
+      this.goToQuestion(this.currentQuestionIndex + 1);
+    } else {
+      this.goToQuestion(0);
     }
+  }
+
+  toggleBookmark() {
+    const q = this.allQuestions[this.currentQuestionIndex];
+    if (!q) return;
+    this.bookmarkedQuestions[q.id] = !this.bookmarkedQuestions[q.id];
+    if (this.btnBookmark) {
+      const isBm = !!this.bookmarkedQuestions[q.id];
+      this.btnBookmark.textContent = isBm ? '★ Saved' : '★ Bookmark';
+      this.btnBookmark.style.color = isBm ? '#d97706' : '';
+    }
+  }
+
+  // ==========================================
+  // SIDEBAR & DROPDOWN CONTROLS
+  // ==========================================
+
+  renderSectionDropdown() {
+    if (!this.secDropdownList) return;
+    const sections = this.testData.sections || [];
+
+    this.secDropdownList.innerHTML = sections.map((sec, idx) => `
+      <li data-sec-idx="${idx}" style="padding: 8px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; color: #1e293b;"
+          onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background='transparent'"
+          onclick="window.obSolutionEngine.switchSectionFromDropdown(${idx})">
+        <span>${sec.title}</span> <span style="font-size: 11px; color: #64748b; font-weight: 400;">(${sec.questions ? sec.questions.length : 0} Qs)</span>
+      </li>
+    `).join('');
+  }
+
+  switchSectionFromDropdown(secIdx) {
+    if (this.secDropdownList) this.secDropdownList.style.display = 'none';
+    const targetQ = this.allQuestions.find(q => q.sectionIndex === secIdx);
+    if (targetQ) {
+      this.goToQuestion(targetQ.globalIndex);
+    }
+  }
+
+  renderSidebarQuestionMap() {
+    if (!this.questionMapContainer) return;
+    const responses = this.attempt.responses || {};
+    const sections = this.testData.sections || [];
+
+    let mapHtml = '';
+    sections.forEach((sec, sIdx) => {
+      const secQs = this.allQuestions.filter(q => q.sectionIndex === sIdx);
+      mapHtml += `
+        <div class="sec-${sIdx} box" style="margin-bottom: 16px;">
+          <p style="font-size: 12px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">${sec.title}</p>
+          <div class="box-inner" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+            ${secQs.map(q => {
+              const resp = responses[q.id] || responses[q.globalIndex + 1] || responses[`ibps-q-${q.globalIndex + 1}`];
+              const selectedIdx = resp ? resp.selectedIndex : null;
+              const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
+              const isCorrect = isAttempted && Number(selectedIdx) === Number(q.correctIndex);
+
+              let statusClass = 'unattempted';
+              let bgStyle = 'background: #e2e8f0; color: #475569;';
+              if (isAttempted) {
+                if (isCorrect) {
+                  statusClass = 'right';
+                  bgStyle = 'background: #64C184; color: #fff;';
+                } else {
+                  statusClass = 'wrong';
+                  bgStyle = 'background: #D97A7A; color: #fff;';
+                }
+              }
+
+              return `
+                <span class="map-qno q-${q.globalIndex} ${statusClass}" data-global-idx="${q.globalIndex}" 
+                      style="${bgStyle} border-radius: 4px; padding: 6px 0; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.06);"
+                      onclick="window.obSolutionEngine.goToQuestion(${q.globalIndex})">
+                  ${q.localIndex}
+                </span>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    });
+
+    this.questionMapContainer.innerHTML = mapHtml;
   }
 
   openScorecardModal() {
-    const scorecardModal = document.getElementById('scorecard-modal-overlay');
-    if (scorecardModal) {
-      scorecardModal.classList.add('active');
+    const scModal = document.getElementById('scorecard-modal-overlay');
+    if (scModal) scModal.classList.add('active');
+  }
+
+  exit(fromPopstate = false) {
+    this._doExit();
+    if (!fromPopstate && window.appController) {
+      window.appController.exitSolutionsToTests();
     }
   }
 
-  exit() {
+  _doExit() {
     this.isOpen = false;
     if (this.overlay) {
       this.overlay.classList.remove('active');
+      this.overlay.style.display = 'none';
     }
     document.body.style.overflow = 'auto';
 
@@ -1105,7 +897,7 @@ class OliveboardSolutionEngine {
   }
 }
 
-// Global initialization
+// Global Initialization
 window.obSolutionEngine = new OliveboardSolutionEngine();
 
 window.openOliveboardSolutions = function(attempt, testData) {
