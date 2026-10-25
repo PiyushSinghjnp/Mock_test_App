@@ -1,10 +1,12 @@
- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <!-- Briefcase base -->
-                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>        
-                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                            <!-- Solid circle mask to hide briefcase line behind clock -->        
-                            <circle cx="17" cy="17" r="5" fill="white" stroke="none"></circle>    
-                            <!-- Clock Badge -->
-                            <circle cx="17" cy="17" r="4.5" fill="white" stroke="white" stroke-width="1"></circle>
-                            <polyline points="17 15 17 17 18.5 18.5" stroke="#4b5563" stroke-width="1.5"></polyline>
-                        </svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <mask id="brief24_cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+    <rect x="0" y="0" width="24" height="24" fill="white" />
+    <circle cx="17" cy="17" r="5.6" fill="black" />
+  </mask>
+  <g mask="url(#brief24_cutout)" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+  </g>
+  <circle cx="17" cy="17" r="4.5" fill="none" stroke="white" stroke-width="1.8" />
+  <polyline points="17 14.8 17 17 18.5 18.5" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

@@ -97,12 +97,7 @@ class OliveboardAppController {
       const rest = hash.replace('#solutions/', '');
       const parts = rest.split('/');
       const testId = parts[0];
-      let qIndex = undefined;
-      if (parts[1] === 'q' && parts[2]) {
-        const qNum = parseInt(parts[2], 10);
-        qIndex = !isNaN(qNum) ? Math.max(0, qNum - 1) : 0;
-      }
-      return { view: 'solutions', testId, qIndex };
+      return { view: 'solutions', testId };
     }
 
     if (hash.startsWith('#scorecard/')) {
@@ -112,6 +107,26 @@ class OliveboardAppController {
 
     if (hash === '#analytics' || hash === '#dashboard') {
       return { view: 'analytics' };
+    }
+
+    if (hash === '#courses') {
+      return { view: 'courses' };
+    }
+
+    if (hash === '#mentorship') {
+      return { view: 'mentorship' };
+    }
+
+    if (hash === '#bookmarks') {
+      return { view: 'bookmarks' };
+    }
+
+    if (hash === '#subscription') {
+      return { view: 'subscription' };
+    }
+
+    if (hash === '#pyp') {
+      return { view: 'pyp' };
     }
 
     if (hash === '#leaderboard') {
@@ -156,7 +171,6 @@ class OliveboardAppController {
 
   handlePopState(e) {
     const rawState = e.state;
-    const prevStep = (typeof this._currentStep === 'number' ? this._currentStep : 0);
     if (rawState && typeof rawState.navStep === 'number') {
       this._currentStep = rawState.navStep;
     } else {
@@ -166,18 +180,68 @@ class OliveboardAppController {
     // Resolve state: if state is null or missing appInitialized, parse from URL
     const state = (rawState && rawState.appInitialized) ? rawState : this.parseLocationToState();
 
-    // Bulletproof Back Interceptor for Solutions Console:
-    // When the solutions console is currently open and a popstate event occurs,
-    // if the target state still points to ANY solutions state (e.g. from lingering question entries in history),
-    // NEVER move questions backward—immediately exit solutions to the tests dashboard!
-    const isSolnOpen = (window.obSolutionEngine && window.obSolutionEngine.isOpen) ||
-                       (document.getElementById('solution-console-overlay') && document.getElementById('solution-console-overlay').classList.contains('active'));
-    if (isSolnOpen && (state.view === 'solutions' || state.view === 'solution-detail')) {
-      this.exitSolutionsToTests();
+    const testOverlay = document.getElementById('test-modal-overlay');
+    const isTestOpen = !!(testOverlay && testOverlay.classList.contains('active'));
+
+    // 1. Live Mock Test Back/Forward Interceptor:
+    // If the user is currently inside an active Mock Test and clicks Browser Back/Forward,
+    // DO NOT exit directly to dashboard! Keep them in the exam and show the Pause/Exit confirmation dialog.
+    if (isTestOpen) {
+      if (this.testEngine && this.testEngine.isExamActive) {
+        const activeTestId = (this.testEngine.testData && this.testEngine.testData.id) || state.testId || 'test';
+        // Re-push the test-engine state so the URL stays on #test/<id> and forward history is cleared
+        this.pushNavState({ view: 'test-engine', testId: activeTestId }, '#test/' + activeTestId);
+
+        // If a sub-pane (Submit Summary, Question Paper, Instructions, Profile) is open, close it back to the question first
+        const submitPane = document.getElementById('submit-pane');
+        const allQPane = document.getElementById('question-list-onbutton');
+        const instrPane = document.getElementById('instructions-onbutton');
+        const profPane = document.getElementById('candidate-details-onbutton');
+
+        if (submitPane && submitPane.style.display !== 'none') {
+          this.testEngine.sBack();
+        } else if (
+          (allQPane && allQPane.style.display === 'block') ||
+          (instrPane && instrPane.style.display === 'block') ||
+          (profPane && profPane.style.display === 'block')
+        ) {
+          this.testEngine.getAllBack();
+        } else if (!this.testEngine.isPaused) {
+          // Prompt the user with the authentic Oliveboard Pause/Exit confirmation dialog (#calert)
+          this.testEngine.pauseTest();
+        }
+        return;
+      } else {
+        // User is on Pre-Exam Instructions screen (exam timer hasn't started yet) -> exit cleanly to dashboard
+        this.exitTestToDashboard(true);
+        return;
+      }
+    }
+
+    // 2. Prevent Browser Forward / Back from re-entering a closed/exited Mock Test:
+    // A mock test must only be started/resumed via explicit user button click, never via popstate.
+    if (!isTestOpen && state.view === 'test-engine') {
+      this.replaceNavState({ view: 'tests' }, window.location.pathname);
+      this.switchAppView('tests', false);
       return;
     }
 
-    // Apply the target state (never call pushState here so Forward stack is preserved!)
+    // 3. Solutions Console Back/Forward Interceptor:
+    const isSolnOpen = (window.obSolutionEngine && window.obSolutionEngine.isOpen) ||
+                       (document.getElementById('solution-console-overlay') && document.getElementById('solution-console-overlay').classList.contains('active'));
+    if (isSolnOpen) {
+      this.exitSolutionsToTests(true);
+      return;
+    }
+
+    // Prevent Browser Forward / Back from jumping back into closed Solutions Console via stale history
+    if (!isSolnOpen && (state.view === 'solutions' || state.view === 'solution-detail')) {
+      this.replaceNavState({ view: 'tests' }, window.location.pathname);
+      this.switchAppView('tests', false);
+      return;
+    }
+
+    // Apply the target state for standard dashboard tabs & modals
     this.applyState(state);
   }
 
@@ -244,12 +308,10 @@ class OliveboardAppController {
       const testOverlay = document.getElementById('test-modal-overlay');
 
       if (view === 'solutions' || view === 'solution-detail') {
-        // Close Test Engine if open
         if (testOverlay && testOverlay.classList.contains('active')) {
           if (this.testEngine) this.testEngine._doExitTest();
         }
 
-        // If solution console is NOT open, open it
         if (!solnOverlay || !solnOverlay.classList.contains('active')) {
           let attId = state.attemptId;
           const tId = state.testId;
@@ -280,30 +342,22 @@ class OliveboardAppController {
           }
         }
 
-        // If solution engine is open, set correct subview
         if (window.obSolutionEngine && window.obSolutionEngine.isOpen) {
-          if (state.qIndex !== undefined && state.qIndex !== null) {
-            window.obSolutionEngine.goToQuestion(state.qIndex, false);
-          } else {
-            window.obSolutionEngine.gotoreview(false);
-          }
+          window.obSolutionEngine.gotoreview(false);
         }
         return;
       }
 
       if (view === 'test-engine') {
-        // Close Solution Console if open
         if (solnOverlay && solnOverlay.classList.contains('active')) {
           if (window.obSolutionEngine) window.obSolutionEngine._doExit();
         }
 
-        // If test overlay is NOT open, open it
         if (!testOverlay || !testOverlay.classList.contains('active')) {
           if (state.testId) {
             await this.resumeMockTest(state.testId, false);
           }
         } else {
-          // If already open, return to active question view
           if (this.testEngine) {
             this.testEngine.getAllBack();
             this.testEngine.sBack();
@@ -380,17 +434,23 @@ class OliveboardAppController {
     const solnOverlay = document.getElementById('solution-console-overlay');
     const testOverlay = document.getElementById('test-modal-overlay');
 
+    // 0. If Scorecard Modal is open on top of Solution Console, close ONLY the Scorecard Modal
+    if (scorecardModal && scorecardModal.classList.contains('active') && solnOverlay && solnOverlay.classList.contains('active')) {
+      scorecardModal.classList.remove('active');
+      return;
+    }
+
     // 1. Solution Console: immediately exit to tests dashboard
     if (solnOverlay && solnOverlay.classList.contains('active')) {
       this.exitSolutionsToTests();
       return;
     }
 
-    // 2. Test Engine: exit or pause safely
+    // 2. Test Engine: exit if on instructions, or prompt pause confirmation if active
     if (testOverlay && testOverlay.classList.contains('active')) {
       if (this.testEngine) {
         if (!this.testEngine.isExamActive) {
-          this.testEngine.exitTest();
+          this.exitTestToDashboard();
         } else {
           this.testEngine.pauseTest();
         }
@@ -408,13 +468,11 @@ class OliveboardAppController {
 
     const isSubView = (this.currentViewTab !== 'tests');
 
-    // If we have history steps within our app session, go back in history
     if (this._currentStep > 0) {
       window.history.back();
       return;
     }
 
-    // Fallback if at the session root (prevents navigating out of app to about:blank)
     if (hasModalOpen || hasOverlayOpen) {
       this.closeAllModalsAndOverlays();
       this.switchAppView('tests', false);
@@ -427,7 +485,22 @@ class OliveboardAppController {
     }
   }
 
-  exitSolutionsToTests() {
+  exitTestToDashboard(fromPopstate = false) {
+    if (this.testEngine) {
+      this.testEngine._doExitTest();
+    }
+    const testOverlay = document.getElementById('test-modal-overlay');
+    if (testOverlay) {
+      testOverlay.classList.remove('active');
+    }
+    this.switchAppView('tests', false);
+    this.replaceNavState({ view: 'tests' }, window.location.pathname);
+    if (fromPopstate) {
+      this.pushNavState({ view: 'tests' }, window.location.pathname);
+    }
+  }
+
+  exitSolutionsToTests(fromPopstate = false) {
     if (window.obSolutionEngine) {
       window.obSolutionEngine._doExit();
     }
@@ -441,6 +514,9 @@ class OliveboardAppController {
 
     this.switchAppView('tests', false);
     this.replaceNavState({ view: 'tests' }, window.location.pathname);
+    if (fromPopstate) {
+      this.pushNavState({ view: 'tests' }, window.location.pathname);
+    }
   }
 
   // ==========================================
@@ -520,6 +596,10 @@ class OliveboardAppController {
     this.renderUserProfileHeader();
     await this.loadAndRenderMockCards();
     await this.renderAnalytics();
+    this.renderLeaderboard();
+    if (this.currentViewTab === 'bookmarks') {
+      this.renderBookmarks();
+    }
     this.showToast('Switched active candidate profile', 'success');
   }
 
@@ -536,6 +616,10 @@ class OliveboardAppController {
       this.renderUserProfileHeader();
       await this.loadAndRenderMockCards();
       await this.renderAnalytics();
+      this.renderLeaderboard();
+      if (this.currentViewTab === 'bookmarks') {
+        this.renderBookmarks();
+      }
       this.showToast(`Created candidate profile for ${name}`, 'success');
     } catch (e) {
       this.showToast('Failed to create candidate profile: ' + e.message, 'error');
@@ -550,8 +634,9 @@ class OliveboardAppController {
     const exam = this.getCurrentExam();
     const btnSelector = document.getElementById('btn-active-exam-selector');
     if (btnSelector) {
+      btnSelector.title = `Active Exam: ${exam.name} (Click to switch)`;
       btnSelector.innerHTML = `
-        <span class="exam-category-current-label">💻 ${exam.name}</span>
+        <span class="exam-category-current-label" id="active-exam-title">💻 ${exam.name}</span>
         <i class="fa-solid fa-chevron-down exam-category-chevron"></i>
       `;
     }
@@ -709,8 +794,35 @@ class OliveboardAppController {
         topBadgeHTML = '<span class="badge-tag-locked">🔒 PRO</span>';
       }
 
-      // Compute 3-color progress bar percentages for completed_attempted
+      // Compute 3-color progress bar percentages & synchronized Rank/Percentile for completed_attempted
       let correctPct = 0, wrongPct = 0, unattPct = 100;
+      let displayAIR = att ? att.estimated_air : 1000;
+      let displayPercentile = att ? att.percentile : 0;
+      let displayActiveUsers = pack.activeUsers || 24800;
+
+      if (window.OB_EXAM_PATTERNS_2026 && typeof window.OB_EXAM_PATTERNS_2026.calculateTestRankAndPercentile === 'function') {
+        const rankInfo = window.OB_EXAM_PATTERNS_2026.calculateTestRankAndPercentile({
+          testId: pack.id,
+          testTitle: pack.title,
+          testType: pack.type,
+          score: att ? att.score : 0,
+          maxScore: pack.marks || 100,
+          correctCount: att ? att.correct_count : 0,
+          wrongCount: att ? att.wrong_count : 0,
+          unansweredCount: att ? att.unanswered_count : totalQs,
+          totalQuestions: totalQs,
+          accuracy: att ? att.accuracy : 0,
+          activeUsers: pack.activeUsers
+        });
+        displayActiveUsers = rankInfo.totalCandidates;
+        if (isAttempted && att) {
+          displayAIR = rankInfo.estimatedAIR;
+          displayPercentile = rankInfo.percentile;
+          att.estimated_air = rankInfo.estimatedAIR;
+          att.percentile = rankInfo.percentile;
+        }
+      }
+
       if (isAttempted && att) {
         const cCount = att.correct_count ?? 0;
         const wCount = att.wrong_count ?? 0;
@@ -721,9 +833,13 @@ class OliveboardAppController {
 
       // Compute remaining mins for paused_in_progress
       let pausedMinsLeft = 20;
+      let pausedSecIdx = 0;
+      let pausedQIdx = 0;
       if (isPaused && paused) {
-        const remSec = paused.section_remaining_seconds || paused.remaining_seconds || 1200;
+        const remSec = paused.sectionRemainingSeconds ?? paused.section_remaining_seconds ?? paused.remainingSeconds ?? paused.remaining_seconds ?? 1200;
         pausedMinsLeft = Math.max(1, Math.ceil(remSec / 60));
+        pausedSecIdx = paused.currentSectionIndex ?? paused.current_section_index ?? 0;
+        pausedQIdx = paused.currentQuestionIndex ?? paused.current_question_index ?? 0;
       }
 
       return `
@@ -752,7 +868,7 @@ class OliveboardAppController {
             ${isPaused ? `
               <div class="card-paused-banner">
                 <div>
-                  <span style="font-weight: 700; color: #0284c7;">⏸ Paused at Section ${(paused.current_section_index ?? 0) + 1}, Q${(paused.current_question_index ?? 0) + 1}</span>
+                  <span style="font-weight: 700; color: #0284c7;">⏸ Paused at Section ${pausedSecIdx + 1}, Q${pausedQIdx + 1}</span>
                   <div style="font-size: 11px; color: #475569; margin-top: 2px;">
                     Time Remaining: <strong>${pausedMinsLeft} mins left</strong>
                   </div>
@@ -768,7 +884,7 @@ class OliveboardAppController {
                     <span style="font-weight: 800; color: #15803d; font-size: 13px;">${Number(att.score).toFixed(2)}/${pack.marks} <span style="font-weight: 600; color: #475569; font-size: 11px;">Score</span></span>
                     <span style="margin-left: 10px; font-weight: 700; color: #0f172a; font-size: 12px;">${att.accuracy ?? 0}% <span style="font-weight: 600; color: #475569; font-size: 11px;">Accuracy</span></span>
                   </div>
-                  <span style="font-size: 11px; color: #334155; font-weight: 600;">Rank: <strong>#${att.estimated_air}</strong> (${att.percentile}%ile)</span>
+                  <span style="font-size: 11px; color: #334155; font-weight: 600;">Rank: <strong>#${Number(displayAIR).toLocaleString()}/${Number(displayActiveUsers).toLocaleString()}</strong> (${Number(displayPercentile).toFixed(1)}%ile)</span>
                 </div>
                 <div class="attempt-3color-bar" title="Green: Correct (${att.correct_count ?? 0}) | Red: Wrong (${att.wrong_count ?? 0}) | Grey: Skipped (${att.unanswered_count ?? 0})">
                   <div class="seg-correct" style="width: ${correctPct}%;"></div>
@@ -785,7 +901,7 @@ class OliveboardAppController {
           </div>
 
           <div class="mock-card-footer">
-            <span class="active-takers">🌐 English, Hindi • 👥 ${(pack.activeUsers || 24800).toLocaleString()}</span>
+            <span class="active-takers">🌐 English, Hindi • 👥 ${Number(displayActiveUsers).toLocaleString()}</span>
             
             <div class="mock-card-actions">
               ${isPaused ? `
@@ -880,10 +996,52 @@ class OliveboardAppController {
     const list = document.getElementById('leaderboard-list-container');
     if (!list) return;
 
-    list.innerHTML = window.OB_TEST_APP.leaderboard.map(u => `
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #ffffff; border-radius: 10px; border: 1px solid var(--ob-app-border); margin-bottom: 8px;">
+    const baseLeaderboard = [...(window.OB_TEST_APP.leaderboard || [])];
+    const activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+
+    // Incorporate active candidate's best completed attempt into the live leaderboard
+    let candidateBest = null;
+    if (this.testsCache && this.testsCache.length > 0) {
+      const attemptedPacks = this.testsCache.filter(p => p.isAttempted && p.userAttempt);
+      if (attemptedPacks.length > 0) {
+        attemptedPacks.sort((a, b) => Number(b.userAttempt.score || 0) - Number(a.userAttempt.score || 0));
+        const bestPack = attemptedPacks[0];
+        const att = bestPack.userAttempt;
+        const maxM = bestPack.marks || 100;
+        const normScore = Number(((Number(att.score || 0) / Math.max(1, maxM)) * 100).toFixed(2));
+        const secs = att.time_spent_seconds || 2400;
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        candidateBest = {
+          name: `${activeUser ? activeUser.name : 'You'} (You • ${bestPack.title})`,
+          score: normScore,
+          rawScoreDisplay: `${Number(att.score || 0).toFixed(2)} / ${maxM}`,
+          accuracy: `${att.accuracy ?? 0}%`,
+          time: `${m}m ${s}s`,
+          isCurrentUser: true
+        };
+      }
+    }
+
+    const combined = baseLeaderboard.map(u => ({
+      ...u,
+      rawScoreDisplay: `${u.score} / 100`,
+      isCurrentUser: false
+    }));
+
+    if (candidateBest) {
+      combined.push(candidateBest);
+    }
+
+    combined.sort((a, b) => Number(b.score) - Number(a.score));
+    combined.forEach((entry, idx) => {
+      entry.rank = idx + 1;
+    });
+
+    list.innerHTML = combined.map(u => `
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: ${u.isCurrentUser ? '#f0fdfa' : '#ffffff'}; border-radius: 10px; border: ${u.isCurrentUser ? '1.5px solid #008479' : '1px solid var(--ob-app-border)'}; margin-bottom: 8px;">
         <div style="display: flex; align-items: center; gap: 14px;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: ${u.rank === 1 ? '#ffd700' : (u.rank === 2 ? '#e0e0e0' : (u.rank === 3 ? '#cd7f32' : '#f1f5f9'))}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #1e293b;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: ${u.rank === 1 ? '#ffd700' : (u.rank === 2 ? '#e0e0e0' : (u.rank === 3 ? '#cd7f32' : (u.isCurrentUser ? '#008479' : '#f1f5f9')))}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: ${u.isCurrentUser && u.rank > 3 ? '#ffffff' : '#1e293b'};">
             ${u.rank}
           </div>
           <div>
@@ -892,7 +1050,7 @@ class OliveboardAppController {
           </div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 16px; font-weight: 800; color: #008479;">${u.score} / 100</div>
+          <div style="font-size: 16px; font-weight: 800; color: #008479;">${u.rawScoreDisplay}</div>
           <span style="font-size: 11px; font-weight: 700; color: #2e7d32; background: #e8f5e9; padding: 2px 6px; border-radius: 4px;">Acc: ${u.accuracy}</span>
         </div>
       </div>
@@ -909,11 +1067,22 @@ class OliveboardAppController {
       this.switchAppView('tests', false);
       this.renderFilterTabs();
       this.loadAndRenderMockCards();
-      // Highlight PYPs in sidebar
+      // Highlight PYPs in sidebar and reset Tests icon
       document.querySelectorAll('#sm-nav-container .sm-nav-item, #ob-sidebar-nav .ob-nav-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.view === 'pyp');
+        const isPyp = item.dataset.view === 'pyp';
+        item.classList.toggle('active', isPyp);
+        const img = item.querySelector('img');
+        if (img && item.dataset.view === 'tests') {
+          img.src = 'img/Tests.svg';
+        }
       });
       return;
+    }
+
+    if (target === 'tests' && pushHistory && this.currentFilterTab === 'pyp') {
+      this.currentFilterTab = 'all';
+      this.renderFilterTabs();
+      this.loadAndRenderMockCards();
     }
 
     const validViews = ['tests', 'analytics', 'courses', 'mentorship', 'bookmarks', 'subscription', 'leaderboard'];
@@ -952,7 +1121,11 @@ class OliveboardAppController {
     // Update Sidebar Navigation state
     document.querySelectorAll('#sm-nav-container .sm-nav-item, #ob-sidebar-nav .ob-nav-item').forEach(item => {
       const v = item.dataset.view;
-      const isActive = (v === target || (v === 'analytics' && target === 'analytics') || (v === 'dashboard' && target === 'analytics'));
+      const isActive = (
+        (v === 'tests' && target === 'tests' && this.currentFilterTab !== 'pyp') ||
+        (v === 'pyp' && target === 'tests' && this.currentFilterTab === 'pyp') ||
+        (v !== 'tests' && v !== 'pyp' && (v === target || (v === 'analytics' && target === 'analytics') || (v === 'dashboard' && target === 'analytics')))
+      );
       item.classList.toggle('active', isActive);
       const img = item.querySelector('img');
       if (img && v === 'tests') {
@@ -1166,62 +1339,402 @@ class OliveboardAppController {
     const container = document.getElementById('bookmarks-view-container');
     if (!container) return;
 
-    const sampleBookmarks = [
-      {
-        id: 1003,
-        testId: 'sbi-po-pre-01',
-        section: 'English Language',
-        title: 'Parajumble Rearrangement Sequence',
-        questionSnippet: 'Rearrange sentences C, E, A, F, B, D to form a coherent paragraph on the Great Pacific Garbage Patch...',
-        answerKey: 'Option B (C is opening sentence)',
-        difficulty: 'Moderate'
-      },
-      {
-        id: 1025,
-        testId: 'ibps-so-it-mains-1',
-        section: 'Professional Knowledge',
-        title: 'B+ Tree Indexing & Page Splitting Order',
-        questionSnippet: 'In a B+ tree of order 4, what is the maximum number of pointers that can be stored in an internal node before splitting occurs?',
-        answerKey: 'Order = 4, max pointers = 4, max keys = 3',
-        difficulty: 'Hard'
-      },
-      {
-        id: 1032,
-        testId: 'sbi-po-sec-quant',
-        section: 'Quantitative Aptitude',
-        title: 'Missing Number Series with Alternating Cubes & Primes',
-        questionSnippet: 'Find the missing number in the series: 7, 16, 41, 90, 171, ?',
-        answerKey: 'Pattern: +9 (+3²), +25 (+5²), +49 (+7²), +81 (+9²), +121 (+11²) => 292',
-        difficulty: 'Tricky'
+    if (!this.activeBookmarkSubject) this.activeBookmarkSubject = 'ALL';
+    if (!this.activeBookmarkTag) this.activeBookmarkTag = 'ALL';
+    if (!this.bookmarkSearchQuery) this.bookmarkSearchQuery = '';
+    if (!this.bookmarkAttempts) this.bookmarkAttempts = {};
+
+    const bookmarks = window.obDataManager ? window.obDataManager.getBookmarks() : [];
+
+    if (!bookmarks || bookmarks.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 48px 24px; background: #ffffff; border-radius: 14px; border: 1px solid var(--ob-app-border); margin-top: 16px;">
+          <div style="font-size: 36px; margin-bottom: 10px;">⭐</div>
+          <h4 style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0;">No Saved Bookmarks Yet</h4>
+          <p style="font-size: 13px; color: #64748b; max-width: 460px; margin: 0 auto 16px auto;">Click the <b>★ Bookmark</b> button on any question inside the Live Mock Test or Solution Window to automatically store it by subject for quick revision.</p>
+          <button onclick="window.appController.switchAppView('tests')" style="padding: 9px 18px; background: #008479; color: #ffffff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+            Explore Mock Tests
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    const canonicalSubjects = window.obDataManager && typeof window.obDataManager.getCanonicalSubjects === 'function'
+      ? window.obDataManager.getCanonicalSubjects()
+      : ['Quantitative Aptitude', 'Reasoning Ability', 'English Language', 'Professional Knowledge', 'General Awareness'];
+
+    // Count bookmarks per subject
+    const subjectCounts = { ALL: bookmarks.length };
+    canonicalSubjects.forEach(s => { subjectCounts[s] = 0; });
+    const allCustomTagsSet = new Set();
+
+    bookmarks.forEach(b => {
+      const subj = b.subject || (window.obDataManager ? window.obDataManager.normalizeSubjectCategory(b.section, b.testTitle, b.questionSnippet) : 'General Awareness');
+      subjectCounts[subj] = (subjectCounts[subj] || 0) + 1;
+      if (Array.isArray(b.customTags)) {
+        b.customTags.forEach(t => { if (t) allCustomTagsSet.add(t); });
       }
-    ];
+    });
+
+    // If active subject filter has 0 items after a deletion, reset to ALL
+    if (this.activeBookmarkSubject !== 'ALL' && !subjectCounts[this.activeBookmarkSubject]) {
+      this.activeBookmarkSubject = 'ALL';
+    }
+
+    const allCustomTags = Array.from(allCustomTagsSet);
+    if (this.activeBookmarkTag !== 'ALL' && !allCustomTags.includes(this.activeBookmarkTag)) {
+      this.activeBookmarkTag = 'ALL';
+    }
+
+    // Filter bookmarks by Subject, Custom Tag, and Search Query
+    const qLower = (this.bookmarkSearchQuery || '').trim().toLowerCase();
+    const filteredBookmarks = bookmarks.filter(b => {
+      const subj = b.subject || 'General Awareness';
+      if (this.activeBookmarkSubject !== 'ALL' && subj !== this.activeBookmarkSubject) {
+        return false;
+      }
+      if (this.activeBookmarkTag !== 'ALL') {
+        const tags = Array.isArray(b.customTags) ? b.customTags : [];
+        if (!tags.includes(this.activeBookmarkTag)) return false;
+      }
+      if (qLower) {
+        const hay = `${b.title || ''} ${b.questionSnippet || ''} ${b.questionHTML || ''} ${b.testTitle || ''} ${b.subject || ''} ${(b.customTags || []).join(' ')}`.toLowerCase();
+        if (!hay.includes(qLower)) return false;
+      }
+      return true;
+    });
+
+    const subjectBadgeColors = {
+      'Quantitative Aptitude': { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' },
+      'Reasoning Ability': { bg: '#f5f3ff', text: '#6d28d9', border: '#ddd6fe' },
+      'English Language': { bg: '#ecfdf5', text: '#047857', border: '#a7f3d0' },
+      'Professional Knowledge': { bg: '#fff7ed', text: '#c2410c', border: '#fed7aa' },
+      'General Awareness': { bg: '#fef2f2', text: '#b91c1c', border: '#fecaca' }
+    };
+
+    const presetTags = ['Formula', 'Tricky', 'Speed Math', 'Must Revise'];
 
     container.innerHTML = `
-      <div class="bookmarks-container">
-        ${sampleBookmarks.map(b => `
-          <div class="bookmark-card">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">${b.section}</span>
-                <span style="background: #fef3c7; color: #b45309; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">${b.difficulty}</span>
-                <span style="font-size: 12px; color: #64748b;">Source: ${b.testId}</span>
-              </div>
-              <span style="color: #d97706; font-size: 16px;">★ Saved</span>
-            </div>
-            <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 4px 0;">${b.title}</h4>
-            <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.4;">${b.questionSnippet}</p>
-            <div style="background: #f8fafc; border-left: 3px solid #008479; padding: 8px 12px; font-size: 12px; color: #1e293b; border-radius: 0 4px 4px 0;">
-              <b>Key Takeaway:</b> ${b.answerKey}
-            </div>
-            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
-              <button onclick="window.appController.startMockTest('${b.testId}')" style="padding: 6px 14px; background: #008479; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                Practice Test
+      <!-- Subject Filter Tabs Bar -->
+      <div class="bm-hub-header-card">
+        <div class="bm-subject-tabs-row">
+          <button class="bm-subject-tab ${this.activeBookmarkSubject === 'ALL' ? 'active' : ''}"
+                  onclick="window.appController.setBookmarkSubjectFilter('ALL')">
+            <span>All Subjects</span>
+            <span class="bm-tab-count">${subjectCounts.ALL}</span>
+          </button>
+          ${canonicalSubjects.map(subj => {
+            const count = subjectCounts[subj] || 0;
+            const isActive = this.activeBookmarkSubject === subj;
+            const safeSubj = subj.replace(/'/g, "\\'");
+            return `
+              <button class="bm-subject-tab ${isActive ? 'active' : ''}"
+                      onclick="window.appController.setBookmarkSubjectFilter('${safeSubj}')">
+                <span>${subj}</span>
+                <span class="bm-tab-count">${count}</span>
               </button>
-            </div>
+            `;
+          }).join('')}
+        </div>
+
+        <!-- Search & Custom Tag Filter Strip -->
+        <div class="bm-filter-toolbar">
+          <div class="bm-search-box">
+            <input type="text"
+                   id="bm-search-input"
+                   placeholder="Search bookmarked questions by topic, keyword, or exam..."
+                   value="${String(this.bookmarkSearchQuery || '').replace(/"/g, '&quot;')}"
+                   oninput="window.appController.setBookmarkSearchQuery(this.value)" />
+            ${this.bookmarkSearchQuery ? `
+              <button class="bm-search-clear" onclick="window.appController.setBookmarkSearchQuery('')" title="Clear search">✕</button>
+            ` : ''}
           </div>
-        `).join('')}
+          <div class="bm-tag-filters">
+            <span class="bm-tag-filter-label">Tag Filter:</span>
+            <button class="bm-tag-chip-filter ${this.activeBookmarkTag === 'ALL' ? 'active' : ''}"
+                    onclick="window.appController.setBookmarkTagFilter('ALL')">
+              All (${bookmarks.length})
+            </button>
+            ${allCustomTags.map(tag => {
+              const safeTag = String(tag).replace(/'/g, "\\'");
+              const isAct = this.activeBookmarkTag === tag;
+              return `
+                <button class="bm-tag-chip-filter ${isAct ? 'active' : ''}"
+                        onclick="window.appController.setBookmarkTagFilter('${safeTag}')">
+                  #${tag}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Bookmarked Questions List -->
+      <div class="bookmarks-container">
+        ${filteredBookmarks.length === 0 ? `
+          <div style="text-align: center; padding: 36px 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">No bookmarked questions match this filter</div>
+            <p style="font-size: 13px; color: #64748b; margin: 0 0 14px 0;">Try switching to "All Subjects" or clearing the tag/search filter.</p>
+            <button onclick="window.appController.resetBookmarkFilters()" style="padding: 7px 16px; background: #008479; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+              Show All Bookmarks (${bookmarks.length})
+            </button>
+          </div>
+        ` : filteredBookmarks.map(b => {
+          const safeQId = String(b.id).replace(/'/g, "\\'");
+          const safeTestId = String(b.testId || 'sbi-po-pre-01').replace(/'/g, "\\'");
+          const subj = b.subject || 'General Awareness';
+          const subjStyle = subjectBadgeColors[subj] || { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' };
+          const attemptState = this.bookmarkAttempts[b.id] || { selectedIdx: null, showSolution: false };
+          const hasAttempted = attemptState.selectedIdx !== null && attemptState.selectedIdx !== undefined;
+          const corIdx = typeof b.correctIndex === 'number' ? b.correctIndex : 0;
+          const isAttemptCorrect = hasAttempted && attemptState.selectedIdx === corIdx;
+          const corLetter = String.fromCharCode(65 + corIdx);
+          const optionsArr = Array.isArray(b.options) && b.options.length > 0
+            ? b.options
+            : ['Option A', 'Option B', 'Option C', 'Option D', 'Option E'];
+          const tagsArr = Array.isArray(b.customTags) ? b.customTags : [];
+
+          return `
+            <div class="bookmark-card" id="bm-card-${b.id}">
+              <!-- Top Metadata & Subject Reassignment Header -->
+              <div class="bm-card-top-bar">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span class="bm-subject-pill" style="background: ${subjStyle.bg}; color: ${subjStyle.text}; border: 1px solid ${subjStyle.border};">
+                    📚 ${subj}
+                  </span>
+                  <select class="bm-subject-select"
+                          title="Change Subject Category"
+                          onchange="window.appController.changeBookmarkSubject('${safeQId}', this.value)">
+                    ${canonicalSubjects.map(s => `<option value="${s}" ${s === subj ? 'selected' : ''}>Move to: ${s}</option>`).join('')}
+                  </select>
+                  <span style="background: #fef3c7; color: #b45309; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">
+                    ${b.difficulty || 'Moderate'}
+                  </span>
+                  <span style="font-size: 12px; color: #64748b; font-weight: 600;">
+                    • ${b.testTitle || b.testId}
+                  </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button onclick="window.appController.startMockTest('${safeTestId}')"
+                          style="padding: 4px 10px; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                    Open Test
+                  </button>
+                  <button onclick="window.appController.removeBookmarkFromView('${safeQId}')"
+                          title="Remove Bookmark"
+                          style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; padding: 4px 9px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                    Remove
+                  </button>
+                </div>
+              </div>
+
+              <!-- Custom Tags Strip -->
+              <div class="bm-tags-row">
+                ${tagsArr.map(tag => {
+                  const safeTag = String(tag).replace(/'/g, "\\'");
+                  return `
+                    <span class="bm-custom-tag">
+                      #${tag}
+                      <button type="button" onclick="window.appController.removeTagFromBookmark('${safeQId}', '${safeTag}')" title="Remove tag">×</button>
+                    </span>
+                  `;
+                }).join('')}
+                <div class="bm-preset-tags-group">
+                  ${presetTags.filter(pt => !tagsArr.includes(pt)).map(pt => `
+                    <button type="button" class="bm-add-preset-btn" onclick="window.appController.addTagToBookmark('${safeQId}', '${pt}')">
+                      + ${pt}
+                    </button>
+                  `).join('')}
+                  <input type="text"
+                         class="bm-custom-tag-input"
+                         placeholder="+ Custom tag & Enter"
+                         onkeydown="if(event.key==='Enter'){ event.preventDefault(); window.appController.addTagToBookmark('${safeQId}', this.value); }" />
+                </div>
+              </div>
+
+              <!-- Question Title & Optional Passage -->
+              <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 2px 0 4px 0;">${b.title || 'Saved Question'}</h4>
+              ${b.passageHTML ? `
+                <div class="bm-passage-box">
+                  ${b.passageHTML}
+                </div>
+              ` : ''}
+
+              <!-- Full Question Body -->
+              <div class="bm-question-body">
+                ${b.questionHTML || b.questionSnippet || ''}
+              </div>
+
+              <!-- Interactive Options (Click to Re-Attempt Right Inside Card) -->
+              <div class="bm-options-grid">
+                ${optionsArr.map((optText, idx) => {
+                  const optLetter = String.fromCharCode(65 + idx);
+                  let stateClass = '';
+                  let badgeLabel = '';
+                  if (hasAttempted) {
+                    if (idx === corIdx) {
+                      stateClass = 'correct';
+                      badgeLabel = '<span class="bm-opt-status correct">✓ Correct Answer</span>';
+                    } else if (idx === attemptState.selectedIdx && idx !== corIdx) {
+                      stateClass = 'wrong';
+                      badgeLabel = '<span class="bm-opt-status wrong">✕ Your Choice</span>';
+                    }
+                  }
+                  return `
+                    <button type="button"
+                            class="bm-option-btn ${stateClass}"
+                            onclick="window.appController.attemptBookmarkQuestion('${safeQId}', ${idx})">
+                      <span class="bm-opt-letter">${optLetter}</span>
+                      <span class="bm-opt-text">${optText}</span>
+                      ${badgeLabel}
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Action & Instant Feedback Footer -->
+              <div class="bm-card-actions-bar">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  ${hasAttempted ? `
+                    <span class="bm-attempt-feedback ${isAttemptCorrect ? 'correct' : 'wrong'}">
+                      ${isAttemptCorrect
+                        ? `✓ Spot On! Option ${corLetter} is Correct`
+                        : `✕ Incorrect — Correct Answer is Option ${corLetter}`}
+                    </span>
+                    <button type="button"
+                            class="bm-btn-secondary"
+                            onclick="window.appController.resetBookmarkAttempt('${safeQId}')">
+                      ↺ Reset & Re-attempt
+                    </button>
+                  ` : `
+                    <span style="font-size: 12px; color: #64748b; font-weight: 600;">
+                      💡 Click any option (A–E) above to re-attempt this question
+                    </span>
+                  `}
+                </div>
+                <button type="button"
+                        class="bm-btn-solution"
+                        onclick="window.appController.toggleBookmarkSolution('${safeQId}')">
+                  ${attemptState.showSolution ? '▲ Hide Solution & Explanation' : '▼ View Solution & Explanation'}
+                </button>
+              </div>
+
+              <!-- Collapsible Step-by-Step Solution Drawer -->
+              ${attemptState.showSolution ? `
+                <div class="bm-solution-drawer">
+                  <div style="margin-bottom: 6px; font-size: 12px; font-weight: 800; color: #008479; text-transform: uppercase; letter-spacing: 0.4px;">
+                    ✓ Official Answer: Option ${corLetter}
+                  </div>
+                  <div style="font-size: 13px; color: #1e293b; line-height: 1.6;">
+                    ${b.explanationHTML || b.answerKey || 'Review complete solution above.'}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('')}
       </div>
     `;
+
+    // Keep search input focused if user was typing
+    if (this._keepBookmarkSearchFocus) {
+      this._keepBookmarkSearchFocus = false;
+      const inputEl = document.getElementById('bm-search-input');
+      if (inputEl) {
+        inputEl.focus();
+        const len = inputEl.value.length;
+        inputEl.setSelectionRange(len, len);
+      }
+    }
+  }
+
+  setBookmarkSubjectFilter(subject) {
+    this.activeBookmarkSubject = subject || 'ALL';
+    this.renderBookmarks();
+  }
+
+  setBookmarkTagFilter(tag) {
+    this.activeBookmarkTag = tag || 'ALL';
+    this.renderBookmarks();
+  }
+
+  setBookmarkSearchQuery(query) {
+    this.bookmarkSearchQuery = query || '';
+    this._keepBookmarkSearchFocus = true;
+    this.renderBookmarks();
+  }
+
+  resetBookmarkFilters() {
+    this.activeBookmarkSubject = 'ALL';
+    this.activeBookmarkTag = 'ALL';
+    this.bookmarkSearchQuery = '';
+    this.renderBookmarks();
+  }
+
+  attemptBookmarkQuestion(bookmarkId, selectedIdx) {
+    if (!this.bookmarkAttempts) this.bookmarkAttempts = {};
+    this.bookmarkAttempts[bookmarkId] = {
+      selectedIdx: Number(selectedIdx),
+      showSolution: true
+    };
+    this.renderBookmarks();
+  }
+
+  resetBookmarkAttempt(bookmarkId) {
+    if (!this.bookmarkAttempts) this.bookmarkAttempts = {};
+    delete this.bookmarkAttempts[bookmarkId];
+    this.renderBookmarks();
+  }
+
+  toggleBookmarkSolution(bookmarkId) {
+    if (!this.bookmarkAttempts) this.bookmarkAttempts = {};
+    const cur = this.bookmarkAttempts[bookmarkId] || { selectedIdx: null, showSolution: false };
+    this.bookmarkAttempts[bookmarkId] = {
+      ...cur,
+      showSolution: !cur.showSolution
+    };
+    this.renderBookmarks();
+  }
+
+  changeBookmarkSubject(bookmarkId, newSubject) {
+    if (window.obDataManager && typeof window.obDataManager.updateBookmarkSubject === 'function') {
+      window.obDataManager.updateBookmarkSubject(bookmarkId, newSubject);
+      this.showToast(`Moved question to ${newSubject}`, 'success');
+      this.renderBookmarks();
+    }
+  }
+
+  addTagToBookmark(bookmarkId, tagText) {
+    const clean = String(tagText || '').trim();
+    if (!clean) return;
+    if (window.obDataManager && typeof window.obDataManager.addBookmarkTag === 'function') {
+      window.obDataManager.addBookmarkTag(bookmarkId, clean);
+      this.renderBookmarks();
+    }
+  }
+
+  removeTagFromBookmark(bookmarkId, tagText) {
+    if (window.obDataManager && typeof window.obDataManager.removeBookmarkTag === 'function') {
+      window.obDataManager.removeBookmarkTag(bookmarkId, tagText);
+      this.renderBookmarks();
+    }
+  }
+
+  removeBookmarkFromView(questionId) {
+    if (window.obDataManager) {
+      window.obDataManager.removeBookmark(questionId);
+    }
+    const rawNum = String(questionId).replace(/^bm-/, '');
+    if (this.testEngine && this.testEngine.bookmarkedQuestions) {
+      delete this.testEngine.bookmarkedQuestions[questionId];
+      delete this.testEngine.bookmarkedQuestions[rawNum];
+    }
+    if (window.obSolutionEngine && window.obSolutionEngine.bookmarkedQuestions) {
+      delete window.obSolutionEngine.bookmarkedQuestions[questionId];
+      delete window.obSolutionEngine.bookmarkedQuestions[rawNum];
+    }
+    this.renderBookmarks();
+    this.showToast('Removed question from bookmarks', 'info');
   }
 
   renderSubscription() {
@@ -1859,6 +2372,7 @@ class OliveboardAppController {
     this.renderHeader();
     this.renderExamHero();
     await this.loadAndRenderMockCards();
+    this.renderLeaderboard();
   }
 
   // ==========================================
@@ -1908,20 +2422,50 @@ class OliveboardAppController {
     }
   }
 
-  async viewSolutions(attemptId, testId, pushHistory = true) {
+  async _resolveAttemptAndTest(attemptId, testId) {
+    let attemptObj = null;
     try {
       const res = await fetch(`/api/attempts/${encodeURIComponent(attemptId)}`);
       const data = await res.json();
-      if (!data.success) throw new Error('Attempt not found');
+      if (data && data.success && data.attempt) {
+        attemptObj = data.attempt;
+      }
+    } catch (err) {
+      console.warn('API attempt fetch failed, checking local fallback:', err);
+    }
 
-      const testData = await window.obDataManager.getTestById(testId);
+    if (!attemptObj && window.obDataManager) {
+      const localAttempts = await window.obDataManager.getUserAttempts();
+      attemptObj = (localAttempts || []).find(a => String(a.id) === String(attemptId) || String(a.test_id || a.testId) === String(testId)) || null;
+    }
+    if (!attemptObj) {
+      throw new Error('Attempt not found');
+    }
+
+    let testData = null;
+    try {
+      testData = await window.obDataManager.getTestById(testId);
+    } catch (err) {
+      const localQ = window.OB_TEST_APP && window.OB_TEST_APP.mockQuestions && window.OB_TEST_APP.mockQuestions[testId];
+      if (localQ) {
+        testData = localQ;
+      } else {
+        throw err;
+      }
+    }
+    return { attempt: attemptObj, testData };
+  }
+
+  async viewSolutions(attemptId, testId, pushHistory = true) {
+    try {
+      const { attempt, testData } = await this._resolveAttemptAndTest(attemptId, testId);
 
       if (pushHistory) {
         this.pushNavState({ view: 'solutions', testId, attemptId }, '#solutions/' + testId);
       }
 
       if (window.openOliveboardSolutions) {
-        window.openOliveboardSolutions(data.attempt, testData);
+        window.openOliveboardSolutions(attempt, testData);
       }
     } catch (e) {
       console.error('Failed to view solutions:', e);
@@ -1931,11 +2475,7 @@ class OliveboardAppController {
 
   async viewAttemptScorecard(attemptId, testId, pushHistory = true) {
     try {
-      const res = await fetch(`/api/attempts/${encodeURIComponent(attemptId)}`);
-      const data = await res.json();
-      if (!data.success) throw new Error('Attempt not found');
-
-      const testData = await window.obDataManager.getTestById(testId);
+      const { attempt, testData } = await this._resolveAttemptAndTest(attemptId, testId);
 
       if (pushHistory) {
         this.pushNavState({ modal: 'scorecard', testId, attemptId, view: this.currentViewTab }, '#scorecard/' + attemptId);
@@ -1944,7 +2484,7 @@ class OliveboardAppController {
       if (!this.testEngine) {
         this.testEngine = window.initTestEngine(testData);
       }
-      this.testEngine.showScorecardForAttempt(data.attempt, testData);
+      this.testEngine.showScorecardForAttempt(attempt, testData);
     } catch (e) {
       console.error('Failed to view scorecard:', e);
       this.showToast('Failed to load scorecard: ' + e.message, 'error');
@@ -1954,6 +2494,7 @@ class OliveboardAppController {
   async refreshAnalytics() {
     await this.loadAndRenderMockCards();
     await this.renderAnalytics();
+    this.renderLeaderboard();
   }
 }
 

@@ -65,6 +65,8 @@ class OliveboardSolutionEngine {
     this.solViewAcc = document.getElementById('sol-view-acc');
     this.solViewDiffBadge = document.getElementById('sol-view-difficulty-badge');
     this.btnBookmark = document.getElementById('btn-sol-view-bookmark');
+    this.btnLangToggle = document.getElementById('btn-sol-lang-toggle');
+    this.langLabel = document.getElementById('sol-lang-label');
 
     // Section Dropdown
     this.secDropdownBtn = document.getElementById('sol-sec-dropdown-btn');
@@ -206,6 +208,9 @@ class OliveboardSolutionEngine {
     if (this.btnBookmark) {
       this.btnBookmark.onclick = (e) => { e.preventDefault(); this.toggleBookmark(); };
     }
+    if (this.btnLangToggle) {
+      this.btnLangToggle.onclick = (e) => { e.preventDefault(); this.toggleLanguage(); };
+    }
 
     // Keyboard Navigation
     document.addEventListener('keydown', (e) => {
@@ -295,6 +300,14 @@ class OliveboardSolutionEngine {
     this.isOpen = true;
     this.isReattemptMode = false;
     this.retryAttempts = {};
+    this.currentLang = 'eqt';
+    this.bookmarkedQuestions = window.obDataManager ? window.obDataManager.getBookmarkedMap() : {};
+    if (this.overlay) {
+      this.overlay.classList.remove('lang-hindi');
+    }
+    if (this.langLabel) {
+      this.langLabel.textContent = 'English';
+    }
 
     // Flatten all questions across all sections with global indexing
     this.allQuestions = [];
@@ -345,7 +358,7 @@ class OliveboardSolutionEngine {
     // Show solution overlay
     if (this.overlay) {
       this.overlay.classList.add('active');
-      this.overlay.style.display = 'block';
+      this.overlay.style.display = 'flex';
     }
     document.body.style.overflow = 'hidden';
 
@@ -539,7 +552,7 @@ class OliveboardSolutionEngine {
       const testId = this.testData ? this.testData.id : 'test';
       const attId = this.attempt ? (this.attempt.id || this.attempt.attempt_id) : '';
       if (window.appController && window.appController.replaceNavState) {
-        window.appController.replaceNavState({ view: 'solutions', testId, attemptId: attId, qIndex: globalQIdx }, '#solutions/' + testId + '/q/' + (globalQIdx + 1));
+        window.appController.replaceNavState({ view: 'solutions', testId, attemptId: attId }, '#solutions/' + testId);
       }
     }
 
@@ -560,23 +573,17 @@ class OliveboardSolutionEngine {
 
     // Bookmark status
     if (this.btnBookmark) {
-      const isBm = !!this.bookmarkedQuestions[q.id];
+      const isBm = !!(this.bookmarkedQuestions[q.id] || (window.obDataManager && window.obDataManager.isBookmarked(q.id)));
+      this.bookmarkedQuestions[q.id] = isBm;
       this.btnBookmark.textContent = isBm ? '★ Saved' : '★ Bookmark';
       this.btnBookmark.style.color = isBm ? '#d97706' : '';
     }
 
     // Attempt Alert Banner Mode
-    if (this.attemptAlert && this.modeIndicator) {
-      if (this.isReattemptMode) {
-        this.attemptAlert.style.display = 'flex';
-        this.modeIndicator.textContent = 'Retry Mode Active';
-        this.modeIndicator.style.background = '#e6f4ff';
-        this.modeIndicator.style.color = '#0958d9';
-      } else {
-        this.attemptAlert.style.display = 'none';
-        this.modeIndicator.textContent = 'Solution Mode';
-      }
-    }
+    const retryAttempt = this.retryAttempts[globalQIdx];
+    const shouldHideSolution = this.isReattemptMode && !retryAttempt;
+
+    this._updateAttemptBanner(globalQIdx);
 
     // Determine layout: Split 2-Pane vs Single Pane
     const rawPassage = q.passage || q.passageHTML || q.passage_text || '';
@@ -585,7 +592,11 @@ class OliveboardSolutionEngine {
     const rawQuestion = q.questionText || q.questionHTML || q.question || '';
     const rawExplanation = q.explanation || q.explanationHTML || '';
     const formattedPassage = this._formatContent(rawPassage);
-    const formattedQuestion = this._formatContent(rawQuestion);
+    let formattedQuestion = this._formatContent(rawQuestion);
+    if (q.imageUrls && Array.isArray(q.imageUrls) && q.imageUrls.length > 0 && !rawQuestion.includes('<img')) {
+      const imgsHtml = q.imageUrls.map(url => `<img src="${url}" alt="Question Diagram" style="max-width: 100%; height: auto; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px; background: #fff; margin: 8px 0; display: block;">`).join('');
+      formattedQuestion = `${imgsHtml}${formattedQuestion}`;
+    }
     const formattedExplanation = this._formatContent(rawExplanation);
 
     const optionsHtml = this._renderQuestionOptions(q);
@@ -604,7 +615,7 @@ class OliveboardSolutionEngine {
             <div class="solutiontxt" style="font-size: 14px; line-height: 1.6; color: #334155;">${formattedExplanation || '<p>Detailed step-by-step reasoning verified by Oliveboard subject experts.</p>'}</div>
           </div>
         `;
-        this.explanation2Sided.style.display = this.isReattemptMode ? 'none' : 'block';
+        this.explanation2Sided.style.display = shouldHideSolution ? 'none' : 'block';
       }
     } else {
       if (this.twoSidedWrapper) this.twoSidedWrapper.style.display = 'none';
@@ -619,7 +630,7 @@ class OliveboardSolutionEngine {
             <div class="solutiontxt" style="font-size: 14px; line-height: 1.6; color: #334155;">${formattedExplanation || '<p>Detailed step-by-step reasoning verified by Oliveboard subject experts.</p>'}</div>
           </div>
         `;
-        this.explanationSingle.style.display = this.isReattemptMode ? 'none' : 'block';
+        this.explanationSingle.style.display = shouldHideSolution ? 'none' : 'block';
       }
     }
 
@@ -641,6 +652,51 @@ class OliveboardSolutionEngine {
     }
   }
 
+  _updateAttemptBanner(globalQIdx) {
+    if (!this.attemptAlert || !this.modeIndicator) return;
+    const retryAttempt = this.retryAttempts[globalQIdx];
+    const promptContainer = this.attemptAlert.querySelector('div:first-child');
+
+    if (this.isReattemptMode) {
+      this.attemptAlert.style.display = 'flex';
+      if (!retryAttempt) {
+        if (promptContainer) {
+          promptContainer.innerHTML = `
+            <span>Select an option below to re-attempt, or </span>
+            <a href="javascript:void(0)" class="btn-viewsol" id="btn-sol-toggle-mode" onclick="window.obSolutionEngine.viewsolution(${globalQIdx})" style="font-weight: 700; color: #0958d9; text-decoration: underline;">View Solution</a>
+          `;
+        }
+        this.modeIndicator.textContent = 'Re-attempt Mode: Click an Option';
+        this.modeIndicator.style.background = '#e6f4ff';
+        this.modeIndicator.style.color = '#0958d9';
+      } else if (retryAttempt.viewedSolution) {
+        if (promptContainer) {
+          promptContainer.innerHTML = `<span>Solution revealed for this question.</span>`;
+        }
+        this.modeIndicator.textContent = 'Solution Revealed';
+        this.modeIndicator.style.background = '#f1f5f9';
+        this.modeIndicator.style.color = '#475569';
+      } else if (retryAttempt.isCorrect) {
+        if (promptContainer) {
+          promptContainer.innerHTML = `<span style="color: #15803d; font-weight: 600;">Great job! You selected the correct option.</span>`;
+        }
+        this.modeIndicator.textContent = '✓ Re-attempt: Correct';
+        this.modeIndicator.style.background = '#dcfce7';
+        this.modeIndicator.style.color = '#15803d';
+      } else {
+        if (promptContainer) {
+          promptContainer.innerHTML = `<span style="color: #b91c1c; font-weight: 600;">Incorrect choice. The correct option is highlighted in green below.</span>`;
+        }
+        this.modeIndicator.textContent = '✕ Re-attempt: Wrong';
+        this.modeIndicator.style.background = '#fee2e2';
+        this.modeIndicator.style.color = '#b91c1c';
+      }
+    } else {
+      this.attemptAlert.style.display = 'none';
+      this.modeIndicator.textContent = 'Solution Mode';
+    }
+  }
+
   _renderQuestionOptions(q) {
     const rawOptions = q.options || [];
     let opts = [];
@@ -657,45 +713,58 @@ class OliveboardSolutionEngine {
       });
     } else if (typeof rawOptions === 'object') {
       const keys = Object.keys(rawOptions).sort();
-      opts = keys.map((k, i) => ({
+      opts = keys.map((k) => ({
         letter: k,
         text: rawOptions[k],
         html: rawOptions[k]
       }));
     }
 
-    const resp = (this.attempt.responses || {})[q.id] || (this.attempt.responses || {})[q.globalIndex + 1];
-    const userSelectedIdx = resp ? resp.selectedIndex : null;
+    const responses = this.attempt.responses || {};
+    const resp = responses[q.id] || responses[q.globalIndex + 1] || responses[`ibps-q-${q.globalIndex + 1}`];
+    const userSelectedIdx = resp && resp.selectedIndex !== undefined ? resp.selectedIndex : null;
     const retryAttempt = this.retryAttempts[q.globalIndex];
+    const corIdx = Number(q.correctIndex);
 
     return opts.map((opt, optIdx) => {
       let stateClass = '';
       let onclickAttr = '';
+      let badgeHtml = '';
 
       if (this.isReattemptMode && !retryAttempt) {
-        // Unanswered in retry mode: clickable cursorst
+        // Unanswered in retry mode: clickable option with radio tick ring
         stateClass = 'cursorst';
-        onclickAttr = `onclick="window.obSolutionEngine.attemptOption(${q.correctIndex}, ${optIdx}, ${q.globalIndex})"`;
+        onclickAttr = `onclick="window.obSolutionEngine.attemptOption(${corIdx}, ${optIdx}, ${q.globalIndex})"`;
+        badgeHtml = `<span class="opt-tick-badge opt-tick-idle" aria-hidden="true"></span>`;
       } else if (this.isReattemptMode && retryAttempt) {
         // User answered this question during retry mode
-        if (optIdx === q.correctIndex) {
+        const userPickedThis = Number(retryAttempt.selectedIdx) === optIdx && !retryAttempt.viewedSolution;
+        if (optIdx === corIdx) {
           stateClass = 'correct';
-        } else if (optIdx === retryAttempt.selectedIdx) {
+          badgeHtml = `<span class="opt-tick-badge opt-tick-correct">✓ ${userPickedThis ? 'Your Choice · Correct' : 'Correct Answer'}</span>`;
+        } else if (userPickedThis) {
           stateClass = 'wrong';
+          badgeHtml = `<span class="opt-tick-badge opt-tick-wrong">✕ Your Choice</span>`;
         }
       } else {
         // Standard Solution View Mode
-        if (optIdx === q.correctIndex) {
+        const userPickedThis = userSelectedIdx !== null && Number(userSelectedIdx) === optIdx;
+        if (optIdx === corIdx) {
           stateClass = 'correct';
-        } else if (userSelectedIdx !== null && Number(userSelectedIdx) === optIdx) {
+          badgeHtml = `<span class="opt-tick-badge opt-tick-correct">✓ ${userPickedThis ? 'Your Answer · Correct' : 'Correct Answer'}</span>`;
+        } else if (userPickedThis) {
           stateClass = 'wrong';
+          badgeHtml = `<span class="opt-tick-badge opt-tick-wrong">✕ Your Answer</span>`;
         }
       }
 
       return `
-        <div id="opt-${q.globalIndex}-${optIdx}" class="opt ${stateClass}" ${onclickAttr} style="display: flex; align-items: center; padding: 12px 14px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; transition: all 0.2s ease;">
-          <div class="left" style="width: 32px; font-weight: 700; color: #1e293b;">${opt.letter}</div>
-          <div class="right" style="flex: 1;"><div class="rightopt" style="font-size: 14px; line-height: 1.5;">${this._formatContent(opt.html || opt.text)}</div></div>
+        <div id="opt-${q.globalIndex}-${optIdx}" class="opt ${stateClass}" data-opt-idx="${optIdx}" ${onclickAttr}>
+          <div class="left">${opt.letter}</div>
+          <div class="right">
+            <div class="rightopt">${this._formatContent(opt.html || opt.text)}</div>
+            ${badgeHtml}
+          </div>
         </div>
       `;
     }).join('');
@@ -706,41 +775,65 @@ class OliveboardSolutionEngine {
   // ==========================================
 
   attemptOption(corOpt, selectedOpt, globalQIdx) {
+    // Lock after first click on this question
+    if (this.retryAttempts[globalQIdx]) return;
+
     const isCorrect = Number(selectedOpt) === Number(corOpt);
-    this.retryAttempts[globalQIdx] = { selectedIdx: selectedOpt, isCorrect };
+    this.retryAttempts[globalQIdx] = {
+      selectedIdx: Number(selectedOpt),
+      isCorrect,
+      viewedSolution: false
+    };
 
-    // Update clicked option styles
-    const selEl = document.getElementById(`opt-${globalQIdx}-${selectedOpt}`);
-    const corEl = document.getElementById(`opt-${globalQIdx}-${corOpt}`);
-
-    if (selEl) {
-      selEl.classList.remove('cursorst');
-      selEl.classList.add(isCorrect ? 'correct' : 'wrong');
-    }
-    if (corEl && !isCorrect) {
-      corEl.classList.remove('cursorst');
-      corEl.classList.add('correct');
+    const q = this.allQuestions[globalQIdx];
+    if (q) {
+      const updatedOptionsHtml = this._renderQuestionOptions(q);
+      if (this.options2Sided) this.options2Sided.innerHTML = updatedOptionsHtml;
+      if (this.optionsSingle) this.optionsSingle.innerHTML = updatedOptionsHtml;
     }
 
-    // Reveal explanation box
+    // Update top attempt status banner
+    this._updateAttemptBanner(globalQIdx);
+
+    // Reveal explanation box immediately without resetting scroll position
     if (this.explanation2Sided) this.explanation2Sided.style.display = 'block';
     if (this.explanationSingle) this.explanationSingle.style.display = 'block';
 
-    // Hide attempt banner
-    if (this.attemptAlert) this.attemptAlert.style.display = 'none';
-
-    // Re-render question options without onclicks
-    this.goToQuestion(globalQIdx);
+    // Ensure the green-highlighted correct option is visible if below the fold
+    const activeOptsContainer = (this.twoSidedWrapper && this.twoSidedWrapper.style.display !== 'none')
+      ? this.options2Sided
+      : this.optionsSingle;
+    if (activeOptsContainer) {
+      const correctEl = activeOptsContainer.querySelector('.opt.correct');
+      if (correctEl && typeof correctEl.scrollIntoView === 'function') {
+        correctEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
   }
 
   viewsolution(globalQIdx) {
     const q = this.allQuestions[globalQIdx];
-    this.retryAttempts[globalQIdx] = { selectedIdx: q.correctIndex, isCorrect: true };
-    this.goToQuestion(globalQIdx);
+    if (!q) return;
+    this.retryAttempts[globalQIdx] = {
+      selectedIdx: Number(q.correctIndex),
+      isCorrect: true,
+      viewedSolution: true
+    };
+
+    const updatedOptionsHtml = this._renderQuestionOptions(q);
+    if (this.options2Sided) this.options2Sided.innerHTML = updatedOptionsHtml;
+    if (this.optionsSingle) this.optionsSingle.innerHTML = updatedOptionsHtml;
+
+    this._updateAttemptBanner(globalQIdx);
+
+    if (this.explanation2Sided) this.explanation2Sided.style.display = 'block';
+    if (this.explanationSingle) this.explanationSingle.style.display = 'block';
   }
 
   toggleReattemptMode(forceState) {
     this.isReattemptMode = typeof forceState === 'boolean' ? forceState : !this.isReattemptMode;
+    // Reset all re-attempts so the user can practice fresh whenever toggling Re-attempt mode
+    this.retryAttempts = {};
 
     if (this.btnToggleReattemptTop) {
       this.btnToggleReattemptTop.textContent = this.isReattemptMode ? 'Re-attempt: ON' : 'Re-attempt: OFF';
@@ -754,7 +847,7 @@ class OliveboardSolutionEngine {
     }
 
     if (this.viewSolDetail && this.viewSolDetail.style.display !== 'none') {
-      this.goToQuestion(this.currentQuestionIndex);
+      this.goToQuestion(this.currentQuestionIndex, false);
     }
   }
 
@@ -792,11 +885,38 @@ class OliveboardSolutionEngine {
   toggleBookmark() {
     const q = this.allQuestions[this.currentQuestionIndex];
     if (!q) return;
-    this.bookmarkedQuestions[q.id] = !this.bookmarkedQuestions[q.id];
+    let isBm = false;
+    if (window.obDataManager && typeof window.obDataManager.toggleBookmark === 'function') {
+      isBm = window.obDataManager.toggleBookmark(q, this.testData, q.sectionTitle);
+      if (isBm) {
+        this.bookmarkedQuestions[q.id] = true;
+        const autoSubj = window.obDataManager.normalizeSubjectCategory(q.sectionTitle || '', this.testData?.title || '', '');
+        if (window.appController && typeof window.appController.showToast === 'function') {
+          window.appController.showToast(`★ Bookmarked under ${autoSubj}`, 'success');
+        }
+      } else {
+        delete this.bookmarkedQuestions[q.id];
+        if (window.appController && typeof window.appController.showToast === 'function') {
+          window.appController.showToast('Removed question from Bookmarks', 'info');
+        }
+      }
+    } else {
+      this.bookmarkedQuestions[q.id] = !this.bookmarkedQuestions[q.id];
+      isBm = !!this.bookmarkedQuestions[q.id];
+    }
     if (this.btnBookmark) {
-      const isBm = !!this.bookmarkedQuestions[q.id];
       this.btnBookmark.textContent = isBm ? '★ Saved' : '★ Bookmark';
       this.btnBookmark.style.color = isBm ? '#d97706' : '';
+    }
+  }
+
+  toggleLanguage() {
+    this.currentLang = this.currentLang === 'eqt' ? 'hqt' : 'eqt';
+    if (this.overlay) {
+      this.overlay.classList.toggle('lang-hindi', this.currentLang === 'hqt');
+    }
+    if (this.langLabel) {
+      this.langLabel.textContent = this.currentLang === 'hqt' ? 'Hindi' : 'English';
     }
   }
 
@@ -872,6 +992,18 @@ class OliveboardSolutionEngine {
   }
 
   openScorecardModal() {
+    if (this.attempt && this.testData) {
+      let engine = (window.appController && window.appController.testEngine) || window.activeTestEngine;
+      if (!engine && window.initTestEngine) {
+        engine = window.initTestEngine(this.testData);
+        if (window.appController) window.appController.testEngine = engine;
+        window.activeTestEngine = engine;
+      }
+      if (engine && typeof engine.showScorecardForAttempt === 'function') {
+        engine.showScorecardForAttempt(this.attempt, this.testData);
+        return;
+      }
+    }
     const scModal = document.getElementById('scorecard-modal-overlay');
     if (scModal) scModal.classList.add('active');
   }

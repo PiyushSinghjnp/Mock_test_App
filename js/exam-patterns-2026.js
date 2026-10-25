@@ -715,10 +715,199 @@
     };
   }
 
+  /**
+   * High-precision Gaussian error function erf(x) (Abramowitz & Stegun 7.1.26)
+   */
+  function erf(x) {
+    const sign = x >= 0 ? 1 : -1;
+    const absX = Math.abs(x);
+    const a1 = 0.254829592;
+    const a2 = -0.284496736;
+    const a3 = 1.421413741;
+    const a4 = -1.453152027;
+    const a5 = 1.061405429;
+    const p = 0.3275911;
+    const t = 1.0 / (1.0 + p * absX);
+    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-absX * absX);
+    return sign * y;
+  }
+
+  /**
+   * Standard Normal Cumulative Distribution Function Phi(z) in [0, 1]
+   */
+  function normalCDF(z) {
+    return 0.5 * (1.0 + erf(z / Math.SQRT2));
+  }
+
+  /**
+   * Deterministic 32-bit string hash for consistent per-test cohort size & difficulty curve
+   */
+  function hashTestKey(str) {
+    const s = String(str || 'oliveboard-mock');
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  /**
+   * Psychometric All India Percentile & Rank Calculator for Every Test
+   *
+   * Uses a test-specific Gaussian score distribution (calibrated by exam stage,
+   * maximum marks, negative marking discipline, accuracy tie-breaking, and
+   * candidate pool size) and derives an exact, mathematically consistent AIR:
+   *   Rank = max(1, round(totalCandidates * (1 - rawPercentile / 100)))
+   */
+  function calculateTestRankAndPercentile(params = {}) {
+    const testId = String(params.testId || params.test_id || '');
+    const testTitle = String(params.testTitle || params.test_title || '');
+    const rawType = String(params.testType || params.type || '').toLowerCase();
+    const combinedKey = `${testId} ${testTitle} ${rawType}`.toLowerCase();
+    const hash = hashTestKey(testId || testTitle || 'default-test');
+
+    const maxScore = Math.max(1, Number(params.maxScore ?? params.max_score ?? params.marks) || 100);
+    const score = Number(params.score ?? params.netScore ?? 0) || 0;
+    const correctCount = Math.max(0, Number(params.correctCount ?? params.correct_count ?? 0) || 0);
+    const wrongCount = Math.max(0, Number(params.wrongCount ?? params.wrong_count ?? 0) || 0);
+    const attemptedCount = correctCount + wrongCount;
+    const totalQuestions = Math.max(1, Number(params.totalQuestions ?? params.total_questions ?? attemptedCount) || 100);
+
+    // 1. Identify test stage/category for distribution calibration
+    let stageCategory = 'prelims';
+    if (rawType === 'topic' || /topic|mini|speed|quiz/i.test(combinedKey) || maxScore <= 30) {
+      stageCategory = 'topic';
+    } else if (rawType === 'sectional' || /sectional/i.test(combinedKey) || maxScore <= 60) {
+      stageCategory = 'sectional';
+    } else if (rawType === 'mains' || /mains|tier\s*2|phase\s*2|rbi\s*grade\s*b|specialist|pk|professional/i.test(combinedKey)) {
+      stageCategory = 'mains';
+    }
+
+    // 2. Deterministic Test-Specific Candidate Cohort Size (N)
+    let totalCandidates = Number(params.totalCandidates || params.activeUsers || 0);
+    if (!totalCandidates || totalCandidates < 500) {
+      const isFreeFirst = /free|-1\b|mock\s*1\b/i.test(combinedKey);
+      if (stageCategory === 'prelims') {
+        totalCandidates = (isFreeFirst ? 22400 : 14800) + (hash % 7400);
+      } else if (stageCategory === 'mains') {
+        totalCandidates = (isFreeFirst ? 13600 : 9400) + (hash % 5200);
+      } else if (stageCategory === 'sectional') {
+        totalCandidates = 7200 + (hash % 4800);
+      } else {
+        totalCandidates = 4800 + (hash % 3600);
+      }
+    }
+
+    // 3. Calibrate Mean (muRatio), StdDev (sigmaRatio), Cutoff, and Topper Ratios per Test
+    // Slight deterministic per-test difficulty shift delta in [-0.02, +0.02]
+    const difficultyDelta = (((hash >> 8) % 41) - 20) * 0.001;
+    let muRatio = 0.45 + difficultyDelta;
+    let sigmaRatio = 0.160;
+    let cutoffRatio = 0.55 + difficultyDelta;
+    let topperRatio = 0.89 + (difficultyDelta * 0.5);
+
+    if (stageCategory === 'mains') {
+      muRatio = 0.39 + difficultyDelta;
+      sigmaRatio = 0.155;
+      cutoffRatio = 0.46 + difficultyDelta;
+      topperRatio = 0.85 + (difficultyDelta * 0.5);
+    } else if (stageCategory === 'sectional') {
+      muRatio = 0.48 + difficultyDelta;
+      sigmaRatio = 0.168;
+      cutoffRatio = 0.57 + difficultyDelta;
+      topperRatio = 0.91 + (difficultyDelta * 0.5);
+    } else if (stageCategory === 'topic') {
+      muRatio = 0.51 + difficultyDelta;
+      sigmaRatio = 0.175;
+      cutoffRatio = 0.60 + difficultyDelta;
+      topperRatio = 0.93 + (difficultyDelta * 0.5);
+    }
+
+    // 4. Compute Candidate Raw Percentile (0.1 to 99.99)
+    // In competitive exams with -0.25 negative marking, ~2.0% of test-takers score < 0,
+    // and unattempted (0 score, 0 attempts) sits right at the ~2.1%ile mark.
+    const zeroScoreBaselinePct = 2.0 + (((hash >> 4) % 5) * 0.1); // 2.0%ile .. 2.4%ile
+    let rawPercentile = zeroScoreBaselinePct;
+
+    if (attemptedCount === 0 && score === 0) {
+      // Unattempted paper: beats only negative-scoring candidates
+      rawPercentile = zeroScoreBaselinePct;
+    } else if (score < 0) {
+      // Negative net score: scales smoothly from [0.1%ile, zeroScoreBaselinePct - 0.1]
+      const minPossibleScore = -0.25 * maxScore;
+      const negProgress = Math.min(1, Math.max(0, Math.abs(score) / Math.max(1, Math.abs(minPossibleScore))));
+      // Exponential decay so -0.25 is ~1.7%ile and heavily negative approaches 0.1%ile
+      rawPercentile = Math.max(0.1, (zeroScoreBaselinePct - 0.15) * Math.exp(-2.6 * negProgress));
+    } else if (score === 0 && attemptedCount > 0) {
+      // Attempted questions but net score is 0.00: slightly above unattempted paper
+      rawPercentile = zeroScoreBaselinePct + Math.min(0.6, (correctCount / Math.max(1, totalQuestions)) * 3.0);
+    } else {
+      // Positive score (score > 0)
+      const scoreRatio = Math.min(1.0, Math.max(0, score / maxScore));
+
+      // Accuracy & negative-marking discipline tie-breaker
+      const computedAcc = attemptedCount > 0
+        ? (correctCount / attemptedCount)
+        : (Math.min(100, Math.max(0, Number(params.accuracy) || 0)) / 100);
+      const accuracyZShift = (computedAcc - 0.72) * 0.16;
+
+      // Standardized z-score at candidate's scoreRatio and at r=0
+      const zAtZero = (0 - muRatio) / sigmaRatio;
+      const cdfAtZero = normalCDF(zAtZero) * 100;
+
+      // If candidate meets or exceeds topper benchmark, smoothly approach 99.99%ile
+      const zRaw = ((scoreRatio - muRatio) / sigmaRatio) + accuracyZShift;
+      const gaussPct = normalCDF(zRaw) * 100;
+
+      // Remap [cdfAtZero .. 100] -> [zeroScoreBaselinePct + 0.5 .. 99.99] so S > 0 is strictly > zeroScoreBaselinePct
+      const floorPct = zeroScoreBaselinePct + 0.5;
+      const normalizedGauss = floorPct + ((Math.max(cdfAtZero, gaussPct) - cdfAtZero) / Math.max(1, 100 - cdfAtZero)) * (99.99 - floorPct);
+
+      // Upper-tail topper boost when scoreRatio >= topperRatio
+      if (scoreRatio >= 0.999) {
+        rawPercentile = 99.99;
+      } else if (scoreRatio >= topperRatio) {
+        const topProgress = Math.min(1, (scoreRatio - topperRatio) / Math.max(0.01, 1.0 - topperRatio));
+        rawPercentile = Math.max(normalizedGauss, 99.4 + topProgress * 0.58);
+      } else {
+        rawPercentile = normalizedGauss;
+      }
+    }
+
+    rawPercentile = Math.min(99.99, Math.max(0.1, rawPercentile));
+
+    // 5. Derive Mathematically Consistent All India Rank (#1 .. #totalCandidates)
+    let estimatedAIR;
+    if (score >= maxScore * 0.999) {
+      estimatedAIR = 1;
+    } else {
+      estimatedAIR = Math.round(totalCandidates * (1 - (rawPercentile / 100)));
+      estimatedAIR = Math.max(1, Math.min(totalCandidates, estimatedAIR));
+    }
+
+    const percentile = Number(Math.min(99.9, Math.max(0.1, rawPercentile)).toFixed(1));
+    const avgScore = Number((maxScore * muRatio).toFixed(2));
+    const topperScore = Number((maxScore * topperRatio).toFixed(2));
+    const cutoffScore = Number((maxScore * cutoffRatio).toFixed(2));
+
+    return {
+      percentile,
+      rawPercentile: Number(rawPercentile.toFixed(3)),
+      estimatedAIR,
+      totalCandidates,
+      avgScore,
+      topperScore,
+      cutoffScore
+    };
+  }
+
   return {
     EXAM_PATTERNS_2026,
     detectExamAndStage,
     normalizeCorrectIndex,
-    apply2026PatternToQuestionPaper
+    apply2026PatternToQuestionPaper,
+    calculateTestRankAndPercentile
   };
 });
+

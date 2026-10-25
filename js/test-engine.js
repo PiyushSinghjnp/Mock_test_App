@@ -425,7 +425,7 @@ class OliveboardTestEngine {
     this.isExamActive = false;
     this.isPaused = false;
     this.completedSections = new Set();
-    this.bookmarkedQuestions = {};
+    this.bookmarkedQuestions = window.obDataManager ? window.obDataManager.getBookmarkedMap() : {};
     this.isSectionAdvanceConfirm = false;
     this.currentSectionIndex = 0;
     this.currentQuestionIndex = 0;
@@ -521,7 +521,10 @@ class OliveboardTestEngine {
         });
       }
       if (pausedState.bookmarkedQuestions || pausedState.bookmarked_questions) {
-        this.bookmarkedQuestions = pausedState.bookmarkedQuestions || pausedState.bookmarked_questions || {};
+        this.bookmarkedQuestions = {
+          ...this.bookmarkedQuestions,
+          ...(pausedState.bookmarkedQuestions || pausedState.bookmarked_questions || {})
+        };
       }
       this.startActiveExam(true);
       return;
@@ -547,6 +550,11 @@ class OliveboardTestEngine {
    */
   startActiveExam(isResume = false) {
     this.isExamActive = true;
+    this.isConfirmPaneOpen = false;
+    if (this.sendDataTimeoutId) {
+      clearTimeout(this.sendDataTimeoutId);
+      this.sendDataTimeoutId = null;
+    }
     this.startTime = Date.now();
     this.currentQuestionEntryTime = Date.now();
 
@@ -654,8 +662,30 @@ class OliveboardTestEngine {
   }
 
   handleSectionTimeout() {
+    if (!this.isExamActive) return;
+    if (this.sendDataTimeoutId) {
+      clearTimeout(this.sendDataTimeoutId);
+      this.sendDataTimeoutId = null;
+    }
+    if (this.isConfirmPaneOpen) {
+      this.sBack();
+    }
+
+    // Strict TCS iON rule: discard any uncommitted radio selection on the expiring section
+    const expiringSec = this.testData.sections && this.testData.sections[this.currentSectionIndex];
+    if (expiringSec && Array.isArray(expiringSec.questions)) {
+      expiringSec.questions.forEach(q => {
+        const r = this.userResponses[q.id];
+        if (r) {
+          r.draftSelectedIndex = r.selectedIndex;
+        }
+      });
+    }
+    this.pendingSelectedIndex = null;
+
     const isLastSection = this.currentSectionIndex >= this.testData.sections.length - 1;
     if (!isLastSection && this.testData.hasSectionalTiming !== false) {
+      this._recordCurrentQuestionTime();
       this.completedSections.add(this.currentSectionIndex);
       this.switchSection(this.currentSectionIndex + 1);
     } else {
@@ -668,6 +698,7 @@ class OliveboardTestEngine {
    */
   pauseTest() {
     this._recordCurrentQuestionTime();
+    this.currentQuestionEntryTime = null;
     this.isPaused = true;
     if (this.questionInnerPane) this.questionInnerPane.style.opacity = '0.1';
     if (this.mainContainer) this.mainContainer.style.opacity = '0.3';
@@ -685,6 +716,8 @@ class OliveboardTestEngine {
   }
 
   async savePausedStateAndExit() {
+    this.isExamActive = false;
+    this.isPaused = false;
     if (this.questionInnerPane) this.questionInnerPane.style.opacity = '1';
     if (this.mainContainer) this.mainContainer.style.opacity = '1';
     if (this.pauseModal) this.pauseModal.style.display = 'none';
@@ -1324,10 +1357,26 @@ class OliveboardTestEngine {
     const question = section.questions[this.currentQuestionIndex];
     if (!question) return;
 
-    if (this.bookmarkedQuestions[question.id]) {
-      delete this.bookmarkedQuestions[question.id];
+    if (window.obDataManager && typeof window.obDataManager.toggleBookmark === 'function') {
+      const nowSaved = window.obDataManager.toggleBookmark(question, this.testData, section.title);
+      if (nowSaved) {
+        this.bookmarkedQuestions[question.id] = true;
+        const autoSubj = window.obDataManager.normalizeSubjectCategory(section.title, this.testData?.title || '', '');
+        if (window.appController && typeof window.appController.showToast === 'function') {
+          window.appController.showToast(`★ Bookmarked under ${autoSubj}`, 'success');
+        }
+      } else {
+        delete this.bookmarkedQuestions[question.id];
+        if (window.appController && typeof window.appController.showToast === 'function') {
+          window.appController.showToast('Removed question from Bookmarks', 'info');
+        }
+      }
     } else {
-      this.bookmarkedQuestions[question.id] = true;
+      if (this.bookmarkedQuestions[question.id]) {
+        delete this.bookmarkedQuestions[question.id];
+      } else {
+        this.bookmarkedQuestions[question.id] = true;
+      }
     }
 
     this.updateBookmarkButtonState(question.id);
@@ -1454,6 +1503,7 @@ class OliveboardTestEngine {
    */
   finalSubmit(forceSectionAdvance = false) {
     this._recordCurrentQuestionTime();
+    this.isConfirmPaneOpen = true;
     const isLastSection = this.currentSectionIndex >= this.testData.sections.length - 1;
     this.isSectionAdvanceConfirm = forceSectionAdvance && !isLastSection;
 
@@ -1515,6 +1565,20 @@ class OliveboardTestEngine {
 
     if (this.fTbody) this.fTbody.innerHTML = tbodyHTML;
 
+    // Check if current question has an uncommitted radio selection (strict TCS iON rule)
+    const curSecObj = this.testData.sections[this.currentSectionIndex];
+    const curQObj = curSecObj && curSecObj.questions ? curSecObj.questions[this.currentQuestionIndex] : null;
+    const curResp = curQObj ? this.userResponses[curQObj.id] : null;
+    const hasUncommittedSelection = Boolean(
+      curResp &&
+      this.pendingSelectedIndex !== null &&
+      this.pendingSelectedIndex !== undefined &&
+      this.pendingSelectedIndex !== curResp.selectedIndex
+    );
+    const uncommittedNote = hasUncommittedSelection
+      ? `⚠️ Unsaved Selection on Q.${this.currentQuestionIndex + 1}: You selected an option without clicking "Save & Next". Per TCS iON rules, it will NOT be counted unless you go back and click "Save & Next".`
+      : '';
+
     if (this.isSectionAdvanceConfirm) {
       const curSec = this.testData.sections[this.currentSectionIndex];
       const nextSec = this.testData.sections[this.targetSectionIndexForAdvance !== undefined ? this.targetSectionIndexForAdvance : (this.currentSectionIndex + 1)];
@@ -1522,13 +1586,21 @@ class OliveboardTestEngine {
       if (this.sureWarningText) this.sureWarningText.textContent = `Are you sure you want to submit "${curSec ? curSec.title : 'this section'}" and move to "${nextSec ? nextSec.title : 'Next Section'}"?`;
       if (this.sureSectionLockNote) {
         this.sureSectionLockNote.style.display = 'block';
-        this.sureSectionLockNote.textContent = `Note: Once you proceed to the next section, you cannot return to "${curSec ? curSec.title : 'this section'}".`;
+        const lockMsg = `Note: Once you proceed to the next section, you cannot return to "${curSec ? curSec.title : 'this section'}".`;
+        this.sureSectionLockNote.textContent = uncommittedNote ? `${uncommittedNote} | ${lockMsg}` : lockMsg;
       }
       if (this.sSubmitSpan) this.sSubmitSpan.textContent = 'Submit Section';
     } else {
       if (this.submitPaneHeading) this.submitPaneHeading.textContent = 'Exam Summary';
       if (this.sureWarningText) this.sureWarningText.textContent = 'Are you sure you want to submit the exam?';
-      if (this.sureSectionLockNote) this.sureSectionLockNote.style.display = 'none';
+      if (this.sureSectionLockNote) {
+        if (uncommittedNote) {
+          this.sureSectionLockNote.style.display = 'block';
+          this.sureSectionLockNote.textContent = uncommittedNote;
+        } else {
+          this.sureSectionLockNote.style.display = 'none';
+        }
+      }
       if (this.sSubmitSpan) this.sSubmitSpan.textContent = 'Submit';
     }
 
@@ -1540,7 +1612,13 @@ class OliveboardTestEngine {
    * Return from Submit Summary to Active Question Pane (sBack() in oliveboard_live_player.html lines 1004-1012)
    */
   sBack() {
+    this.isConfirmPaneOpen = false;
+    if (this.sendDataTimeoutId) {
+      clearTimeout(this.sendDataTimeoutId);
+      this.sendDataTimeoutId = null;
+    }
     this.targetSectionIndexForAdvance = undefined;
+    this.currentQuestionEntryTime = Date.now();
     if (this.leftContainerPre) this.leftContainerPre.style.display = 'none';
     if (this.rightContainerPre) this.rightContainerPre.style.display = 'none';
     if (this.submitPane) this.submitPane.style.display = 'none';
@@ -1559,12 +1637,25 @@ class OliveboardTestEngine {
    * Confirm Section Advance or Final Exam Submit (sendData() in oliveboard_live_player.html lines 1014-1097)
    */
   sendData() {
+    if (!this.isExamActive || this.sendDataTimeoutId) return;
     if (this.sureBox) this.sureBox.style.display = 'none';
     if (this.plsWaitBox) this.plsWaitBox.style.display = 'block';
 
-    setTimeout(() => {
+    this.sendDataTimeoutId = setTimeout(() => {
+      this.sendDataTimeoutId = null;
+      if (!this.isExamActive) return;
       if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
       if (this.isSectionAdvanceConfirm) {
+        // Strict TCS iON rule: clear uncommitted draft on the section being exited
+        const curSec = this.testData.sections && this.testData.sections[this.currentSectionIndex];
+        if (curSec && Array.isArray(curSec.questions)) {
+          curSec.questions.forEach(q => {
+            const r = this.userResponses[q.id];
+            if (r) r.draftSelectedIndex = r.selectedIndex;
+          });
+        }
+        this.pendingSelectedIndex = null;
+
         if (this.testData.isSectionalLocked !== false) {
           this.completedSections.add(this.currentSectionIndex);
         }
@@ -1579,23 +1670,37 @@ class OliveboardTestEngine {
           this.submitTest();
         }
       } else {
+        this.isConfirmPaneOpen = false;
         this.submitTest();
       }
     }, 250);
   }
 
   async submitTest() {
+    if (!this.isExamActive) return;
     this._recordCurrentQuestionTime();
+    this.currentQuestionEntryTime = null;
     clearInterval(this.timerInterval);
+    if (this.sendDataTimeoutId) {
+      clearTimeout(this.sendDataTimeoutId);
+      this.sendDataTimeoutId = null;
+    }
     this.isExamActive = false;
+    this.isConfirmPaneOpen = false;
 
     const endTime = Date.now();
-    const totalTimeSeconds = Math.max(1, Math.round((endTime - this.startTime) / 1000));
+    const summedQuestionSeconds = Object.values(this.userResponses || {}).reduce(
+      (sum, r) => sum + (Number(r && r.timeSpentSeconds) || 0),
+      0
+    );
+    const sessionWallSeconds = Math.max(1, Math.round((endTime - (this.startTime || endTime)) / 1000));
+    const totalTimeSeconds = Math.max(1, summedQuestionSeconds > 0 ? summedQuestionSeconds : sessionWallSeconds);
 
     // Compute detailed scoring using 2026 official per-question / per-section marking scheme
     const allQuestions = [];
     this.testData.sections.forEach(sec => {
       sec.questions.forEach(q => {
+        q.section = q.section || sec.title || 'General';
         q.correctIndex = this._getNormalizedCorrectIndex(q);
         if (q.marksForCorrect === undefined && sec.positiveMarks !== undefined) {
           q.marksForCorrect = sec.positiveMarks;
@@ -1625,9 +1730,10 @@ class OliveboardTestEngine {
 
       const secName = q.section || 'General';
       if (!sectionBreakdown[secName]) {
-        sectionBreakdown[secName] = { correct: 0, wrong: 0, unanswered: 0, score: 0, total: 0, timeSpentSeconds: 0 };
+        sectionBreakdown[secName] = { correct: 0, wrong: 0, unanswered: 0, score: 0, total: 0, maxMarks: 0, timeSpentSeconds: 0 };
       }
       sectionBreakdown[secName].total++;
+      sectionBreakdown[secName].maxMarks += marksPos;
       sectionBreakdown[secName].timeSpentSeconds += (response && response.timeSpentSeconds ? response.timeSpentSeconds : 0);
 
       if (isAttempted) {
@@ -1650,8 +1756,22 @@ class OliveboardTestEngine {
 
     const maxScore = this.testData.marks || Math.round(computedMaxScore) || 100;
     const accuracy = correct + wrong > 0 ? ((correct / (correct + wrong)) * 100).toFixed(1) : '0.0';
-    const percentile = Math.min(99.9, Math.max(12.0, (Math.max(0, totalScore) / Math.max(1, maxScore)) * 100 * 1.15)).toFixed(1);
-    const estimatedAIR = Math.max(1, Math.round(1500 - (parseFloat(percentile) * 14.5)));
+    const rankData = this._computeRankAndPercentile({
+      testId: this.testData.id,
+      testTitle: this.testData.title,
+      testType: this.testData.type,
+      score: totalScore,
+      maxScore,
+      correctCount: correct,
+      wrongCount: wrong,
+      unansweredCount: unanswered,
+      totalQuestions: allQuestions.length,
+      accuracy: parseFloat(accuracy),
+      activeUsers: this.testData.activeUsers
+    });
+    const percentile = rankData.percentile.toFixed(1);
+    const estimatedAIR = rankData.estimatedAIR;
+    const totalCandidates = rankData.totalCandidates;
 
     const sectionBreakdownArr = Object.entries(sectionBreakdown).map(([name, data]) => ({
       sectionName: name,
@@ -1673,7 +1793,8 @@ class OliveboardTestEngine {
         maxScore,
         accuracy: parseFloat(accuracy),
         percentile: parseFloat(percentile),
-        estimatedAIR
+        estimatedAIR,
+        totalCandidates
       },
       timing: {
         startedAt: new Date(this.startTime).toISOString(),
@@ -1684,8 +1805,9 @@ class OliveboardTestEngine {
       sectionBreakdown: sectionBreakdownArr
     };
 
+    let savedAttempt = null;
     if (window.obDataManager) {
-      await window.obDataManager.saveResult(resultObj);
+      savedAttempt = await window.obDataManager.saveResult(resultObj);
     }
 
     const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
@@ -1693,7 +1815,7 @@ class OliveboardTestEngine {
     setEl('metric-score', `${totalScore.toFixed(2)} / ${maxScore}`);
     setEl('metric-percentile', `${percentile}%ile`);
     setEl('metric-accuracy', `${accuracy}%`);
-    setEl('metric-rank', `#${estimatedAIR} / 14,680`);
+    setEl('metric-rank', `#${estimatedAIR.toLocaleString()} / ${totalCandidates.toLocaleString()}`);
     setEl('metric-correct', correct);
     setEl('metric-wrong', wrong);
     setEl('metric-unanswered', unanswered);
@@ -1701,7 +1823,7 @@ class OliveboardTestEngine {
 
     this._renderScorecardSectionalTable(sectionBreakdownArr, totalTimeSeconds);
     this._renderScorecardTopicBreakdown(sectionBreakdownArr, allQuestions);
-    this._renderTopperComparisonModule(totalScore, maxScore, parseFloat(accuracy), totalTimeSeconds, allQuestions.length, sectionBreakdownArr);
+    this._renderTopperComparisonModule(totalScore, maxScore, parseFloat(accuracy), totalTimeSeconds, allQuestions.length, sectionBreakdownArr, rankData);
 
     const breakdownEl = document.getElementById('scorecard-section-breakdown');
     if (breakdownEl) {
@@ -1734,7 +1856,19 @@ class OliveboardTestEngine {
       };
     }
 
+    // Refresh dashboard cards & analytics in the background
+    if (window.appController && typeof window.appController.refreshAnalytics === 'function') {
+      window.appController.refreshAnalytics();
+    }
+
     // Launch Oliveboard Authentic Solution & Review Console immediately upon submission
+    const resolvedAttemptId = (savedAttempt && (savedAttempt.attemptId || savedAttempt.id || savedAttempt.attempt_id)) || resultObj.attemptId;
+    if (window.appController && window.appController.replaceNavState) {
+      window.appController.replaceNavState(
+        { view: 'solutions', testId: this.testData.id, attemptId: resolvedAttemptId },
+        '#solutions/' + this.testData.id
+      );
+    }
     if (window.openOliveboardSolutions) {
       window.openOliveboardSolutions(resultObj, this.testData);
     } else if (this.scorecardOverlay) {
@@ -1742,24 +1876,65 @@ class OliveboardTestEngine {
     }
   }
 
+  _computeRankAndPercentile(params) {
+    if (window.OB_EXAM_PATTERNS_2026 && typeof window.OB_EXAM_PATTERNS_2026.calculateTestRankAndPercentile === 'function') {
+      return window.OB_EXAM_PATTERNS_2026.calculateTestRankAndPercentile(params);
+    }
+    const maxScore = Math.max(1, Number(params.maxScore) || 100);
+    const score = Number(params.score) || 0;
+    const totalCandidates = Number(params.activeUsers) || 24800;
+    const pct = score <= 0 ? 2.1 : Math.min(99.9, Math.max(2.5, (score / maxScore) * 100));
+    const air = Math.max(1, Math.min(totalCandidates, Math.round(totalCandidates * (1 - pct / 100))));
+    return {
+      percentile: Number(pct.toFixed(1)),
+      estimatedAIR: air,
+      totalCandidates,
+      avgScore: Number((maxScore * 0.45).toFixed(2)),
+      topperScore: Number((maxScore * 0.89).toFixed(2)),
+      cutoffScore: Number((maxScore * 0.55).toFixed(2))
+    };
+  }
+
   showScorecardForAttempt(attempt, testData) {
     const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-    const netScore = attempt.score !== undefined ? (typeof attempt.score === 'number' ? attempt.score : (attempt.score.total ?? 0)) : 0;
-    const maxScore = attempt.max_score || (testData && testData.marks) || 100;
-    const accuracy = attempt.accuracy !== undefined ? attempt.accuracy : 0;
-    const timeSpent = attempt.time_spent_seconds || 0;
+    const netScore = attempt.score !== undefined
+      ? (typeof attempt.score === 'number' ? attempt.score : (attempt.score.netScore ?? attempt.score.total ?? 0))
+      : 0;
+    const maxScore = attempt.max_score || (attempt.score && attempt.score.maxScore) || (testData && testData.marks) || 100;
+    const correctCount = attempt.correct_count ?? (attempt.score && attempt.score.correct) ?? 0;
+    const wrongCount = attempt.wrong_count ?? (attempt.score && attempt.score.wrong) ?? 0;
+    const unansweredCount = attempt.unanswered_count ?? (attempt.score && attempt.score.unanswered) ?? 0;
+    const accuracy = attempt.accuracy !== undefined
+      ? attempt.accuracy
+      : (attempt.score && attempt.score.accuracy !== undefined ? attempt.score.accuracy : (correctCount + wrongCount > 0 ? ((correctCount / (correctCount + wrongCount)) * 100) : 0));
+    const timeSpent = attempt.time_spent_seconds || (attempt.timing && attempt.timing.totalTimeSeconds) || 0;
+    const totalQ = attempt.total_questions || attempt.totalQuestions || (testData && testData.questionsCount) || 100;
 
-    setEl('scorecard-test-title', attempt.test_title || attempt.testTitle || 'Mock Test');
+    const rankData = this._computeRankAndPercentile({
+      testId: attempt.test_id || attempt.testId || (testData && testData.id),
+      testTitle: attempt.test_title || attempt.testTitle || (testData && testData.title),
+      testType: testData && testData.type,
+      score: netScore,
+      maxScore,
+      correctCount,
+      wrongCount,
+      unansweredCount,
+      totalQuestions: totalQ,
+      accuracy: Number(accuracy),
+      activeUsers: testData && testData.activeUsers
+    });
+
+    setEl('scorecard-test-title', attempt.test_title || attempt.testTitle || (testData && testData.title) || 'Mock Test');
     setEl('metric-score', `${Number(netScore).toFixed(2)} / ${maxScore}`);
-    setEl('metric-percentile', `${Number(attempt.percentile || 0).toFixed(1)}%ile`);
+    setEl('metric-percentile', `${Number(rankData.percentile).toFixed(1)}%ile`);
     setEl('metric-accuracy', `${Number(accuracy).toFixed(1)}%`);
-    setEl('metric-rank', `#${attempt.estimated_air || 1000} / 14,680`);
-    setEl('metric-correct', attempt.correct_count ?? 0);
-    setEl('metric-wrong', attempt.wrong_count ?? 0);
-    setEl('metric-unanswered', attempt.unanswered_count ?? 0);
+    setEl('metric-rank', `#${rankData.estimatedAIR.toLocaleString()} / ${rankData.totalCandidates.toLocaleString()}`);
+    setEl('metric-correct', correctCount);
+    setEl('metric-wrong', wrongCount);
+    setEl('metric-unanswered', unansweredCount);
     setEl('metric-time', this._formatTime(timeSpent));
 
-    const breakdown = attempt.section_breakdown || [];
+    const breakdown = attempt.section_breakdown || attempt.sectionBreakdown || [];
     this._renderScorecardSectionalTable(breakdown, timeSpent);
 
     const breakdownEl = document.getElementById('scorecard-section-breakdown');
@@ -1783,7 +1958,7 @@ class OliveboardTestEngine {
       }));
 
       this._renderScorecardTopicBreakdown(breakdown, allQuestions);
-      this._renderTopperComparisonModule(netScore, maxScore, parseFloat(accuracy), timeSpent, allQuestions.length, breakdown);
+      this._renderTopperComparisonModule(netScore, maxScore, parseFloat(accuracy), timeSpent, allQuestions.length, breakdown, rankData);
 
       solutionsContainer.innerHTML = '';
     }
@@ -1809,8 +1984,9 @@ class OliveboardTestEngine {
 
     rowsEl.innerHTML = sectionBreakdownArr.map(sec => {
       const totalQ = sec.total || (sec.questions ? sec.questions.length : 30);
+      const secMaxMarks = sec.maxMarks || totalQ;
       const attempted = (sec.correct || 0) + (sec.wrong || 0);
-      const cutoff = (totalQ * 0.35).toFixed(2);
+      const cutoff = (secMaxMarks * 0.35).toFixed(2);
       const score = sec.score !== undefined ? sec.score : 0;
       const isCleared = score >= parseFloat(cutoff);
       const statusHtml = isCleared
@@ -1868,11 +2044,15 @@ class OliveboardTestEngine {
     sectionArr.forEach(sec => {
       const kwList = topicKeywords[sec.sectionName] || ['Concept Fundamentals', 'Application & Practice', 'Advanced Problem Solving'];
       const perTopicCount = Math.max(3, Math.floor((sec.total || 30) / kwList.length));
+      const attemptedInSec = (sec.correct || 0) + (sec.wrong || 0);
+      const secBaseSpeed = sec.timeSpentSeconds && sec.timeSpentSeconds > 0
+        ? Math.max(5, Math.round(sec.timeSpentSeconds / Math.max(1, attemptedInSec || sec.total || 30)))
+        : 24;
       kwList.forEach((kw, idx) => {
         const topicTotal = (idx === kwList.length - 1) ? ((sec.total || 30) - perTopicCount * (kwList.length - 1)) : perTopicCount;
         const topicCorrect = Math.min(topicTotal, Math.round((sec.correct || 0) * (topicTotal / Math.max(1, (sec.total || 30)))));
         const acc = topicTotal > 0 ? Math.round((topicCorrect / topicTotal) * 100) : 0;
-        const avgSpeed = Math.floor(25 + ((idx * 7) % 35));
+        const avgSpeed = Math.max(4, secBaseSpeed + ((idx % 3) - 1) * 2);
         topics.push({
           name: kw,
           section: sec.sectionName,
@@ -1887,12 +2067,16 @@ class OliveboardTestEngine {
     return topics;
   }
 
-  _renderTopperComparisonModule(userScore, maxScore, userAcc, userTimeSec, totalQ, sectionArr) {
+  _renderTopperComparisonModule(userScore, maxScore, userAcc, userTimeSec, totalQ, sectionArr, rankData = null) {
     const container = document.getElementById('comp-cards-container');
     if (!container) return;
 
-    const avgScore = Math.max(10, (maxScore * 0.442)).toFixed(2);
-    const topperScore = (maxScore * 0.898).toFixed(2);
+    const avgScore = rankData && rankData.avgScore !== undefined
+      ? Number(rankData.avgScore).toFixed(2)
+      : Math.max(10, (maxScore * 0.442)).toFixed(2);
+    const topperScore = rankData && rankData.topperScore !== undefined
+      ? Number(rankData.topperScore).toFixed(2)
+      : (maxScore * 0.898).toFixed(2);
     const avgAcc = 68.2;
     const topperAcc = 96.5;
     const userSpeed = Math.round(userTimeSec / Math.max(1, totalQ));
@@ -2052,10 +2236,9 @@ class OliveboardTestEngine {
   }
 
   exitTest(fromPopstate = false) {
-    if (!fromPopstate && window.appController) {
-      window.appController.goBack();
-    } else {
-      this._doExitTest();
+    this._doExitTest();
+    if (!fromPopstate && window.appController && window.appController.exitTestToDashboard) {
+      window.appController.exitTestToDashboard(false);
     }
   }
 

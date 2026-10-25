@@ -16,11 +16,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer">
 
   <!-- App Stylesheets (Authentic Oliveboard Cascade) -->
-  <link rel="stylesheet" href="css/bootstrap.min.css?v=20261024_3">
-  <link rel="stylesheet" href="css/style.css?v=20261024_3">
-  <link rel="stylesheet" href="css/app-shell.css?v=20261024_3">
-  <link rel="stylesheet" href="css/test-engine.css?v=20261024_3">
-  <link rel="stylesheet" href="css/style4.css?v=20261024_3">
+  <link rel="stylesheet" href="css/bootstrap.min.css?v=20261025_3">
+  <link rel="stylesheet" href="css/style.css?v=20261025_3">
+  <link rel="stylesheet" href="css/app-shell.css?v=20261025_3">
+  <link rel="stylesheet" href="css/test-engine.css?v=20261025_3">
+  <link rel="stylesheet" href="css/style4.css?v=20261025_3">
 </head>
 <body class="app-body">
 
@@ -31,29 +31,6 @@
   
   <!-- 1. TOP STICKY HEADER (.hdr-main) -->
   <header class="hdr-main" id="hdr-main" style="z-index: 1040;">
-    <!-- PROMO BANNER -->
-    <div class="hdr-promo-banner" onclick="window.open('https://www.oliveboard.in/myaccount/buypayu/100tests.php');" title="Special Dussehra Dhamaka Offer">
-      <div class="hdr-promo-text">
-        <span class="hdr-text-mobile">Dussehra Dhamaka</span>
-        <span class="hdr-text-desktop">
-          <span>🎉</span>
-          <span>Dussehra Dhamaka</span>
-        </span>
-      </div>
-      <div class="hdr-timer-group">
-        <img class="web-wal" src="img/hd-clock.svg" alt="" style="width: 14px; height: 14px;">
-        <img class="mob-wal" src="img/red-wallet.svg" alt="" style="width: 14px; height: 14px;">
-        <span class="hdr-timer-label">Expires in:</span>
-        <div id="wexptimer" class="hdr-time-blocks">
-          <span class="hdr-time-box">04</span> <span class="hdr-time-sep">:</span>
-          <span class="hdr-time-box">00</span> <span class="hdr-time-sep">:</span>
-          <span class="hdr-time-box">58</span>
-        </div>
-        <img class="mob-wal" src="img/red-rightarr.svg" alt="" style="width: 12px; height: 12px;">
-        <img class="web-wal" src="img/rightarr.svg" alt="" style="width: 12px; height: 12px;">
-      </div>
-    </div>
-
     <!-- BRAND AREA -->
     <div class="hdr-brand-area">
       <button class="mrp-back-btn hdr-back-btn" id="hdr-global-back-btn" title="Back to Tests" style="display: none;" onclick="window.appController.goBack()">
@@ -96,7 +73,7 @@
       </button>
 
       <!-- Buy Now CTA -->
-      <button class="btn-buy-nw" onclick="window.open('https://www.oliveboard.in/myaccount/buypayu/100tests.php');">Buy Now</button>
+      <button class="btn-buy-nw" onclick="window.appController.switchAppView('subscription');">Buy Now</button>
 
       <!-- User Profile & Dropdown -->
       <div class="upd-relative-wrapper">
@@ -117,11 +94,11 @@
               <div class="upd-icon"><img src="img/dashboard.svg" alt=""></div>
               <span>Analytics &amp; Streaks (🔥 <span id="header-user-streak">1d</span>)</span>
             </a>
-            <a href="javascript:void(0)" class="upd-nav-item">
+            <a href="javascript:void(0)" class="upd-nav-item" onclick="window.appController.switchAppView('bookmarks')">
               <div class="upd-icon"><img src="img/bm.svg" alt=""></div>
               <span>My Bookmarks</span>
             </a>
-            <a href="javascript:void(0)" class="upd-nav-item">
+            <a href="javascript:void(0)" class="upd-nav-item" onclick="window.appController.switchAppView('subscription')">
               <div class="upd-icon"><img src="img/brief.svg" alt=""></div>
               <span>My Subscription (🪙 <span id="header-user-coins">300</span> coins)</span>
             </a>
@@ -174,7 +151,7 @@
     </a>
     
     <a href="javascript:void(0)" class="plainanchor sm-nav-item" data-view="subscription" title="My Subscription">
-      <img src="img/brief24.svg" alt="">
+      <img src="img/brief24.svg?v=20261024_9" alt="">
       <span class="sm-text-desk">Subscription</span>
       <span class="sm-text-mob">Subscription</span>
     </a>
@@ -217,26 +194,6 @@
               </div>
               <div style="font-size: 13px; font-weight: 600; color: #475569;" id="active-tab-tests-count">
                 Loading Tests...
-              </div>
-            </div>
-          </div>
-
-          <!-- OliveScore Readiness Assessment Banner -->
-          <div id="olive-readiness-assessment-banner">
-            <div class="readiness-pointer-score-box">
-              <div class="score-digit" id="readiness-score-val">84</div>
-            </div>
-            <div id="olive-readiness-text-content">
-              <div class="olive-branding-text-group">
-                <div class="brand-blue-part">Olive</div>
-                <div class="brand-gold-part">Score</div>
-              </div>
-              <div class="olive-readiness-headline">Your Exam Readiness Score</div>
-              <div class="olive-readiness-subtext">Get personalized learning recommendations based on your test performance across all topics</div>
-            </div>
-            <div class="olive-readiness-action-wrap" onclick="window.appController.switchAppView('analytics')">
-              <div class="btn-navigation-report-trigger" id="js-report-redirect-trigger">
-                Learn More.
               </div>
             </div>
           </div>
@@ -594,7 +551,7 @@
               <span>Choose your default language: </span>
               <div class="lang-dropdown" id="instr-lang-dropdown">
                 <button class="btn btn-dropdown dropdown-toggle" id="instrDropdownMenu" type="button">
-                  <span class="dd-selected-item">English</span> <span class="caret">▼</span>
+                  <span class="dd-selected-item">English</span> <span class="caret"></span>
                 </button>
                 <ul class="lang-dropdown-menu" id="instr-lang-menu" style="display: none;">
                   <li data-lang="eqt">English</li>
@@ -734,7 +691,7 @@
               <div>Question No <span id="qno-disp">1</span><span id="exam-q-num-label" style="display: none;">1</span></div>
               <div class="lang-dropdown" id="question-lang-dropdown">
                 <button class="btn btn-dropdown dropdown-toggle" id="dropdownMenu2" type="button">
-                  <span class="dd-selected-item">English</span> <span class="caret">▼</span>
+                  <span class="dd-selected-item">English</span> <span class="caret"></span>
                 </button>
                 <ul class="lang-dropdown-menu" id="lang-dropdown-menu" style="display: none;">
                   <li data-lang="eqt">English</li>
@@ -1017,8 +974,8 @@
       <!-- Review Filters Strip (#sec-status) -->
       <section id="sec-status">
         <div class="oliveblk oliveblk-middle padd5">
-          <div class="container" style="display: flex; justify-content: flex-end; align-items: center; gap: 24px; padding: 12px 15px;">
-            <div class="ddncol" style="display: flex; gap: 18px; align-items: center;">
+          <div class="container" style="display: flex; justify-content: flex-end; align-items: center; gap: 24px; padding: 12px 15px; flex-wrap: wrap;">
+            <div class="ddncol" style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
               <span id="chkwrong" class="cuc-review" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; color: #1e293b;">
                 <input type="checkbox" id="chkwrong-cb" style="margin: 0; cursor: pointer;">
                 Review Wrong
@@ -1030,8 +987,8 @@
             </div>
             <div class="ddncol" style="display: flex; align-items: center; gap: 8px;">
               <div class="switch-block" style="display: flex; align-items: center; gap: 8px;">
-                <label class="switch" style="position: relative; display: inline-block; width: 36px; height: 18px; margin: 0;">
-                  <input type="checkbox" id="togreattempt-landing" style="display: none;">
+                <label class="switch" style="position: relative; display: inline-block; width: 38px; height: 20px; margin: 0;">
+                  <input type="checkbox" id="togreattempt-landing" class="togreattempt" style="display: none;">
                   <div class="switch-slider round" id="switch-slider-landing" style="position: absolute; inset: 0; background-color: #cbd5e1; border-radius: 20px; cursor: pointer; transition: 0.3s;"></div>
                 </label>
                 <h3 class="txt-reattempt" style="font-size: 13px; font-weight: 600; color: #475569; margin: 0;">Retry Mode</h3>
@@ -1043,7 +1000,7 @@
 
       <!-- The Review Table (#sec-reviewtable) -->
       <div class="paper-layout">
-        <div class="left-col" style="width: 100%; border: none;">
+        <div class="left-col" style="width: 100%; border: none; height: auto; overflow: visible;">
           <section id="sec-reviewtable">
             <div class="oliveblk reviewtable padd5" style="width: 100%; max-width: 1380px; margin: 0 auto;">
               <div class="container" style="width: 100%; padding: 0 15px;">
@@ -1064,7 +1021,7 @@
                     </div>
                   </div>
                   <!-- Scrollable Questions List -->
-                  <div class="review-scroll" id="sol-landing-review-rows" style="max-height: calc(100vh - 270px); overflow-y: auto;">
+                  <div class="review-scroll" id="sol-landing-review-rows">
                     <!-- Dynamically populated rows -->
                   </div>
                 </div>
@@ -1078,10 +1035,10 @@
     <!-- ========================================================
          VIEW 2: AUTHENTIC OLIVEBOARD DETAILED QUESTION SOLUTION VIEW (#sec-solview)
          ======================================================== -->
-    <div id="sec-solview" style="display: none; height: calc(100vh - 58px); flex-direction: column;">
+    <div id="sec-solview" style="display: none;">
       <!-- Sub-header bar (#sec-solheader) -->
-      <section id="sec-solheader" style="height: 52px; background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 15px; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 14px;">
+      <section id="sec-solheader">
+        <div class="sol-subheader-left" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
           <button class="btn-sol-return-table" id="btn-sol-header-gotoreview" title="Back to Solution Review Table" onclick="window.obSolutionEngine.gotoreview()">
             <img src="img/backbutton.svg" alt="" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: middle;">
             <span>Review Table</span>
@@ -1092,7 +1049,7 @@
             <span class="qnodivder">/</span>
             <span id="sol-view-total-q">100</span>
           </div>
-          <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: #475569; border-left: 1px solid #cbd5e1; padding-left: 14px;">
+          <div class="sol-subheader-metrics" style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: #475569; border-left: 1px solid #cbd5e1; padding-left: 14px;">
             <span title="Your Time Spent on this Question">⏱ <strong id="sol-view-user-time">--</strong></span>
             <span title="All-India Candidate Accuracy">🎯 <strong id="sol-view-acc">74%</strong></span>
             <span id="sol-view-difficulty-badge" style="background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">Moderate</span>
@@ -1100,8 +1057,12 @@
           <button class="btn-bookmark-toggle" id="btn-sol-view-bookmark" style="padding: 4px 10px; font-size: 12px;">★ Bookmark</button>
         </div>
 
-        <!-- Section Dropdown Selector -->
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <!-- Section Dropdown & Language Selector -->
+        <div class="sol-subheader-right" style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" id="btn-sol-lang-toggle" title="Switch Question Language (English / Hindi)" style="display: inline-flex; align-items: center; gap: 5px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; font-weight: 700; color: #334155; cursor: pointer; font-size: 12px;">
+            <span>🌐</span>
+            <span id="sol-lang-label">English</span>
+          </button>
           <div class="ddncol-inner" style="position: relative;">
             <button class="btn-dropdown" id="sol-sec-dropdown-btn" type="button" style="display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 14px; font-weight: 700; color: #1c4b79; cursor: pointer; font-size: 13px;">
               <span class="ddn-select" id="sol-sec-dropdown-label">English Language</span>
@@ -1115,73 +1076,73 @@
       </section>
 
       <!-- Main Split Content Area & Sidebar -->
-      <div style="flex: 1; display: flex; position: relative; overflow: hidden;">
+      <div class="sol-main-workspace">
         <!-- Question & Passage Pane -->
-        <div id="questionssols-block" style="flex: 1; overflow-y: auto; padding: 18px 24px; position: relative;">
+        <div id="questionssols-block">
           <!-- Attempt Again or View Solution Toggle Banner -->
-          <div class="attemptalert" id="sol-attempt-alert" style="display: flex; align-items: center; justify-content: space-between; background: #f0f7ff; border: 1px solid #bae0ff; border-radius: 6px; padding: 10px 16px; margin-bottom: 16px; font-size: 14px; color: #0050b3;">
-            <div>
+          <div class="attemptalert" id="sol-attempt-alert">
+            <div class="sol-alert-prompt">
               <span>Attempt again or </span>
               <a href="javascript:void(0)" class="btn-viewsol" id="btn-sol-toggle-mode" style="font-weight: 700; color: #0958d9; text-decoration: underline;">View Solution</a>
             </div>
-            <div id="sol-mode-indicator" style="font-size: 12px; background: #e6f4ff; color: #0958d9; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Solution Mode</div>
+            <div id="sol-mode-indicator">Solution Mode</div>
           </div>
 
           <!-- 2-Sided Split Pane (Passage on Left, Question on Right) -->
-          <div class="two-sided-wrapper" id="sol-view-two-sided" style="display: flex; gap: 20px;">
-            <div class="paneqcol" id="sol-view-passage-pane" style="width: 50%; max-height: calc(100vh - 250px); overflow-y: auto; padding: 14px 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;"></div>
-            <div class="paneqcol" id="sol-view-question-pane" style="width: 50%; max-height: calc(100vh - 250px); overflow-y: auto; padding: 14px 18px;">
-              <div id="sol-view-qtext-2sided" style="font-size: 15px; font-weight: 600; line-height: 1.6; margin-bottom: 16px;"></div>
+          <div class="sol-two-sided-wrapper" id="sol-view-two-sided" style="display: flex;">
+            <div class="paneqcol" id="sol-view-passage-pane"></div>
+            <div class="paneqcol" id="sol-view-question-pane">
+              <div id="sol-view-qtext-2sided" style="font-size: 15px; font-weight: 600; line-height: 1.65; color: #0f172a; margin-bottom: 16px;"></div>
               <div class="qoptions" id="sol-view-options-2sided"></div>
               <div class="soln-explanation-box" id="sol-view-explanation-2sided" style="display: block; margin-top: 16px;"></div>
             </div>
           </div>
 
           <!-- 1-Column Standalone View -->
-          <div class="singlequestion" id="sol-view-single" style="display: none; max-width: 900px; margin: 0 auto;">
-            <div id="sol-view-qtext-single" style="font-size: 15px; font-weight: 600; line-height: 1.6; margin-bottom: 16px;"></div>
+          <div class="singlequestion" id="sol-view-single" style="display: none;">
+            <div id="sol-view-qtext-single" style="font-size: 15px; font-weight: 600; line-height: 1.65; color: #0f172a; margin-bottom: 16px;"></div>
             <div class="qoptions" id="sol-view-options-single"></div>
             <div class="soln-explanation-box" id="sol-view-explanation-single" style="display: block; margin-top: 16px;"></div>
           </div>
         </div>
 
-        <!-- Right Sidebar (#right-col) -->
-        <div class="right-col" id="sol-right-col" style="display: flex; width: 320px; background: #f8fafc; border-left: 1px solid #e2e8f0; flex-direction: column; overflow: hidden; position: relative;">
+        <!-- Right Sidebar (#sol-right-col) -->
+        <div class="right-col" id="sol-right-col">
           <!-- Header Mini Metrics Card -->
-          <div class="right-header" style="background: #fff; padding: 12px 14px; border-bottom: 1px solid #e2e8f0;">
-            <div class="row" style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <div class="right-header">
+            <div class="row">
               <div class="head-card">
-                <div class="left"><img src="images/oliveboard_solution/timetaken.svg" alt=""><h3 id="sol-mini-time" style="font-size: 13px; font-weight: 700; margin: 0 0 0 4px;">00:00:34</h3></div>
-                <div class="right"><p style="font-size: 11px; color: #64748b; margin: 2px 0 0 0;">Time Taken</p></div>
+                <div class="left"><img src="images/oliveboard_solution/timetaken.svg" alt=""><h3 id="sol-mini-time">00:00:34</h3></div>
+                <div class="right"><p>Time Taken</p></div>
               </div>
               <div class="head-card">
-                <div class="left"><img src="images/oliveboard_solution/accuracy.svg" alt=""><h3 id="sol-mini-acc" style="font-size: 13px; font-weight: 700; margin: 0 0 0 4px;">0%</h3></div>
-                <div class="right"><p style="font-size: 11px; color: #64748b; margin: 2px 0 0 0;">Accuracy</p></div>
+                <div class="left"><img src="images/oliveboard_solution/accuracy.svg" alt=""><h3 id="sol-mini-acc">0%</h3></div>
+                <div class="right"><p>Accuracy</p></div>
               </div>
               <div class="head-card">
-                <div class="left"><img src="images/oliveboard_solution/totalscore.svg" alt=""><h3 id="sol-mini-score" style="font-size: 13px; font-weight: 700; margin: 0 0 0 4px;">-0.25</h3></div>
-                <div class="right"><p style="font-size: 11px; color: #64748b; margin: 2px 0 0 0;">Total Score</p></div>
+                <div class="left"><img src="images/oliveboard_solution/totalscore.svg" alt=""><h3 id="sol-mini-score">-0.25</h3></div>
+                <div class="right"><p>Total Score</p></div>
               </div>
             </div>
-            <div class="ans-map" style="display: flex; justify-content: space-around; border-top: 1px solid #f1f5f9; padding-top: 8px; font-size: 12px;">
-              <span><strong id="sol-mini-right" class="ans-mock answered" style="background: #64C184; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 4px;">0</strong>Right</span>
-              <span><strong id="sol-mini-wrong" class="ans-mock not-answered" style="background: #D97A7A; color: #fff; padding: 2px 8px; border-radius: 4px; margin-right: 4px;">1</strong>Wrong</span>
-              <span><strong id="sol-mini-unat" class="ans-mock" style="background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 4px; margin-right: 4px;">99</strong>Unattempted</span>
+            <div class="ans-map">
+              <span><strong id="sol-mini-right" class="ans-mock answered">0</strong>Right</span>
+              <span><strong id="sol-mini-wrong" class="ans-mock not-answered">1</strong>Wrong</span>
+              <span><strong id="sol-mini-unat" class="ans-mock">99</strong>Unattempted</span>
             </div>
           </div>
 
           <!-- Section Question Map with 4-Column Numbered Pills -->
-          <div class="question-map" id="sol-section-question-map" style="flex: 1; overflow-y: auto; padding: 12px 14px;">
+          <div class="question-map" id="sol-section-question-map">
             <!-- Dynamically rendered section boxes with .map-qno -->
           </div>
         </div>
       </div>
 
       <!-- Bottom Navigation Bar -->
-      <section id="sec-footer" style="height: 52px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
-        <button class="btn-prenext" id="btn-sol-prev" style="padding: 7px 18px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; cursor: pointer;">Previous</button>
-        <button class="btn-review" id="btn-sol-gotoreview" style="padding: 7px 24px; background: #3476BB; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(52, 118, 187, 0.3);">Review</button>
-        <button class="btn-prenext" id="btn-sol-next" style="padding: 7px 18px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; cursor: pointer;">Next</button>
+      <section id="sec-footer">
+        <button class="btn-prenext" id="btn-sol-prev">Previous</button>
+        <button class="btn-review" id="btn-sol-gotoreview">Review</button>
+        <button class="btn-prenext" id="btn-sol-next">Next</button>
       </section>
     </div>
 
@@ -1370,11 +1331,11 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/exam-patterns-2026.js?v=20261024_3"></script>
-  <script src="js/data.js?v=20261024_3"></script>
-  <script src="js/data-manager.js?v=20261024_3"></script>
-  <script src="js/test-engine.js?v=20261024_3"></script>
-  <script src="js/solution-engine.js?v=20261024_3"></script>
-  <script src="js/app.js?v=20261024_3"></script>
+  <script src="js/exam-patterns-2026.js?v=20261025_1"></script>
+  <script src="js/data.js?v=20261025_1"></script>
+  <script src="js/data-manager.js?v=20261025_1"></script>
+  <script src="js/test-engine.js?v=20261025_1"></script>
+  <script src="js/solution-engine.js?v=20261025_1"></script>
+  <script src="js/app.js?v=20261025_1"></script>
 </body>
 </html>

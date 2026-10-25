@@ -489,6 +489,19 @@ app.get('/api/tests', (req, res) => {
 
       attempts.forEach(att => {
         if (!attemptsMap[att.test_id]) {
+          const rankInfo = examPatterns2026.calculateTestRankAndPercentile({
+            testId: att.test_id,
+            score: att.score,
+            maxScore: att.max_score,
+            correctCount: att.correct_count,
+            wrongCount: att.wrong_count,
+            unansweredCount: att.unanswered_count,
+            totalQuestions: att.total_questions,
+            accuracy: att.accuracy
+          });
+          att.percentile = rankInfo.percentile;
+          att.estimated_air = rankInfo.estimatedAIR;
+          att.total_candidates = rankInfo.totalCandidates;
           attemptsMap[att.test_id] = att;
         }
       });
@@ -514,8 +527,32 @@ app.get('/api/tests', (req, res) => {
     const result = tests.map(t => {
       const userAttempt = attemptsMap[t.id] || null;
       const pausedAttempt = pausedMap[t.id] || null;
+      const cohortInfo = examPatterns2026.calculateTestRankAndPercentile({
+        testId: t.id,
+        testTitle: t.title,
+        testType: t.type,
+        maxScore: t.marks
+      });
+      if (userAttempt) {
+        const syncedRank = examPatterns2026.calculateTestRankAndPercentile({
+          testId: t.id,
+          testTitle: t.title,
+          testType: t.type,
+          score: userAttempt.score,
+          maxScore: userAttempt.max_score || t.marks,
+          correctCount: userAttempt.correct_count,
+          wrongCount: userAttempt.wrong_count,
+          unansweredCount: userAttempt.unanswered_count,
+          totalQuestions: userAttempt.total_questions || t.questions_count,
+          accuracy: userAttempt.accuracy
+        });
+        userAttempt.percentile = syncedRank.percentile;
+        userAttempt.estimated_air = syncedRank.estimatedAIR;
+        userAttempt.total_candidates = syncedRank.totalCandidates;
+      }
       return {
         ...t,
+        activeUsers: cohortInfo.totalCandidates,
         sections_summary: JSON.parse(t.sections_summary_json || '[]'),
         userAttempt: userAttempt,
         isAttempted: !!userAttempt,
@@ -725,6 +762,43 @@ app.post('/api/tests/upload-json', (req, res) => {
   }
 });
 
+// Retroactively synchronize all existing test_attempts rows in SQLite with the psychometric rank & percentile engine
+function recalculateExistingAttemptsInDB() {
+  try {
+    const allAttempts = db.prepare(`
+      SELECT a.*, t.type as test_type, t.title as catalog_title, t.marks as catalog_marks
+      FROM test_attempts a
+      LEFT JOIN tests t ON a.test_id = t.id
+    `).all();
+    const updateStmt = db.prepare(`
+      UPDATE test_attempts
+      SET percentile = ?, estimated_air = ?
+      WHERE id = ?
+    `);
+    allAttempts.forEach(att => {
+      const rankData = examPatterns2026.calculateTestRankAndPercentile({
+        testId: att.test_id,
+        testTitle: att.test_title || att.catalog_title,
+        testType: att.test_type,
+        score: att.score,
+        maxScore: att.max_score || att.catalog_marks || 100,
+        correctCount: att.correct_count,
+        wrongCount: att.wrong_count,
+        unansweredCount: att.unanswered_count,
+        totalQuestions: att.total_questions,
+        accuracy: att.accuracy
+      });
+      updateStmt.run(rankData.percentile, rankData.estimatedAIR, att.id);
+    });
+    if (allAttempts.length > 0) {
+      console.log(`[Rank & Percentile Engine] Synchronized ${allAttempts.length} existing attempt(s) in SQLite.`);
+    }
+  } catch (err) {
+    console.warn('Failed to synchronize existing attempts on startup:', err.message);
+  }
+}
+recalculateExistingAttemptsInDB();
+
 // 4.4 ATTEMPTS API - SAVE ATTEMPT (NEVER DELETES DATA)
 app.post('/api/attempts', (req, res) => {
   try {
@@ -739,8 +813,6 @@ app.post('/api/attempts', (req, res) => {
       wrongCount,
       unansweredCount,
       accuracy,
-      percentile,
-      estimatedAir,
       timeSpentSeconds,
       sectionBreakdown,
       responses,
@@ -751,6 +823,20 @@ app.post('/api/attempts', (req, res) => {
     if (!userId || !testId) {
       return res.status(400).json({ success: false, error: 'userId and testId are required' });
     }
+
+    const testRow = db.prepare('SELECT type, title, marks FROM tests WHERE id = ?').get(testId);
+    const rankData = examPatterns2026.calculateTestRankAndPercentile({
+      testId,
+      testTitle: testTitle || (testRow && testRow.title) || 'Mock Test',
+      testType: testRow && testRow.type,
+      score: score ?? 0,
+      maxScore: maxScore || (testRow && testRow.marks) || 100,
+      correctCount: correctCount ?? 0,
+      wrongCount: wrongCount ?? 0,
+      unansweredCount: unansweredCount ?? 0,
+      totalQuestions: totalQuestions || 100,
+      accuracy: accuracy ?? 0
+    });
 
     const attemptId = `att-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
@@ -768,16 +854,16 @@ app.post('/api/attempts', (req, res) => {
       attemptId,
       userId,
       testId,
-      testTitle || 'Mock Test',
+      testTitle || (testRow && testRow.title) || 'Mock Test',
       totalQuestions || 0,
-      score || 0,
-      maxScore || 100,
+      score ?? 0,
+      maxScore || (testRow && testRow.marks) || 100,
       correctCount || 0,
       wrongCount || 0,
       unansweredCount || 0,
       accuracy || 0,
-      percentile || 0,
-      estimatedAir || 1000,
+      rankData.percentile,
+      rankData.estimatedAIR,
       timeSpentSeconds || 0,
       JSON.stringify(sectionBreakdown || []),
       JSON.stringify(responses || {}),
@@ -788,11 +874,14 @@ app.post('/api/attempts', (req, res) => {
     // Clear any paused state for this user and test upon final submission
     db.prepare('DELETE FROM paused_attempts WHERE user_id = ? AND test_id = ?').run(userId, testId);
 
-    console.log(`Test attempt saved permanently: ID ${attemptId} for User ${userId} on Test ${testId}`);
+    console.log(`Test attempt saved permanently: ID ${attemptId} for User ${userId} on Test ${testId} (Percentile: ${rankData.percentile}%ile, AIR: #${rankData.estimatedAIR}/${rankData.totalCandidates})`);
 
     res.json({
       success: true,
       attemptId,
+      percentile: rankData.percentile,
+      estimatedAir: rankData.estimatedAIR,
+      totalCandidates: rankData.totalCandidates,
       message: 'Mock test result saved permanently in SQLite database.'
     });
   } catch (err) {
@@ -810,21 +899,43 @@ app.get('/api/attempts', (req, res) => {
       return res.status(400).json({ success: false, error: 'userId is required for isolated attempts' });
     }
 
-    let query = 'SELECT * FROM test_attempts WHERE user_id = ?';
+    let query = `
+      SELECT a.*, t.type as test_type
+      FROM test_attempts a
+      LEFT JOIN tests t ON a.test_id = t.id
+      WHERE a.user_id = ?
+    `;
     const params = [userId];
 
     if (testId) {
-      query += ' AND test_id = ?';
+      query += ' AND a.test_id = ?';
       params.push(testId);
     }
-    query += ' ORDER BY completed_at DESC';
+    query += ' ORDER BY a.completed_at DESC';
 
     const rows = db.prepare(query).all(...params);
-    const attempts = rows.map(r => ({
-      ...r,
-      section_breakdown: JSON.parse(r.section_breakdown_json || '[]'),
-      responses: JSON.parse(r.responses_json || '{}')
-    }));
+    const attempts = rows.map(r => {
+      const rankInfo = examPatterns2026.calculateTestRankAndPercentile({
+        testId: r.test_id,
+        testTitle: r.test_title,
+        testType: r.test_type,
+        score: r.score,
+        maxScore: r.max_score,
+        correctCount: r.correct_count,
+        wrongCount: r.wrong_count,
+        unansweredCount: r.unanswered_count,
+        totalQuestions: r.total_questions,
+        accuracy: r.accuracy
+      });
+      return {
+        ...r,
+        percentile: rankInfo.percentile,
+        estimated_air: rankInfo.estimatedAIR,
+        total_candidates: rankInfo.totalCandidates,
+        section_breakdown: JSON.parse(r.section_breakdown_json || '[]'),
+        responses: JSON.parse(r.responses_json || '{}')
+      };
+    });
 
     res.json({ success: true, attempts });
   } catch (err) {
@@ -835,12 +946,32 @@ app.get('/api/attempts', (req, res) => {
 // 4.6 GET SINGLE ATTEMPT SCORECARD
 app.get('/api/attempts/:id', (req, res) => {
   try {
-    const row = db.prepare('SELECT * FROM test_attempts WHERE id = ?').get(req.params.id);
+    const row = db.prepare(`
+      SELECT a.*, t.type as test_type
+      FROM test_attempts a
+      LEFT JOIN tests t ON a.test_id = t.id
+      WHERE a.id = ?
+    `).get(req.params.id);
     if (!row) {
       return res.status(404).json({ success: false, error: 'Attempt not found' });
     }
+    const rankInfo = examPatterns2026.calculateTestRankAndPercentile({
+      testId: row.test_id,
+      testTitle: row.test_title,
+      testType: row.test_type,
+      score: row.score,
+      maxScore: row.max_score,
+      correctCount: row.correct_count,
+      wrongCount: row.wrong_count,
+      unansweredCount: row.unanswered_count,
+      totalQuestions: row.total_questions,
+      accuracy: row.accuracy
+    });
     const attempt = {
       ...row,
+      percentile: rankInfo.percentile,
+      estimated_air: rankInfo.estimatedAIR,
+      total_candidates: rankInfo.totalCandidates,
       section_breakdown: JSON.parse(row.section_breakdown_json || '[]'),
       responses: JSON.parse(row.responses_json || '{}')
     };
@@ -858,14 +989,20 @@ app.get('/api/analytics', (req, res) => {
       return res.status(400).json({ success: false, error: 'userId required' });
     }
 
-    const attempts = db.prepare('SELECT * FROM test_attempts WHERE user_id = ? ORDER BY completed_at DESC').all(userId);
+    const rawAttempts = db.prepare(`
+      SELECT a.*, t.type as test_type
+      FROM test_attempts a
+      LEFT JOIN tests t ON a.test_id = t.id
+      WHERE a.user_id = ?
+      ORDER BY a.completed_at DESC
+    `).all(userId);
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
 
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    if (attempts.length === 0) {
+    if (rawAttempts.length === 0) {
       return res.json({
         success: true,
         user: {
@@ -887,15 +1024,79 @@ app.get('/api/analytics', (req, res) => {
       });
     }
 
-    const totalTests = attempts.length;
-    const avgScore = (attempts.reduce((sum, a) => sum + a.score, 0) / totalTests).toFixed(2);
-    const avgAccuracy = (attempts.reduce((sum, a) => sum + a.accuracy, 0) / totalTests).toFixed(1);
-    const avgPercentile = (attempts.reduce((sum, a) => sum + a.percentile, 0) / totalTests).toFixed(1);
-    const bestAIR = Math.min(...attempts.map(a => a.estimated_air));
+    // Enrich attempts with recalculated psychometric rank & percentile
+    const attempts = rawAttempts.map(a => {
+      const rankInfo = examPatterns2026.calculateTestRankAndPercentile({
+        testId: a.test_id,
+        testTitle: a.test_title,
+        testType: a.test_type,
+        score: a.score,
+        maxScore: a.max_score,
+        correctCount: a.correct_count,
+        wrongCount: a.wrong_count,
+        unansweredCount: a.unanswered_count,
+        totalQuestions: a.total_questions,
+        accuracy: a.accuracy
+      });
+      return {
+        ...a,
+        percentile: rankInfo.percentile,
+        estimated_air: rankInfo.estimatedAIR,
+        total_candidates: rankInfo.totalCandidates
+      };
+    });
 
-    // Section breakdown aggregated across user's tests
-    const secTotals = {};
+    // Use the latest attempt per unique test_id for standing metrics so re-attempts replace older trial runs
+    const latestPerTestMap = new Map();
     attempts.forEach(a => {
+      if (!latestPerTestMap.has(a.test_id)) {
+        latestPerTestMap.set(a.test_id, a);
+      }
+    });
+    const representativeAttempts = Array.from(latestPerTestMap.values());
+
+    const totalTests = attempts.length;
+    const repCount = representativeAttempts.length;
+    const avgScore = (representativeAttempts.reduce((sum, a) => sum + (Number(a.score) || 0), 0) / repCount).toFixed(2);
+    const avgMaxScore = Math.round(representativeAttempts.reduce((sum, a) => sum + (Number(a.max_score) || 100), 0) / repCount);
+    const avgScorePct = (
+      representativeAttempts.reduce((sum, a) => {
+        const maxS = Number(a.max_score) || 100;
+        return sum + ((Number(a.score) || 0) / Math.max(1, maxS)) * 100;
+      }, 0) / repCount
+    ).toFixed(1);
+    const allSameMaxScore = representativeAttempts.every(a => Number(a.max_score) === Number(representativeAttempts[0].max_score));
+    const formattedAvgScore = allSameMaxScore
+      ? `${avgScore} / ${representativeAttempts[0].max_score}`
+      : `${avgScore} / ${avgMaxScore} (${avgScorePct}%)`;
+
+    const avgAccuracy = (representativeAttempts.reduce((sum, a) => sum + a.accuracy, 0) / repCount).toFixed(1);
+    const avgPercentile = (representativeAttempts.reduce((sum, a) => sum + a.percentile, 0) / repCount).toFixed(1);
+    const bestAIR = Math.min(...representativeAttempts.map(a => a.estimated_air));
+
+    // Calculate consecutive active day streak from attempt timestamps
+    const uniqueDayNumbers = Array.from(new Set(
+      attempts
+        .map(a => {
+          const ts = a.submitted_at ? new Date(a.submitted_at) : null;
+          if (!ts || isNaN(ts.getTime())) return null;
+          return Math.floor(Date.UTC(ts.getUTCFullYear(), ts.getUTCMonth(), ts.getUTCDate()) / 86400000);
+        })
+        .filter(d => d !== null)
+    )).sort((a, b) => b - a);
+
+    let streakDays = uniqueDayNumbers.length > 0 ? 1 : 0;
+    for (let i = 1; i < uniqueDayNumbers.length; i++) {
+      if (uniqueDayNumbers[i - 1] - uniqueDayNumbers[i] === 1) {
+        streakDays++;
+      } else {
+        break;
+      }
+    }
+
+    // Section breakdown aggregated across user's representative attempts
+    const secTotals = {};
+    representativeAttempts.forEach(a => {
       const breakdown = JSON.parse(a.section_breakdown_json || '[]');
       breakdown.forEach(s => {
         if (!secTotals[s.sectionName]) {
@@ -930,11 +1131,11 @@ app.get('/api/analytics', (req, res) => {
       },
       stats: {
         testsAttempted: totalTests,
-        avgScore: `${avgScore} / ${attempts[0].max_score}`,
+        avgScore: formattedAvgScore,
         avgAccuracy: `${avgAccuracy}%`,
         overallPercentile: `${avgPercentile}%ile`,
-        predictedAIR: `#${bestAIR}`,
-        streakDays: 1,
+        predictedAIR: `#${bestAIR.toLocaleString()}`,
+        streakDays: Math.max(1, streakDays),
         sectionBreakdowns: sectionBreakdowns
       }
     });
