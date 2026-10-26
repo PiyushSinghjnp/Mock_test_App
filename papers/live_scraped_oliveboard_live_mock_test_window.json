@@ -1,0 +1,1527 @@
+{
+  "id": "live-ob-oliveboard_live_mock_test_window",
+  "testTitle": "Oliveboard | Live Mock Test Window",
+  "totalQuestions": 40,
+  "questions": [
+    {
+      "qid": 1001,
+      "questionNumber": 1,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>Match the statement/s from column 1 with column 2 and find which of the following pairs of statements given in the options make/s contextually and grammatically correct sense.</p><p></p><table style=\"border-collapse:collapse;\"><tbody><tr><td align=\"left\" style=\"border:1px solid black;padding:5px;\">Column I</td><td align=\"left\" style=\"border:1px solid black;padding:5px;\">Column II</td></tr><tr><td align=\"left\" style=\"border:1px solid black;padding:5px;\">A. Wearing several layers, for instance, enables you to take off</td><td align=\"left\" style=\"border:1px solid black;padding:5px;\">D. This year the price rise was a tad bit on the higher side</td></tr><tr><td align=\"left\" style=\"border:1px solid black;padding:5px;\">B. The elevated inflation levels robbed people</td><td align=\"left\" style=\"border:1px solid black;padding:5px;\">E. You to customise your attire for the task at hand</td></tr><tr><td align=\"left\" style=\"border:1px solid black;padding:5px;\">C. While it is not unusual for egg prices to increase in the winter</td><td align=\"left\" style=\"border:1px solid black;padding:5px;\">F. Of their purchasing power and worsened India's trade deficit</td></tr></tbody></table><p></p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Both A-D and C-F<br>",
+          "text": "Both A-D and C-F"
+        },
+        {
+          "letter": "B",
+          "html": "Both C-D and A-E<br>",
+          "text": "Both C-D and A-E"
+        },
+        {
+          "letter": "C",
+          "html": "Both B-F and C-D<br>",
+          "text": "Both B-F and C-D"
+        },
+        {
+          "letter": "D",
+          "html": "Only C-D<br>",
+          "text": "Only C-D"
+        },
+        {
+          "letter": "E",
+          "html": "Only B-F<br>",
+          "text": "Only B-F"
+        }
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Both B-F and C-D</b></p><p><b>Explanation:</b><br>• <b>B-F:</b> \"The elevated inflation levels robbed people <i>of their purchasing power and worsened India's trade deficit</i>\" is grammatically and contextually sound ('robbed someone of something').<br>• <b>C-D:</b> \"While it is not unusual for egg prices to increase in the winter, <i>this year the price rise was a tad bit on the higher side</i>\" forms a coherent contrast.<br>• <b>A-E</b> is grammatically incorrect because 'enables you to take off you to customise' repeats the object pronoun.</p>"
+    },
+    {
+      "qid": 1002,
+      "questionNumber": 2,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>Match the statement/s from column 1 with column 2 and find which of the following pairs of statements given in the options make/s sense contextually and grammatically.</p><p></p><table style=\"border-collapse:collapse;\"><tbody><tr><td align=\"left\" style=\"border:1px solid black;padding:5px;\">Column 1</td><td align=\"left\" style=\"border:1px solid black;padding:5px;\">Column 2</td></tr><tr><td align=\"left\" style=\"border:1px solid black;padding:5px;\">A. The train departed earlier than expected and so</td><td align=\"left\" style=\"border:1px solid black;padding:5px;\">D. Peak of summer and the sunlight is blinding at these times.</td></tr><tr><td align=\"left\" style=\"border:1px solid black;padding:5px;\">B. The snake is bred in captivity and that is why</td><td align=\"left\" style=\"border:1px solid black;padding:5px;\">E. It is used to its own company and dislikes other snakes.</td></tr><tr><td align=\"left\" style=\"border:1px solid black;padding:5px;\">C. The sun is shining a bit extra bright today as it is the</td><td align=\"left\" style=\"border:1px solid black;padding:5px;\">F. Passengers were running across the platform to catch the train.</td></tr></tbody></table><p></p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Both A-D &amp; B-F<br>",
+          "text": "Both A-D & B-F"
+        },
+        {
+          "letter": "B",
+          "html": "Only B-F<br>",
+          "text": "Only B-F"
+        },
+        {
+          "letter": "C",
+          "html": "All A-F, B-E &amp; C-D<br>",
+          "text": "All A-F, B-E & C-D"
+        },
+        {
+          "letter": "D",
+          "html": "Only C-E<br>",
+          "text": "Only C-E"
+        },
+        {
+          "letter": "E",
+          "html": "Both B-F &amp; C-E<br>",
+          "text": "Both B-F & C-E"
+        }
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) All A-F, B-E & C-D</b></p><p><b>Explanation:</b><br>• <b>A-F:</b> \"The train departed earlier than expected and so <i>passengers were running across the platform to catch the train.</i>\"<br>• <b>B-E:</b> \"The snake is bred in captivity and that is why <i>it is used to its own company and dislikes other snakes.</i>\"<br>• <b>C-D:</b> \"The sun is shining a bit extra bright today as it is the <i>peak of summer and the sunlight is blinding at these times.</i>\"<br>All three pairs form contextually and grammatically meaningful sentences.</p>"
+    },
+    {
+      "qid": 1003,
+      "questionNumber": 3,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>Given below is a set of six sentences, which when properly sequenced, form a coherent paragraph. Arrange the sentences in the correct sequence, and answer the questions that follow.</p><p>A. This patch was formed by the North Pacific Subtropical Gyre, a system of circulating ocean currents that pulls debris into its centre.</p><p>B. The concentration of plastic poses a significant threat to marine life, as animals can mistake it for food or become entangled in larger pieces.</p><p>C. The Great Pacific Garbage Patch is a vast accumulation of marine debris located in the central North Pacific Ocean, often described as a floating island of trash.</p><p>D. Addressing this environmental issue is incredibly challenging due to the patch's massive size and its remote location in international waters.</p><p>E. It is not a solid mass but is primarily composed of microplastics, which are tiny plastic particles resulting from the breakdown of larger plastic items.</p><p>F. The gyre's slow, circular motion traps the debris, preventing it from escaping and allowing it to concentrate over a very large area.</p>",
+      "questionHTML": "<p>Which of the following will be the FIRST sentence after rearrangement?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "A<br>",
+          "text": "A"
+        },
+        {
+          "letter": "B",
+          "html": "C<br>",
+          "text": "C"
+        },
+        {
+          "letter": "C",
+          "html": "F<br>",
+          "text": "F"
+        },
+        {
+          "letter": "D",
+          "html": "E<br>",
+          "text": "E"
+        },
+        {
+          "letter": "E",
+          "html": "D<br>",
+          "text": "D"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) C</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>• <b>C</b> is the opening sentence as it introduces the central subject: <i>\"The Great Pacific Garbage Patch is a vast accumulation of marine debris...\"</i><br>• <b>E</b> follows C by clarifying the \"floating island of trash\" metaphor: <i>\"It is not a solid mass but is primarily composed of microplastics...\"</i><br>• <b>A</b> explains how \"This patch was formed by the North Pacific Subtropical Gyre...\"<br>• <b>F</b> elaborates on \"The gyre's slow, circular motion traps the debris... allowing it to concentrate...\"<br>• <b>B</b> links \"The concentration of plastic poses a significant threat to marine life...\"<br>• <b>D</b> concludes with the challenge of addressing this environmental issue.</p>"
+    },
+    {
+      "qid": 1004,
+      "questionNumber": 4,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>Given below is a set of six sentences, which when properly sequenced, form a coherent paragraph. Arrange the sentences in the correct sequence, and answer the questions that follow.</p><p>A. This patch was formed by the North Pacific Subtropical Gyre, a system of circulating ocean currents that pulls debris into its centre.</p><p>B. The concentration of plastic poses a significant threat to marine life, as animals can mistake it for food or become entangled in larger pieces.</p><p>C. The Great Pacific Garbage Patch is a vast accumulation of marine debris located in the central North Pacific Ocean, often described as a floating island of trash.</p><p>D. Addressing this environmental issue is incredibly challenging due to the patch's massive size and its remote location in international waters.</p><p>E. It is not a solid mass but is primarily composed of microplastics, which are tiny plastic particles resulting from the breakdown of larger plastic items.</p><p>F. The gyre's slow, circular motion traps the debris, preventing it from escaping and allowing it to concentrate over a very large area.</p>",
+      "questionHTML": "<p>Which of the following will be the THIRD sentence after rearrangement?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "E<br>",
+          "text": "E"
+        },
+        {
+          "letter": "B",
+          "html": "B<br>",
+          "text": "B"
+        },
+        {
+          "letter": "C",
+          "html": "F<br>",
+          "text": "F"
+        },
+        {
+          "letter": "D",
+          "html": "A<br>",
+          "text": "A"
+        },
+        {
+          "letter": "E",
+          "html": "C<br>",
+          "text": "C"
+        }
+      ],
+      "correctAnswer": "D",
+      "correctIndex": 3,
+      "explanationHTML": "<p><b>Correct Answer: d) A</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>Sentence <b>A</b> (<i>\"This patch was formed by the North Pacific Subtropical Gyre...\"</i>) is the <b>THIRD</b> sentence after C and E.</p>"
+    },
+    {
+      "qid": 1005,
+      "questionNumber": 5,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>Given below is a set of six sentences, which when properly sequenced, form a coherent paragraph. Arrange the sentences in the correct sequence, and answer the questions that follow.</p><p>A. This patch was formed by the North Pacific Subtropical Gyre, a system of circulating ocean currents that pulls debris into its centre.</p><p>B. The concentration of plastic poses a significant threat to marine life, as animals can mistake it for food or become entangled in larger pieces.</p><p>C. The Great Pacific Garbage Patch is a vast accumulation of marine debris located in the central North Pacific Ocean, often described as a floating island of trash.</p><p>D. Addressing this environmental issue is incredibly challenging due to the patch's massive size and its remote location in international waters.</p><p>E. It is not a solid mass but is primarily composed of microplastics, which are tiny plastic particles resulting from the breakdown of larger plastic items.</p><p>F. The gyre's slow, circular motion traps the debris, preventing it from escaping and allowing it to concentrate over a very large area.</p>",
+      "questionHTML": "<p>Which of the following will be the SIXTH sentence after rearrangement?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "D<br>",
+          "text": "D"
+        },
+        {
+          "letter": "B",
+          "html": "B<br>",
+          "text": "B"
+        },
+        {
+          "letter": "C",
+          "html": "E<br>",
+          "text": "E"
+        },
+        {
+          "letter": "D",
+          "html": "F<br>",
+          "text": "F"
+        },
+        {
+          "letter": "E",
+          "html": "A<br>",
+          "text": "A"
+        }
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) D</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>Sentence <b>D</b> (<i>\"Addressing this environmental issue is incredibly challenging...\"</i>) is the <b>SIXTH (last)</b> sentence concluding the paragraph.</p>"
+    },
+    {
+      "qid": 1006,
+      "questionNumber": 6,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>Given below is a set of six sentences, which when properly sequenced, form a coherent paragraph. Arrange the sentences in the correct sequence, and answer the questions that follow.</p><p>A. This patch was formed by the North Pacific Subtropical Gyre, a system of circulating ocean currents that pulls debris into its centre.</p><p>B. The concentration of plastic poses a significant threat to marine life, as animals can mistake it for food or become entangled in larger pieces.</p><p>C. The Great Pacific Garbage Patch is a vast accumulation of marine debris located in the central North Pacific Ocean, often described as a floating island of trash.</p><p>D. Addressing this environmental issue is incredibly challenging due to the patch's massive size and its remote location in international waters.</p><p>E. It is not a solid mass but is primarily composed of microplastics, which are tiny plastic particles resulting from the breakdown of larger plastic items.</p><p>F. The gyre's slow, circular motion traps the debris, preventing it from escaping and allowing it to concentrate over a very large area.</p>",
+      "questionHTML": "<p>Which of the following will be the FOURTH sentence after rearrangement?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "B<br>",
+          "text": "B"
+        },
+        {
+          "letter": "B",
+          "html": "A<br>",
+          "text": "A"
+        },
+        {
+          "letter": "C",
+          "html": "F<br>",
+          "text": "F"
+        },
+        {
+          "letter": "D",
+          "html": "C<br>",
+          "text": "C"
+        },
+        {
+          "letter": "E",
+          "html": "D<br>",
+          "text": "D"
+        }
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) F</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>Sentence <b>F</b> (<i>\"The gyre's slow, circular motion traps the debris...\"</i>) directly follows A (which introduces the Gyre) and is the <b>FOURTH</b> sentence.</p>"
+    },
+    {
+      "qid": 1007,
+      "questionNumber": 7,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>Given below is a set of six sentences, which when properly sequenced, form a coherent paragraph. Arrange the sentences in the correct sequence, and answer the questions that follow.</p><p>A. This patch was formed by the North Pacific Subtropical Gyre, a system of circulating ocean currents that pulls debris into its centre.</p><p>B. The concentration of plastic poses a significant threat to marine life, as animals can mistake it for food or become entangled in larger pieces.</p><p>C. The Great Pacific Garbage Patch is a vast accumulation of marine debris located in the central North Pacific Ocean, often described as a floating island of trash.</p><p>D. Addressing this environmental issue is incredibly challenging due to the patch's massive size and its remote location in international waters.</p><p>E. It is not a solid mass but is primarily composed of microplastics, which are tiny plastic particles resulting from the breakdown of larger plastic items.</p><p>F. The gyre's slow, circular motion traps the debris, preventing it from escaping and allowing it to concentrate over a very large area.</p>",
+      "questionHTML": "<p>Which of the following will be the SECOND sentence after rearrangement?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "D<br>",
+          "text": "D"
+        },
+        {
+          "letter": "B",
+          "html": "A<br>",
+          "text": "A"
+        },
+        {
+          "letter": "C",
+          "html": "B<br>",
+          "text": "B"
+        },
+        {
+          "letter": "D",
+          "html": "C<br>",
+          "text": "C"
+        },
+        {
+          "letter": "E",
+          "html": "E<br>",
+          "text": "E"
+        }
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) E</b></p><p><b>Explanation (Parajumble Sequence: C - E - A - F - B - D):</b><br>Sentence <b>E</b> (<i>\"It is not a solid mass but is primarily composed of microplastics...\"</i>) immediately clarifies the \"floating island\" mentioned in C, making it the <b>SECOND</b> sentence.</p>"
+    },
+    {
+      "qid": 1008,
+      "questionNumber": 8,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, a sentence is given with four words marked as (A), (B), (C), and (D). These words may or may not be placed at the right places. Four options with different arrangements of these words are given. Mark the option with the correct rearrangement as the answer. If no change is required, mark 'No rearrangement required' as your answer.</p><p>The study of 135 <b>likely(A)</b> girls found the female teenagers who were most <b>appearance(B)</b> to report depressive symptoms when comparing their <b>adolescent(C)</b> to others were those who <b>reported(D)</b> higher levels of \"self-critical perfectionism\".</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "BACD<br>",
+          "text": "BACD"
+        },
+        {
+          "letter": "B",
+          "html": "DACB<br>",
+          "text": "DACB"
+        },
+        {
+          "letter": "C",
+          "html": "DBCA<br>",
+          "text": "DBCA"
+        },
+        {
+          "letter": "D",
+          "html": "CABD<br>",
+          "text": "CABD"
+        },
+        {
+          "letter": "E",
+          "html": "No rearrangement required<br>",
+          "text": "No rearrangement required"
+        }
+      ],
+      "correctAnswer": "D",
+      "correctIndex": 3,
+      "explanationHTML": "<p><b>Correct Answer: d) CABD</b></p><p><b>Explanation:</b><br>• Position 1 requires an adjective modifying \"girls\" → <b>adolescent (C)</b>.<br>• Position 2 requires an adjective after \"most\" → <b>likely (A)</b> (\"most likely to report\").<br>• Position 3 requires a noun after \"comparing their\" → <b>appearance (B)</b>.<br>• Position 4 remains <b>reported (D)</b>.<br>Correct rearrangement: <b>CABD</b>.</p>"
+    },
+    {
+      "qid": 1009,
+      "questionNumber": 9,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, a sentence is given with four words marked as (A), (B), (C), and (D). These words may or may not be placed at the right places. Four options with different arrangements of these words are given. Mark the option with the correct rearrangement as the answer. If no change is required, mark 'No rearrangement required' as your answer.</p><p>The potato is believed to have been <b>ideally(A)</b> in the Andes mountains about 10,000 years ago, a robust crop <b>longest(B)</b> suited to the harsh, frozen conditions of the world's <b>domesticated(C)</b> mountain range, the potato was a nutritious <b>foodstuff(D)</b> that had the added advantage of being much less susceptible to spoilage.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "BCDA<br>",
+          "text": "BCDA"
+        },
+        {
+          "letter": "B",
+          "html": "CDAB<br>",
+          "text": "CDAB"
+        },
+        {
+          "letter": "C",
+          "html": "CABD<br>",
+          "text": "CABD"
+        },
+        {
+          "letter": "D",
+          "html": "BCAD<br>",
+          "text": "BCAD"
+        },
+        {
+          "letter": "E",
+          "html": "No rearrangement required<br>",
+          "text": "No rearrangement required"
+        }
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) CABD</b></p><p><b>Explanation:</b><br>• \"believed to have been <b>domesticated (C)</b> in the Andes mountains\"<br>• \"a robust crop <b>ideally (A)</b> suited to the harsh, frozen conditions\"<br>• \"of the world's <b>longest (B)</b> mountain range\"<br>• \"a nutritious <b>foodstuff (D)</b>\"<br>Hence, <b>CABD</b> is the correct sequence.</p>"
+    },
+    {
+      "qid": 1010,
+      "questionNumber": 10,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, a sentence is given with four words marked as (A), (B), (C), and (D). These words may or may not be placed at the right places. Four options with different arrangements of these words are given. Mark the option with the correct rearrangement as the answer. If no change is required, mark 'No rearrangement required' as your answer.</p><p>Better <b>took(A)</b> as a 'Dancing Queen' than a high performing PM, Theresa May <b>in(B)</b> office <b>known(C)</b> 2016, as David Cameron jumped ship after the Brexit <b>referendum(D)</b>.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "DCBA<br>",
+          "text": "DCBA"
+        },
+        {
+          "letter": "B",
+          "html": "CABD<br>",
+          "text": "CABD"
+        },
+        {
+          "letter": "C",
+          "html": "CADB<br>",
+          "text": "CADB"
+        },
+        {
+          "letter": "D",
+          "html": "ACBD<br>",
+          "text": "ACBD"
+        },
+        {
+          "letter": "E",
+          "html": "No rearrangement required<br>",
+          "text": "No rearrangement required"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) CABD</b></p><p><b>Explanation:</b><br>• \"Better <b>known (C)</b> as a 'Dancing Queen'...\"<br>• \"...Theresa May <b>took (A)</b> office <b>in (B)</b> 2016, as David Cameron jumped ship after the Brexit <b>referendum (D)</b>.\"<br>Hence, <b>CABD</b> is the correct arrangement.</p>"
+    },
+    {
+      "qid": 1011,
+      "questionNumber": 11,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, a sentence is given with a part of it highlighted in bold. Below the sentence, four options are given which can replace the highlighted part to make the sentence grammatically and contextually correct. Choose the most appropriate option. If the sentence is correct as it is, choose 'No correction required' as your answer.</p><p>To protect the local ecosystem, the park's new regulations strictly prohibit <b>visitors to feed the wildlife</b>.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "visitors from feeding the animals<br>",
+          "text": "visitors from feeding the animals"
+        },
+        {
+          "letter": "B",
+          "html": "visitor's feeding the wildlife<br>",
+          "text": "visitor's feeding the wildlife"
+        },
+        {
+          "letter": "C",
+          "html": "visitor's to feed the wildlife<br>",
+          "text": "visitor's to feed the wildlife"
+        },
+        {
+          "letter": "D",
+          "html": "that visitors would fed any animal<br>",
+          "text": "that visitors would fed any animal"
+        },
+        {
+          "letter": "E",
+          "html": "No correction required<br>",
+          "text": "No correction required"
+        }
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) visitors from feeding the animals</b></p><p><b>Explanation:</b><br>The verb <b>\"prohibit\"</b> takes the preposition <b>\"from\"</b> followed by a gerund (<i>prohibit someone from doing something</i>), not an infinitive (<i>to feed</i>). Therefore, \"visitors from feeding the animals\" is grammatically correct.</p>"
+    },
+    {
+      "qid": 1012,
+      "questionNumber": 12,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, a sentence is given with a part of it highlighted in bold. Below the sentence, four options are given which can replace the highlighted part to make the sentence grammatically and contextually correct. Choose the most appropriate option. If the sentence is correct as it is, choose 'No correction required' as your answer.</p><p>If a person <b>was to exercise more caution</b>, many common household accidents could easily be avoided.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "were to exercise more caution<br>",
+          "text": "were to exercise more caution"
+        },
+        {
+          "letter": "B",
+          "html": "was exercise more precautions<br>",
+          "text": "was exercise more precautions"
+        },
+        {
+          "letter": "C",
+          "html": "should had to be more cautious<br>",
+          "text": "should had to be more cautious"
+        },
+        {
+          "letter": "D",
+          "html": "have exercise much caution<br>",
+          "text": "have exercise much caution"
+        },
+        {
+          "letter": "E",
+          "html": "No correction required<br>",
+          "text": "No correction required"
+        }
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) were to exercise more caution</b></p><p><b>Explanation:</b><br>In hypothetical conditional clauses (\"If a person...\"), the subjunctive mood requires <b>\"were\"</b> instead of \"was\" (<i>\"If a person were to exercise more caution...\"</i>).</p>"
+    },
+    {
+      "qid": 1013,
+      "questionNumber": 13,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, a sentence is given with a part of it highlighted in bold. Below the sentence, four options are given which can replace the highlighted part to make the sentence grammatically and contextually correct. Choose the most appropriate option. If the sentence is correct as it is, choose 'No correction required' as your answer.</p><p><b>Despite of the heavy rain</b>, the dedicated marathon runners continued the race toward the finish line.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "In despite of the heavy rain<br>",
+          "text": "In despite of the heavy rain"
+        },
+        {
+          "letter": "B",
+          "html": "Despite the heavy rain<br>",
+          "text": "Despite the heavy rain"
+        },
+        {
+          "letter": "C",
+          "html": "In spite the storm<br>",
+          "text": "In spite the storm"
+        },
+        {
+          "letter": "D",
+          "html": "Although the cloudy weather<br>",
+          "text": "Although the cloudy weather"
+        },
+        {
+          "letter": "E",
+          "html": "No correction required<br>",
+          "text": "No correction required"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Despite the heavy rain</b></p><p><b>Explanation:</b><br><b>\"Despite\"</b> is never followed by the preposition \"of\" (unlike \"In spite of\"). Hence, <b>\"Despite the heavy rain\"</b> is the correct replacement.</p>"
+    },
+    {
+      "qid": 1014,
+      "questionNumber": 14,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, a sentence is given with a part of it highlighted in bold. Below the sentence, four options are given which can replace the highlighted part to make the sentence grammatically and contextually correct. Choose the most appropriate option. If the sentence is correct as it is, choose 'No correction required' as your answer.</p><p><b>Having arrived late for the concert</b>, the gates were already locked and barred by the security team.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Because of arriving late for the show<br>",
+          "text": "Because of arriving late for the show"
+        },
+        {
+          "letter": "B",
+          "html": "To have arrived late at the games<br>",
+          "text": "To have arrived late at the games"
+        },
+        {
+          "letter": "C",
+          "html": "By arriving late for the concert<br>",
+          "text": "By arriving late for the concert"
+        },
+        {
+          "letter": "D",
+          "html": "When we arrived late for the show<br>",
+          "text": "When we arrived late for the show"
+        },
+        {
+          "letter": "E",
+          "html": "No correction required<br>",
+          "text": "No correction required"
+        }
+      ],
+      "correctAnswer": "D",
+      "correctIndex": 3,
+      "explanationHTML": "<p><b>Correct Answer: d) When we arrived late for the show</b></p><p><b>Explanation:</b><br>The original sentence suffers from a <b>dangling modifier</b>: \"Having arrived late for the concert\" modifies the subject of the main clause (\"the gates\"), which is illogical because gates cannot arrive late. Replacing the participial phrase with the finite clause <b>\"When we arrived late for the show\"</b> resolves the dangling modifier.</p>"
+    },
+    {
+      "qid": 1015,
+      "questionNumber": 15,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, a sentence is given with a part of it highlighted in bold. Below the sentence, four options are given which can replace the highlighted part to make the sentence grammatically and contextually correct. Choose the most appropriate option. If the sentence is correct as it is, choose 'No correction required' as your answer.</p><p>The new intern, <b>to whom the task was assigned</b>, asked a lot of clarifying questions.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "to whom was the task assigned<br>",
+          "text": "to whom was the task assigned"
+        },
+        {
+          "letter": "B",
+          "html": "who the task was assigned to<br>",
+          "text": "who the task was assigned to"
+        },
+        {
+          "letter": "C",
+          "html": "to who the task was assigned<br>",
+          "text": "to who the task was assigned"
+        },
+        {
+          "letter": "D",
+          "html": "who the task was assigned<br>",
+          "text": "who the task was assigned"
+        },
+        {
+          "letter": "E",
+          "html": "No correction required<br>",
+          "text": "No correction required"
+        }
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) No correction required</b></p><p><b>Explanation:</b><br>The relative clause <b>\"to whom the task was assigned\"</b> properly uses the objective pronoun <i>whom</i> after the preposition <i>to</i>. No correction is needed.</p>"
+    },
+    {
+      "qid": 1016,
+      "questionNumber": 16,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, one part of the sentence may have an error. Find out which part of the sentence has an error and select the appropriate option. If the sentence is free from error, select 'No Error'. Ignore errors of punctuation, if any.</p><p>Next to religion, (A) / leadership may be the (B) / most studied social phenomenon (C) / in the human historical. (D)</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "B<br>",
+          "text": "B"
+        },
+        {
+          "letter": "B",
+          "html": "D<br>",
+          "text": "D"
+        },
+        {
+          "letter": "C",
+          "html": "C<br>",
+          "text": "C"
+        },
+        {
+          "letter": "D",
+          "html": "A<br>",
+          "text": "A"
+        },
+        {
+          "letter": "E",
+          "html": "No error<br>",
+          "text": "No error"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) D</b></p><p><b>Explanation:</b><br>In part (D), <i>\"in the human historical\"</i> uses the adjective \"historical\" instead of the noun <b>\"history\"</b>. It should read <b>\"in human history\"</b>. Thus, the error is in part (D), which corresponds to option <b>b)</b>.</p>"
+    },
+    {
+      "qid": 1017,
+      "questionNumber": 17,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, one part of the sentence may have an error. Find out which part of the sentence has an error and select the appropriate option. If the sentence is free from error, select 'No Error'. Ignore errors of punctuation, if any.</p><p>The book(A)/ that I borrowed(B)/ from the library(C)/ was very interesting(D).</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "D<br>",
+          "text": "D"
+        },
+        {
+          "letter": "B",
+          "html": "C<br>",
+          "text": "C"
+        },
+        {
+          "letter": "C",
+          "html": "B<br>",
+          "text": "B"
+        },
+        {
+          "letter": "D",
+          "html": "A<br>",
+          "text": "A"
+        },
+        {
+          "letter": "E",
+          "html": "No error<br>",
+          "text": "No error"
+        }
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) No error</b></p><p><b>Explanation:</b><br>\"The book that I borrowed from the library was very interesting\" is grammatically complete and free of error.</p>"
+    },
+    {
+      "qid": 1018,
+      "questionNumber": 18,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, one part of the sentence may have an error. Find out which part of the sentence has an error and select the appropriate option. If the sentence is free from error, select 'No Error'. Ignore errors of punctuation, if any.</p><p>The gardens at Sigiriya are not only (A) / the best-preserved water gardens (B) / in South Asia yet some of (C) / the oldest landscaped gardens in the world. (D) </p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "D<br>",
+          "text": "D"
+        },
+        {
+          "letter": "B",
+          "html": "No error<br>",
+          "text": "No error"
+        },
+        {
+          "letter": "C",
+          "html": "A<br>",
+          "text": "A"
+        },
+        {
+          "letter": "D",
+          "html": "B<br>",
+          "text": "B"
+        },
+        {
+          "letter": "E",
+          "html": "C<br>",
+          "text": "C"
+        }
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) C</b></p><p><b>Explanation:</b><br>The correlative conjunction pair is <b>\"not only ... but also\"</b>. In part (C), \"yet\" is erroneously used instead of \"but also\" (<i>\"...not only the best-preserved water gardens in South Asia <b>but also</b> some of...\"</i>). Thus, the error is in part (C), which is option <b>e)</b>.</p>"
+    },
+    {
+      "qid": 1019,
+      "questionNumber": 19,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the following question, one part of the sentence may have an error. Find out which part of the sentence has an error and select the appropriate option. If the sentence is free from error, select 'No Error'. Ignore errors of punctuation, if any.</p><p>Sushmita is (A)/ smart and (B)/ more beautiful than (C)/ anyone else here.(D)</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "B<br>",
+          "text": "B"
+        },
+        {
+          "letter": "B",
+          "html": "A<br>",
+          "text": "A"
+        },
+        {
+          "letter": "C",
+          "html": "D<br>",
+          "text": "D"
+        },
+        {
+          "letter": "D",
+          "html": "C<br>",
+          "text": "C"
+        },
+        {
+          "letter": "E",
+          "html": "No error<br>",
+          "text": "No error"
+        }
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) B</b></p><p><b>Explanation:</b><br>Since the sentence makes a comparison using <b>\"than anyone else here\"</b>, both adjectives joined by \"and\" must be in the comparative degree: <b>\"smarter and more beautiful than...\"</b>. Hence, the error lies in part (B), which corresponds to option <b>a)</b>.</p>"
+    },
+    {
+      "qid": 1020,
+      "questionNumber": 20,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   In the following passage, some of the words have been left out and replaced with blanks represented by letters. First, read the passage and try to understand what it is about. Then fill in the blanks as per the questions given.</p><p>One major way the brain and heart communicate is through the autonomic nervous system. Think of the autonomic nervous system as a network of paths that <b>___(A)___</b> different brain areas to many bodily organs. It helps regulate processes that you are not generally aware of, like your heartbeat or breathing, or how fast the food you eat is digested. The connections between the autonomic nervous system and the organs can be <b>___(B)___</b> into two parts: sympathetic and parasympathetic. The sympathetic nervous system mostly pitches in during times of <b>___(C)___</b> or excitement, like if you ever need to run away from a dangerous animal, or when you feel motivated. The parasympathetic nervous system promotes relaxation of the body and supports vital functions like digestion. Thinking in terms of the body's band, the way the brain and heart communicate through the autonomic nervous system is like the singer and drummer silently communicating with gestures and <b>___(D)___</b> expressions. If the singer delivers the lyrics with more urgency, the drummer needs to match the intensity, similar to how the brain's sympathetic signaling can increase the heart rate. A gentler, more relaxed style of singing <b>___(E)___</b> cues the drummer to slow down, just as parasympathetic activity slows the heartbeat.</p>",
+      "questionHTML": "<p>Which of the following is the most appropriate option to fill the blank (A)?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "connects<br>",
+          "text": "connects"
+        },
+        {
+          "letter": "B",
+          "html": "join<br>",
+          "text": "join"
+        },
+        {
+          "letter": "C",
+          "html": "discussed<br>",
+          "text": "discussed"
+        },
+        {
+          "letter": "D",
+          "html": "disjoint<br>",
+          "text": "disjoint"
+        },
+        {
+          "letter": "E",
+          "html": "assess<br>",
+          "text": "assess"
+        }
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) connects</b></p><p><b>Explanation:</b><br>The antecedent of \"that\" is \"a network\" (singular), so it requires the singular present-tense verb <b>\"connects\"</b> (<i>\"a network of paths that connects different brain areas to many bodily organs\"</i>).</p>"
+    },
+    {
+      "qid": 1021,
+      "questionNumber": 21,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   In the following passage, some of the words have been left out and replaced with blanks represented by letters. First, read the passage and try to understand what it is about. Then fill in the blanks as per the questions given.</p><p>One major way the brain and heart communicate is through the autonomic nervous system. Think of the autonomic nervous system as a network of paths that <b>___(A)___</b> different brain areas to many bodily organs. It helps regulate processes that you are not generally aware of, like your heartbeat or breathing, or how fast the food you eat is digested. The connections between the autonomic nervous system and the organs can be <b>___(B)___</b> into two parts: sympathetic and parasympathetic. The sympathetic nervous system mostly pitches in during times of <b>___(C)___</b> or excitement, like if you ever need to run away from a dangerous animal, or when you feel motivated. The parasympathetic nervous system promotes relaxation of the body and supports vital functions like digestion. Thinking in terms of the body's band, the way the brain and heart communicate through the autonomic nervous system is like the singer and drummer silently communicating with gestures and <b>___(D)___</b> expressions. If the singer delivers the lyrics with more urgency, the drummer needs to match the intensity, similar to how the brain's sympathetic signaling can increase the heart rate. A gentler, more relaxed style of singing <b>___(E)___</b> cues the drummer to slow down, just as parasympathetic activity slows the heartbeat.</p>",
+      "questionHTML": "<p>Which of the following is the most appropriate option to fill the blank (B)?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "accused<br>",
+          "text": "accused"
+        },
+        {
+          "letter": "B",
+          "html": "restriction<br>",
+          "text": "restriction"
+        },
+        {
+          "letter": "C",
+          "html": "continues<br>",
+          "text": "continues"
+        },
+        {
+          "letter": "D",
+          "html": "behave<br>",
+          "text": "behave"
+        },
+        {
+          "letter": "E",
+          "html": "divided<br>",
+          "text": "divided"
+        }
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) divided</b></p><p><b>Explanation:</b><br>Passive construction \"can be ___ into two parts\" requires the past participle <b>\"divided\"</b> (<i>\"can be divided into two parts: sympathetic and parasympathetic\"</i>).</p>"
+    },
+    {
+      "qid": 1022,
+      "questionNumber": 22,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   In the following passage, some of the words have been left out and replaced with blanks represented by letters. First, read the passage and try to understand what it is about. Then fill in the blanks as per the questions given.</p><p>One major way the brain and heart communicate is through the autonomic nervous system. Think of the autonomic nervous system as a network of paths that <b>___(A)___</b> different brain areas to many bodily organs. It helps regulate processes that you are not generally aware of, like your heartbeat or breathing, or how fast the food you eat is digested. The connections between the autonomic nervous system and the organs can be <b>___(B)___</b> into two parts: sympathetic and parasympathetic. The sympathetic nervous system mostly pitches in during times of <b>___(C)___</b> or excitement, like if you ever need to run away from a dangerous animal, or when you feel motivated. The parasympathetic nervous system promotes relaxation of the body and supports vital functions like digestion. Thinking in terms of the body's band, the way the brain and heart communicate through the autonomic nervous system is like the singer and drummer silently communicating with gestures and <b>___(D)___</b> expressions. If the singer delivers the lyrics with more urgency, the drummer needs to match the intensity, similar to how the brain's sympathetic signaling can increase the heart rate. A gentler, more relaxed style of singing <b>___(E)___</b> cues the drummer to slow down, just as parasympathetic activity slows the heartbeat.</p>",
+      "questionHTML": "<p>Which of the following is the most appropriate option to fill the blank (C)?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "inactive<br>",
+          "text": "inactive"
+        },
+        {
+          "letter": "B",
+          "html": "activity<br>",
+          "text": "activity"
+        },
+        {
+          "letter": "C",
+          "html": "anxious<br>",
+          "text": "anxious"
+        },
+        {
+          "letter": "D",
+          "html": "reactive<br>",
+          "text": "reactive"
+        },
+        {
+          "letter": "E",
+          "html": "laziness<br>",
+          "text": "laziness"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) activity</b></p><p><b>Explanation:</b><br>Following the preposition \"of\" and parallel with the noun \"excitement\", we need a noun: <b>\"activity\"</b> (<i>\"during times of activity or excitement\"</i>).</p>"
+    },
+    {
+      "qid": 1023,
+      "questionNumber": 23,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   In the following passage, some of the words have been left out and replaced with blanks represented by letters. First, read the passage and try to understand what it is about. Then fill in the blanks as per the questions given.</p><p>One major way the brain and heart communicate is through the autonomic nervous system. Think of the autonomic nervous system as a network of paths that <b>___(A)___</b> different brain areas to many bodily organs. It helps regulate processes that you are not generally aware of, like your heartbeat or breathing, or how fast the food you eat is digested. The connections between the autonomic nervous system and the organs can be <b>___(B)___</b> into two parts: sympathetic and parasympathetic. The sympathetic nervous system mostly pitches in during times of <b>___(C)___</b> or excitement, like if you ever need to run away from a dangerous animal, or when you feel motivated. The parasympathetic nervous system promotes relaxation of the body and supports vital functions like digestion. Thinking in terms of the body's band, the way the brain and heart communicate through the autonomic nervous system is like the singer and drummer silently communicating with gestures and <b>___(D)___</b> expressions. If the singer delivers the lyrics with more urgency, the drummer needs to match the intensity, similar to how the brain's sympathetic signaling can increase the heart rate. A gentler, more relaxed style of singing <b>___(E)___</b> cues the drummer to slow down, just as parasympathetic activity slows the heartbeat.</p>",
+      "questionHTML": "<p>Which of the following is the most appropriate option to fill the blank (D)?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "phase<br>",
+          "text": "phase"
+        },
+        {
+          "letter": "B",
+          "html": "faces<br>",
+          "text": "faces"
+        },
+        {
+          "letter": "C",
+          "html": "facial<br>",
+          "text": "facial"
+        },
+        {
+          "letter": "D",
+          "html": "puzzling<br>",
+          "text": "puzzling"
+        },
+        {
+          "letter": "E",
+          "html": "entirely<br>",
+          "text": "entirely"
+        }
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) facial</b></p><p><b>Explanation:</b><br>To modify the noun \"expressions\", the adjective <b>\"facial\"</b> (<i>\"gestures and facial expressions\"</i>) is required.</p>"
+    },
+    {
+      "qid": 1024,
+      "questionNumber": 24,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   In the following passage, some of the words have been left out and replaced with blanks represented by letters. First, read the passage and try to understand what it is about. Then fill in the blanks as per the questions given.</p><p>One major way the brain and heart communicate is through the autonomic nervous system. Think of the autonomic nervous system as a network of paths that <b>___(A)___</b> different brain areas to many bodily organs. It helps regulate processes that you are not generally aware of, like your heartbeat or breathing, or how fast the food you eat is digested. The connections between the autonomic nervous system and the organs can be <b>___(B)___</b> into two parts: sympathetic and parasympathetic. The sympathetic nervous system mostly pitches in during times of <b>___(C)___</b> or excitement, like if you ever need to run away from a dangerous animal, or when you feel motivated. The parasympathetic nervous system promotes relaxation of the body and supports vital functions like digestion. Thinking in terms of the body's band, the way the brain and heart communicate through the autonomic nervous system is like the singer and drummer silently communicating with gestures and <b>___(D)___</b> expressions. If the singer delivers the lyrics with more urgency, the drummer needs to match the intensity, similar to how the brain's sympathetic signaling can increase the heart rate. A gentler, more relaxed style of singing <b>___(E)___</b> cues the drummer to slow down, just as parasympathetic activity slows the heartbeat.</p>",
+      "questionHTML": "<p>Which of the following is the most appropriate option to fill the blank (E)?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "naturally<br>",
+          "text": "naturally"
+        },
+        {
+          "letter": "B",
+          "html": "obvious<br>",
+          "text": "obvious"
+        },
+        {
+          "letter": "C",
+          "html": "creative<br>",
+          "text": "creative"
+        },
+        {
+          "letter": "D",
+          "html": "punctually<br>",
+          "text": "punctually"
+        },
+        {
+          "letter": "E",
+          "html": "greed<br>",
+          "text": "greed"
+        }
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) naturally</b></p><p><b>Explanation:</b><br>To modify the verb \"cues\", we need the adverb <b>\"naturally\"</b> (<i>\"A gentler, more relaxed style of singing naturally cues the drummer to slow down\"</i>).</p>"
+    },
+    {
+      "qid": 1025,
+      "questionNumber": 25,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   Read the following passage carefully and answer the questions that follow.</p><p>For much of the late twentieth century, Chinese manufacturing was associated primarily with low-cost, low-durability goods designed to meet mass demand in price-sensitive markets. These products were often dismissed in advanced economies as functional but inferior substitutes, suitable mainly where affordability outweighed performance. Over time, however, this perception has become increasingly outdated. Chinese firms have steadily moved beyond cost-led competitiveness to invest in research, design, and systems integration, allowing them to compete in segments once dominated by Western and Japanese manufacturers.</p><p>This transformation has been driven by a deliberate alignment of industrial policy, scale advantages, and technological learning. Rather than relying solely on imitation, firms have absorbed global knowledge while adapting it to domestic conditions, producing innovations that are incremental yet cumulative. As a result, Chinese products now incorporate advanced software, data-driven optimisation, and integrated supply chains that reduce production cycles and improve reliability. The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.</p><p>The implications of this shift extend beyond consumer markets into strategic sectors such as renewable energy, telecommunications, and advanced manufacturing. Countries long regarded as technological leaders increasingly recognise that China is not only catching up but, in some domains, setting benchmarks. Even economies like Germany, traditionally confident in their engineering depth, express concern about the speed and coordination with which Chinese firms translate research into scalable output. This <b>unease </b>is not rooted solely in price competition but in the possibility that established innovation <b>hierarchies </b>may be reconfigured.</p><p>Western responses to this development reveal an underlying tension. On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency, standards control, and long-term competitiveness. The debate is therefore less about whether Chinese products have improved and more about how global systems should adapt to a landscape in which technological leadership is no longer geographically concentrated. Understanding this evolution requires moving beyond outdated stereotypes and acknowledging the structural capabilities that now underpin Chinese manufacturing.</p>",
+      "questionHTML": "<p>Which of the following statements is FALSE according to the passage?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Chinese manufacturing was earlier perceived as prioritising affordability over performance.<br>",
+          "text": "Chinese manufacturing was earlier perceived as prioritising affordability over performance."
+        },
+        {
+          "letter": "B",
+          "html": "Chinese firms have completely abandoned cost competitiveness in favour of premium pricing.<br>",
+          "text": "Chinese firms have completely abandoned cost competitiveness in favour of premium pricing."
+        },
+        {
+          "letter": "C",
+          "html": "Technological learning and policy alignment have contributed to China's manufacturing shift.<br>",
+          "text": "Technological learning and policy alignment have contributed to China's manufacturing shift."
+        },
+        {
+          "letter": "D",
+          "html": "Advanced software and integrated supply chains now characterise many Chinese products.<br>",
+          "text": "Advanced software and integrated supply chains now characterise many Chinese products."
+        },
+        {
+          "letter": "E",
+          "html": "Western concern extends beyond prices to questions of long-term competitiveness.<br>",
+          "text": "Western concern extends beyond prices to questions of long-term competitiveness."
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Chinese firms have completely abandoned cost competitiveness in favour of premium pricing.</b></p><p><b>Explanation:</b><br>Paragraph 2 explicitly states: <i>\"The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.\"</i> Thus, Chinese firms have <b>not</b> abandoned affordability/cost competitiveness, making option (b) FALSE.</p>"
+    },
+    {
+      "qid": 1026,
+      "questionNumber": 26,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   Read the following passage carefully and answer the questions that follow.</p><p>For much of the late twentieth century, Chinese manufacturing was associated primarily with low-cost, low-durability goods designed to meet mass demand in price-sensitive markets. These products were often dismissed in advanced economies as functional but inferior substitutes, suitable mainly where affordability outweighed performance. Over time, however, this perception has become increasingly outdated. Chinese firms have steadily moved beyond cost-led competitiveness to invest in research, design, and systems integration, allowing them to compete in segments once dominated by Western and Japanese manufacturers.</p><p>This transformation has been driven by a deliberate alignment of industrial policy, scale advantages, and technological learning. Rather than relying solely on imitation, firms have absorbed global knowledge while adapting it to domestic conditions, producing innovations that are incremental yet cumulative. As a result, Chinese products now incorporate advanced software, data-driven optimisation, and integrated supply chains that reduce production cycles and improve reliability. The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.</p><p>The implications of this shift extend beyond consumer markets into strategic sectors such as renewable energy, telecommunications, and advanced manufacturing. Countries long regarded as technological leaders increasingly recognise that China is not only catching up but, in some domains, setting benchmarks. Even economies like Germany, traditionally confident in their engineering depth, express concern about the speed and coordination with which Chinese firms translate research into scalable output. This <b>unease </b>is not rooted solely in price competition but in the possibility that established innovation <b>hierarchies </b>may be reconfigured.</p><p>Western responses to this development reveal an underlying tension. On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency, standards control, and long-term competitiveness. The debate is therefore less about whether Chinese products have improved and more about how global systems should adapt to a landscape in which technological leadership is no longer geographically concentrated. Understanding this evolution requires moving beyond outdated stereotypes and acknowledging the structural capabilities that now underpin Chinese manufacturing.</p>",
+      "questionHTML": "<p>According to the passage, what primarily distinguishes China's current manufacturing approach from its earlier phase?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Exclusive reliance on foreign technology without adaptation<br>",
+          "text": "Exclusive reliance on foreign technology without adaptation"
+        },
+        {
+          "letter": "B",
+          "html": "Shift from affordability alone to affordability combined with technical sophistication<br>",
+          "text": "Shift from affordability alone to affordability combined with technical sophistication"
+        },
+        {
+          "letter": "C",
+          "html": "Reduction in production scale to improve quality<br>",
+          "text": "Reduction in production scale to improve quality"
+        },
+        {
+          "letter": "D",
+          "html": "Complete disengagement from global supply chains<br>",
+          "text": "Complete disengagement from global supply chains"
+        },
+        {
+          "letter": "E",
+          "html": "Focus solely on domestic markets over exports<br>",
+          "text": "Focus solely on domestic markets over exports"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Shift from affordability alone to affordability combined with technical sophistication</b></p><p><b>Explanation:</b><br>The last sentence of Paragraph 2 directly states: <i>\"The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.\"</i></p>"
+    },
+    {
+      "qid": 1027,
+      "questionNumber": 27,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   Read the following passage carefully and answer the questions that follow.</p><p>For much of the late twentieth century, Chinese manufacturing was associated primarily with low-cost, low-durability goods designed to meet mass demand in price-sensitive markets. These products were often dismissed in advanced economies as functional but inferior substitutes, suitable mainly where affordability outweighed performance. Over time, however, this perception has become increasingly outdated. Chinese firms have steadily moved beyond cost-led competitiveness to invest in research, design, and systems integration, allowing them to compete in segments once dominated by Western and Japanese manufacturers.</p><p>This transformation has been driven by a deliberate alignment of industrial policy, scale advantages, and technological learning. Rather than relying solely on imitation, firms have absorbed global knowledge while adapting it to domestic conditions, producing innovations that are incremental yet cumulative. As a result, Chinese products now incorporate advanced software, data-driven optimisation, and integrated supply chains that reduce production cycles and improve reliability. The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.</p><p>The implications of this shift extend beyond consumer markets into strategic sectors such as renewable energy, telecommunications, and advanced manufacturing. Countries long regarded as technological leaders increasingly recognise that China is not only catching up but, in some domains, setting benchmarks. Even economies like Germany, traditionally confident in their engineering depth, express concern about the speed and coordination with which Chinese firms translate research into scalable output. This <b>unease </b>is not rooted solely in price competition but in the possibility that established innovation <b>hierarchies </b>may be reconfigured.</p><p>Western responses to this development reveal an underlying tension. On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency, standards control, and long-term competitiveness. The debate is therefore less about whether Chinese products have improved and more about how global systems should adapt to a landscape in which technological leadership is no longer geographically concentrated. Understanding this evolution requires moving beyond outdated stereotypes and acknowledging the structural capabilities that now underpin Chinese manufacturing.</p>",
+      "questionHTML": "<p>Which of the following best captures the author's view on Germany's response to China's technological rise?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Germany remains unaffected due to its established engineering dominance.<br>",
+          "text": "Germany remains unaffected due to its established engineering dominance."
+        },
+        {
+          "letter": "B",
+          "html": "German concerns are limited to declining export volumes.<br>",
+          "text": "German concerns are limited to declining export volumes."
+        },
+        {
+          "letter": "C",
+          "html": "Germany recognises a challenge to traditional innovation hierarchies.<br>",
+          "text": "Germany recognises a challenge to traditional innovation hierarchies."
+        },
+        {
+          "letter": "D",
+          "html": "Germany views Chinese advances as temporary and unsustainable.<br>",
+          "text": "Germany views Chinese advances as temporary and unsustainable."
+        },
+        {
+          "letter": "E",
+          "html": "Germany attributes China's rise solely to unfair trade practices.<br>",
+          "text": "Germany attributes China's rise solely to unfair trade practices."
+        }
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Germany recognises a challenge to traditional innovation hierarchies.</b></p><p><b>Explanation:</b><br>Paragraph 3 notes that even economies like Germany express concern, and <i>\"This unease is not rooted solely in price competition but in the possibility that established innovation hierarchies may be reconfigured.\"</i></p>"
+    },
+    {
+      "qid": 1028,
+      "questionNumber": 28,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   Read the following passage carefully and answer the questions that follow.</p><p>For much of the late twentieth century, Chinese manufacturing was associated primarily with low-cost, low-durability goods designed to meet mass demand in price-sensitive markets. These products were often dismissed in advanced economies as functional but inferior substitutes, suitable mainly where affordability outweighed performance. Over time, however, this perception has become increasingly outdated. Chinese firms have steadily moved beyond cost-led competitiveness to invest in research, design, and systems integration, allowing them to compete in segments once dominated by Western and Japanese manufacturers.</p><p>This transformation has been driven by a deliberate alignment of industrial policy, scale advantages, and technological learning. Rather than relying solely on imitation, firms have absorbed global knowledge while adapting it to domestic conditions, producing innovations that are incremental yet cumulative. As a result, Chinese products now incorporate advanced software, data-driven optimisation, and integrated supply chains that reduce production cycles and improve reliability. The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.</p><p>The implications of this shift extend beyond consumer markets into strategic sectors such as renewable energy, telecommunications, and advanced manufacturing. Countries long regarded as technological leaders increasingly recognise that China is not only catching up but, in some domains, setting benchmarks. Even economies like Germany, traditionally confident in their engineering depth, express concern about the speed and coordination with which Chinese firms translate research into scalable output. This <b>unease </b>is not rooted solely in price competition but in the possibility that established innovation <b>hierarchies </b>may be reconfigured.</p><p>Western responses to this development reveal an underlying tension. On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency, standards control, and long-term competitiveness. The debate is therefore less about whether Chinese products have improved and more about how global systems should adapt to a landscape in which technological leadership is no longer geographically concentrated. Understanding this evolution requires moving beyond outdated stereotypes and acknowledging the structural capabilities that now underpin Chinese manufacturing.</p>",
+      "questionHTML": "<p>Which of the following, if assumed true, would strengthen the argument in paragraph 3?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Chinese firms face persistent difficulties in scaling production.<br>",
+          "text": "Chinese firms face persistent difficulties in scaling production."
+        },
+        {
+          "letter": "B",
+          "html": "German industries increasingly outsource basic manufacturing tasks.<br>",
+          "text": "German industries increasingly outsource basic manufacturing tasks."
+        },
+        {
+          "letter": "C",
+          "html": "Chinese firms rapidly convert research outputs into mass production.<br>",
+          "text": "Chinese firms rapidly convert research outputs into mass production."
+        },
+        {
+          "letter": "D",
+          "html": "Western economies no longer invest in industrial research.<br>",
+          "text": "Western economies no longer invest in industrial research."
+        },
+        {
+          "letter": "E",
+          "html": "Innovation in China is confined to low-technology sectors.<br>",
+          "text": "Innovation in China is confined to low-technology sectors."
+        }
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Chinese firms rapidly convert research outputs into mass production.</b></p><p><b>Explanation:</b><br>Paragraph 3 highlights concern over <i>\"the speed and coordination with which Chinese firms translate research into scalable output.\"</i> Option (c) directly reinforces and strengthens this argument.</p>"
+    },
+    {
+      "qid": 1029,
+      "questionNumber": 29,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   Read the following passage carefully and answer the questions that follow.</p><p>For much of the late twentieth century, Chinese manufacturing was associated primarily with low-cost, low-durability goods designed to meet mass demand in price-sensitive markets. These products were often dismissed in advanced economies as functional but inferior substitutes, suitable mainly where affordability outweighed performance. Over time, however, this perception has become increasingly outdated. Chinese firms have steadily moved beyond cost-led competitiveness to invest in research, design, and systems integration, allowing them to compete in segments once dominated by Western and Japanese manufacturers.</p><p>This transformation has been driven by a deliberate alignment of industrial policy, scale advantages, and technological learning. Rather than relying solely on imitation, firms have absorbed global knowledge while adapting it to domestic conditions, producing innovations that are incremental yet cumulative. As a result, Chinese products now incorporate advanced software, data-driven optimisation, and integrated supply chains that reduce production cycles and improve reliability. The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.</p><p>The implications of this shift extend beyond consumer markets into strategic sectors such as renewable energy, telecommunications, and advanced manufacturing. Countries long regarded as technological leaders increasingly recognise that China is not only catching up but, in some domains, setting benchmarks. Even economies like Germany, traditionally confident in their engineering depth, express concern about the speed and coordination with which Chinese firms translate research into scalable output. This <b>unease </b>is not rooted solely in price competition but in the possibility that established innovation <b>hierarchies </b>may be reconfigured.</p><p>Western responses to this development reveal an underlying tension. On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency, standards control, and long-term competitiveness. The debate is therefore less about whether Chinese products have improved and more about how global systems should adapt to a landscape in which technological leadership is no longer geographically concentrated. Understanding this evolution requires moving beyond outdated stereotypes and acknowledging the structural capabilities that now underpin Chinese manufacturing.</p>",
+      "questionHTML": "<p>What can be most reasonably inferred from the passage about Western collaboration with Chinese suppliers?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "It is driven purely by political alignment.<br>",
+          "text": "It is driven purely by political alignment."
+        },
+        {
+          "letter": "B",
+          "html": "It persists despite concerns because of efficiency benefits.<br>",
+          "text": "It persists despite concerns because of efficiency benefits."
+        },
+        {
+          "letter": "C",
+          "html": "It has been completely phased out due to security risks.<br>",
+          "text": "It has been completely phased out due to security risks."
+        },
+        {
+          "letter": "D",
+          "html": "It occurs only in non-technological sectors.<br>",
+          "text": "It occurs only in non-technological sectors."
+        },
+        {
+          "letter": "E",
+          "html": "It reflects a lack of domestic manufacturing capacity in the West.<br>",
+          "text": "It reflects a lack of domestic manufacturing capacity in the West."
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) It persists despite concerns because of efficiency benefits.</b></p><p><b>Explanation:</b><br>Paragraph 4 states: <i>\"On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency...\"</i></p>"
+    },
+    {
+      "qid": 1030,
+      "questionNumber": 30,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   Read the following passage carefully and answer the questions that follow.</p><p>For much of the late twentieth century, Chinese manufacturing was associated primarily with low-cost, low-durability goods designed to meet mass demand in price-sensitive markets. These products were often dismissed in advanced economies as functional but inferior substitutes, suitable mainly where affordability outweighed performance. Over time, however, this perception has become increasingly outdated. Chinese firms have steadily moved beyond cost-led competitiveness to invest in research, design, and systems integration, allowing them to compete in segments once dominated by Western and Japanese manufacturers.</p><p>This transformation has been driven by a deliberate alignment of industrial policy, scale advantages, and technological learning. Rather than relying solely on imitation, firms have absorbed global knowledge while adapting it to domestic conditions, producing innovations that are incremental yet cumulative. As a result, Chinese products now incorporate advanced software, data-driven optimisation, and integrated supply chains that reduce production cycles and improve reliability. The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.</p><p>The implications of this shift extend beyond consumer markets into strategic sectors such as renewable energy, telecommunications, and advanced manufacturing. Countries long regarded as technological leaders increasingly recognise that China is not only catching up but, in some domains, setting benchmarks. Even economies like Germany, traditionally confident in their engineering depth, express concern about the speed and coordination with which Chinese firms translate research into scalable output. This <b>unease </b>is not rooted solely in price competition but in the possibility that established innovation <b>hierarchies </b>may be reconfigured.</p><p>Western responses to this development reveal an underlying tension. On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency, standards control, and long-term competitiveness. The debate is therefore less about whether Chinese products have improved and more about how global systems should adapt to a landscape in which technological leadership is no longer geographically concentrated. Understanding this evolution requires moving beyond outdated stereotypes and acknowledging the structural capabilities that now underpin Chinese manufacturing.</p>",
+      "questionHTML": "<p>Which of the following statements is/are supported by the passage?</p><p>A. Chinese manufacturing has evolved beyond imitation.</p><p>B. Western fears are limited to short-term price competition.</p><p>C. Technological leadership is becoming less geographically concentrated.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Only A<br>",
+          "text": "Only A"
+        },
+        {
+          "letter": "B",
+          "html": "Only B<br>",
+          "text": "Only B"
+        },
+        {
+          "letter": "C",
+          "html": "Only C<br>",
+          "text": "Only C"
+        },
+        {
+          "letter": "D",
+          "html": "Both A and C<br>",
+          "text": "Both A and C"
+        },
+        {
+          "letter": "E",
+          "html": "A, B, and C<br>",
+          "text": "A, B, and C"
+        }
+      ],
+      "correctAnswer": "D",
+      "correctIndex": 3,
+      "explanationHTML": "<p><b>Correct Answer: d) Both A and C</b></p><p><b>Explanation:</b><br>• Statement <b>A</b> is supported by Paragraph 2 (<i>\"Rather than relying solely on imitation, firms have absorbed global knowledge...\"</i>).<br>• Statement <b>B</b> is contradicted by Paragraph 3 (<i>\"This unease is not rooted solely in price competition...\"</i>).<br>• Statement <b>C</b> is supported by Paragraph 4 (<i>\"...a landscape in which technological leadership is no longer geographically concentrated\"</i>).</p>"
+    },
+    {
+      "qid": 1031,
+      "questionNumber": 31,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   Read the following passage carefully and answer the questions that follow.</p><p>For much of the late twentieth century, Chinese manufacturing was associated primarily with low-cost, low-durability goods designed to meet mass demand in price-sensitive markets. These products were often dismissed in advanced economies as functional but inferior substitutes, suitable mainly where affordability outweighed performance. Over time, however, this perception has become increasingly outdated. Chinese firms have steadily moved beyond cost-led competitiveness to invest in research, design, and systems integration, allowing them to compete in segments once dominated by Western and Japanese manufacturers.</p><p>This transformation has been driven by a deliberate alignment of industrial policy, scale advantages, and technological learning. Rather than relying solely on imitation, firms have absorbed global knowledge while adapting it to domestic conditions, producing innovations that are incremental yet cumulative. As a result, Chinese products now incorporate advanced software, data-driven optimisation, and integrated supply chains that reduce production cycles and improve reliability. The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.</p><p>The implications of this shift extend beyond consumer markets into strategic sectors such as renewable energy, telecommunications, and advanced manufacturing. Countries long regarded as technological leaders increasingly recognise that China is not only catching up but, in some domains, setting benchmarks. Even economies like Germany, traditionally confident in their engineering depth, express concern about the speed and coordination with which Chinese firms translate research into scalable output. This <b>unease </b>is not rooted solely in price competition but in the possibility that established innovation <b>hierarchies </b>may be reconfigured.</p><p>Western responses to this development reveal an underlying tension. On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency, standards control, and long-term competitiveness. The debate is therefore less about whether Chinese products have improved and more about how global systems should adapt to a landscape in which technological leadership is no longer geographically concentrated. Understanding this evolution requires moving beyond outdated stereotypes and acknowledging the structural capabilities that now underpin Chinese manufacturing.</p>",
+      "questionHTML": "<p>Which of the following is a correct synonym of the word \"unease\" as used in the passage?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "enthusiasm<br>",
+          "text": "enthusiasm"
+        },
+        {
+          "letter": "B",
+          "html": "anxiety<br>",
+          "text": "anxiety"
+        },
+        {
+          "letter": "C",
+          "html": "indifference<br>",
+          "text": "indifference"
+        },
+        {
+          "letter": "D",
+          "html": "certainty<br>",
+          "text": "certainty"
+        },
+        {
+          "letter": "E",
+          "html": "admiration<br>",
+          "text": "admiration"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) anxiety</b></p><p><b>Explanation:</b><br>In context, <b>\"unease\"</b> refers to apprehension, worry, or <b>\"anxiety\"</b> felt by established industrial economies.</p>"
+    },
+    {
+      "qid": 1032,
+      "questionNumber": 32,
+      "section": "EL",
+      "hasPassage": true,
+      "passageHTML": "<p><b>Directions :</b>   Read the following passage carefully and answer the questions that follow.</p><p>For much of the late twentieth century, Chinese manufacturing was associated primarily with low-cost, low-durability goods designed to meet mass demand in price-sensitive markets. These products were often dismissed in advanced economies as functional but inferior substitutes, suitable mainly where affordability outweighed performance. Over time, however, this perception has become increasingly outdated. Chinese firms have steadily moved beyond cost-led competitiveness to invest in research, design, and systems integration, allowing them to compete in segments once dominated by Western and Japanese manufacturers.</p><p>This transformation has been driven by a deliberate alignment of industrial policy, scale advantages, and technological learning. Rather than relying solely on imitation, firms have absorbed global knowledge while adapting it to domestic conditions, producing innovations that are incremental yet cumulative. As a result, Chinese products now incorporate advanced software, data-driven optimisation, and integrated supply chains that reduce production cycles and improve reliability. The emphasis has shifted from merely producing cheaper alternatives to delivering products that combine affordability with technical sophistication.</p><p>The implications of this shift extend beyond consumer markets into strategic sectors such as renewable energy, telecommunications, and advanced manufacturing. Countries long regarded as technological leaders increasingly recognise that China is not only catching up but, in some domains, setting benchmarks. Even economies like Germany, traditionally confident in their engineering depth, express concern about the speed and coordination with which Chinese firms translate research into scalable output. This <b>unease </b>is not rooted solely in price competition but in the possibility that established innovation <b>hierarchies </b>may be reconfigured.</p><p>Western responses to this development reveal an underlying tension. On the one hand, collaboration with Chinese suppliers remains economically attractive due to efficiency gains and integrated production networks. On the other, policymakers and industries worry about dependency, standards control, and long-term competitiveness. The debate is therefore less about whether Chinese products have improved and more about how global systems should adapt to a landscape in which technological leadership is no longer geographically concentrated. Understanding this evolution requires moving beyond outdated stereotypes and acknowledging the structural capabilities that now underpin Chinese manufacturing.</p>",
+      "questionHTML": "<p>Which of the following can replace the word \"hierarchies\" as used in the passage without changing the context?</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "routines<br>",
+          "text": "routines"
+        },
+        {
+          "letter": "B",
+          "html": "rankings<br>",
+          "text": "rankings"
+        },
+        {
+          "letter": "C",
+          "html": "delays<br>",
+          "text": "delays"
+        },
+        {
+          "letter": "D",
+          "html": "monopolies<br>",
+          "text": "monopolies"
+        },
+        {
+          "letter": "E",
+          "html": "procedures<br>",
+          "text": "procedures"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) rankings</b></p><p><b>Explanation:</b><br>In the phrase <i>\"established innovation hierarchies may be reconfigured\"</i>, <b>\"hierarchies\"</b> refers to the order of standing or <b>\"rankings\"</b> among nations.</p>"
+    },
+    {
+      "qid": 1033,
+      "questionNumber": 33,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the given question, a word has been given and there are three ways in which the word has been used,<b> in similar or different forms</b>. You need to see which of the sentences has/have correctly used the highlighted word, and mark that as your answer.</p><p><b>Bland </b></p><p>I. To make the line appear less stepped, we <b>bland </b>the colour of the edge of the line with the colours around it.</p><p>II. Brad and Julia tramped up the stairs, each carrying a <b>bland </b>laden with food and cups of coffee.</p><p>III. The visuals of the movie are disappointingly mediocre, featuring <b>bland</b> track designs.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Only I and III<br>",
+          "text": "Only I and III"
+        },
+        {
+          "letter": "B",
+          "html": "Only III<br>",
+          "text": "Only III"
+        },
+        {
+          "letter": "C",
+          "html": "Only I and II<br>",
+          "text": "Only I and II"
+        },
+        {
+          "letter": "D",
+          "html": "Only II and III<br>",
+          "text": "Only II and III"
+        },
+        {
+          "letter": "E",
+          "html": "Only II<br>",
+          "text": "Only II"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Only III</b></p><p><b>Explanation:</b><br>• Sentence I confuses <i>bland</i> with <b>blend</b> (to mix colours).<br>• Sentence II misuses <i>bland</i> where a noun like <b>tray</b> is needed.<br>• Sentence III correctly uses the adjective <b>bland</b> (uninteresting/mediocre) to describe track designs.</p>"
+    },
+    {
+      "qid": 1034,
+      "questionNumber": 34,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the given question, a word has been given and there are three ways in which the word has been used,<b> in similar or different forms</b>. You need to see which of the sentences has/have correctly used the highlighted word, and mark that as your answer.</p><p>Lie</p><p>I. He was the most cheerful person I knew and now he <b>lies </b>dead in his coffin.</p><p>II. His facial expressions were the indicators of him telling a <b>lie</b>.</p><p>III. He was the only member of the club who didn't <b>lie</b> plum pudding.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Only II<br>",
+          "text": "Only II"
+        },
+        {
+          "letter": "B",
+          "html": "Only I and II<br>",
+          "text": "Only I and II"
+        },
+        {
+          "letter": "C",
+          "html": "Only I and III<br>",
+          "text": "Only I and III"
+        },
+        {
+          "letter": "D",
+          "html": "Only II and III<br>",
+          "text": "Only II and III"
+        },
+        {
+          "letter": "E",
+          "html": "All I, II and III<br>",
+          "text": "All I, II and III"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Only I and II</b></p><p><b>Explanation:</b><br>• Sentence I correctly uses the verb <b>lies</b> (to be in a horizontal/resting state).<br>• Sentence II correctly uses the noun <b>lie</b> (an intentionally false statement).<br>• Sentence III erroneously uses <i>lie</i> instead of <b>like</b> (\"didn't like plum pudding\").</p>"
+    },
+    {
+      "qid": 1035,
+      "questionNumber": 35,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the given question, a word has been given and there are three ways in which the word has been used,<b> in similar or different forms</b>. You need to see which of the sentences has/have correctly used the highlighted word, and mark that as your answer.</p><p>Conditions</p><p>I) The weather <b>conditions</b> are favourable for sailing.</p><p>II) The old car is in good driving <b>conditions</b>.</p><p>III) Reena <b>conditions</b> her hair with a conditioner.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Only I<br>",
+          "text": "Only I"
+        },
+        {
+          "letter": "B",
+          "html": "Only II<br>",
+          "text": "Only II"
+        },
+        {
+          "letter": "C",
+          "html": "Only III<br>",
+          "text": "Only III"
+        },
+        {
+          "letter": "D",
+          "html": "Only I, II<br>",
+          "text": "Only I, II"
+        },
+        {
+          "letter": "E",
+          "html": "Only I, III<br>",
+          "text": "Only I, III"
+        }
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) Only I, III</b></p><p><b>Explanation:</b><br>• Sentence I correctly uses the plural noun <b>conditions</b> (\"weather conditions\").<br>• Sentence II is ungrammatical because the idiom for state of repair is singular: <i>\"in good driving <b>condition</b>\"</i>.<br>• Sentence III correctly uses <b>conditions</b> as a singular verb (\"Reena conditions her hair\").</p>"
+    },
+    {
+      "qid": 1036,
+      "questionNumber": 36,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the question below, a sentence is given with two words missing. You are given five options each containing a pair of words that can or cannot fill the blanks grammatically and/or contextually. Identify the words that are opposite in meaning to each other and make the sentence grammatically and contextually correct.</p><p>These ______ alleys eventually merge into a ______ expressway.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Dirty, filthy<br>",
+          "text": "Dirty, filthy"
+        },
+        {
+          "letter": "B",
+          "html": "Narrow, broad<br>",
+          "text": "Narrow, broad"
+        },
+        {
+          "letter": "C",
+          "html": "Sad, depressed<br>",
+          "text": "Sad, depressed"
+        },
+        {
+          "letter": "D",
+          "html": "Famous, rough<br>",
+          "text": "Famous, rough"
+        },
+        {
+          "letter": "E",
+          "html": "Hatred, loved<br>",
+          "text": "Hatred, loved"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p><b>Correct Answer: b) Narrow, broad</b></p><p><b>Explanation:</b><br><b>\"Narrow\"</b> and <b>\"broad\"</b> are antonyms that fit both grammatically and contextually: <i>\"These narrow alleys eventually merge into a broad expressway.\"</i></p>"
+    },
+    {
+      "qid": 1037,
+      "questionNumber": 37,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the question below, a sentence is given with two words missing. You are given five options each containing a pair of words that can or cannot fill the blanks grammatically and/or contextually. Identify the words that are opposite in meaning to each other and make the sentence grammatically and contextually correct.</p><p>The tumour seems ______, but it might turn ______ later on.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Huge, enormous<br>",
+          "text": "Huge, enormous"
+        },
+        {
+          "letter": "B",
+          "html": "Simple, complexity<br>",
+          "text": "Simple, complexity"
+        },
+        {
+          "letter": "C",
+          "html": "Benign, malignant<br>",
+          "text": "Benign, malignant"
+        },
+        {
+          "letter": "D",
+          "html": "Grasp, captive<br>",
+          "text": "Grasp, captive"
+        },
+        {
+          "letter": "E",
+          "html": "Careless, careful<br>",
+          "text": "Careless, careful"
+        }
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Benign, malignant</b></p><p><b>Explanation:</b><br>In medical terminology, <b>\"benign\"</b> (non-cancerous/harmless) and <b>\"malignant\"</b> (cancerous/virulent) are exact antonyms: <i>\"The tumour seems benign, but it might turn malignant later on.\"</i></p>"
+    },
+    {
+      "qid": 1038,
+      "questionNumber": 38,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the question given below, a sentence is given with two blanks. Choose the correct combination of words that fit in the sentence.</p><p>From time to time ___________ the history, the title of Great has been bestowed upon a ruler who has distinguished himself, either through the splendour of his conquests _____ the value of his services to his fellowmen. </p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Thorough, and<br>",
+          "text": "Thorough, and"
+        },
+        {
+          "letter": "B",
+          "html": "Thorough, or<br>",
+          "text": "Thorough, or"
+        },
+        {
+          "letter": "C",
+          "html": "Throughout, or<br>",
+          "text": "Throughout, or"
+        },
+        {
+          "letter": "D",
+          "html": "Throughout, and<br>",
+          "text": "Throughout, and"
+        },
+        {
+          "letter": "E",
+          "html": "Thorough, nor<br>",
+          "text": "Thorough, nor"
+        }
+      ],
+      "correctAnswer": "C",
+      "correctIndex": 2,
+      "explanationHTML": "<p><b>Correct Answer: c) Throughout, or</b></p><p><b>Explanation:</b><br>• Blank 1 requires the preposition <b>\"throughout\"</b> (meaning all the way through history; \"thorough\" is an adjective).<br>• Blank 2 pairs with <b>\"either\"</b>, requiring the correlative conjunction <b>\"or\"</b> (<i>\"either through the splendour... or the value...\"</i>).</p>"
+    },
+    {
+      "qid": 1039,
+      "questionNumber": 39,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the question given below, a sentence is given with two blanks. Choose the correct combination of words that fit in the sentence.</p><p>Adding journalism to my professional endeavours has __________ my communication skills, widened my range of expression, and provided me with _________ to a plethora of interesting interviews. </p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "Refined, access<br>",
+          "text": "Refined, access"
+        },
+        {
+          "letter": "B",
+          "html": "Refines, assess<br>",
+          "text": "Refines, assess"
+        },
+        {
+          "letter": "C",
+          "html": "Refining, excess<br>",
+          "text": "Refining, excess"
+        },
+        {
+          "letter": "D",
+          "html": "Refined, assess<br>",
+          "text": "Refined, assess"
+        },
+        {
+          "letter": "E",
+          "html": "Refines, excess<br>",
+          "text": "Refines, excess"
+        }
+      ],
+      "correctAnswer": "A",
+      "correctIndex": 0,
+      "explanationHTML": "<p><b>Correct Answer: a) Refined, access</b></p><p><b>Explanation:</b><br>• Blank 1 follows \"has\", requiring the past participle <b>\"refined\"</b> (improved/polished).<br>• Blank 2 is followed by the preposition \"to\", requiring the noun <b>\"access\"</b> (<i>\"provided me with access to a plethora of...\"</i>).</p>"
+    },
+    {
+      "qid": 1040,
+      "questionNumber": 40,
+      "section": "EL",
+      "hasPassage": false,
+      "passageHTML": "",
+      "questionHTML": "<p>In the question given below, a sentence is given with two blanks. Choose the correct combination of words that fit in the sentence.</p><p>This is the _______ hit movie of the year and wins an international ______ too.</p>",
+      "options": [
+        {
+          "letter": "A",
+          "html": "large, recognition<br>",
+          "text": "large, recognition"
+        },
+        {
+          "letter": "B",
+          "html": "biggest, relations<br>",
+          "text": "biggest, relations"
+        },
+        {
+          "letter": "C",
+          "html": "ultimatum, appraisal<br>",
+          "text": "ultimatum, appraisal"
+        },
+        {
+          "letter": "D",
+          "html": "smaller, publicity<br>",
+          "text": "smaller, publicity"
+        },
+        {
+          "letter": "E",
+          "html": "biggest, award<br>",
+          "text": "biggest, award"
+        }
+      ],
+      "correctAnswer": "E",
+      "correctIndex": 4,
+      "explanationHTML": "<p><b>Correct Answer: e) biggest, award</b></p><p><b>Explanation:</b><br>• Blank 1 follows the definite article \"the\", requiring the superlative adjective <b>\"biggest\"</b> (<i>\"the biggest hit movie of the year\"</i>).<br>• Blank 2 follows \"wins an international\", requiring the singular countable noun <b>\"award\"</b>.</p>"
+    }
+  ]
+}

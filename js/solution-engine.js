@@ -381,18 +381,53 @@ class OliveboardSolutionEngine {
   // VIEW 1: LANDING & REVIEW TABLE
   // ==========================================
 
+  _getQuestionResponse(q) {
+    if (!q || !this.attempt || !this.attempt.responses) return null;
+    const responses = this.attempt.responses;
+    return (
+      responses[q.id] ||
+      responses[q.globalIndex + 1] ||
+      responses[`ibps-q-${q.globalIndex + 1}`] ||
+      responses[`ibps-pre-q-${q.globalIndex + 1}`] ||
+      null
+    );
+  }
+
+  _getQuestionTimeSeconds(q) {
+    const resp = this._getQuestionResponse(q);
+    if (!resp) return null;
+    const selectedIdx = resp.selectedIndex;
+    const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
+    const isVisited = Boolean((resp.status && resp.status !== 'stic-notvisited') || isAttempted);
+    if (!isVisited) return null;
+    const sec = Number(resp.timeSpentSeconds);
+    if (!Number.isFinite(sec) || sec < 0) return 0;
+    return Math.round(sec);
+  }
+
+  _formatQuestionTimeSpent(q) {
+    const sec = this._getQuestionTimeSeconds(q);
+    if (sec === null) return '--';
+    return `${sec}s`;
+  }
+
   renderLandingView() {
-    const responses = this.attempt.responses || {};
     let rightCount = 0;
     let wrongCount = 0;
     let unattemptedCount = 0;
     let totalScore = 0;
+    let summedQuestionTime = 0;
 
     this.allQuestions.forEach(q => {
-      const resp = responses[q.id] || responses[q.globalIndex + 1] || responses[`ibps-q-${q.globalIndex + 1}`];
+      const resp = this._getQuestionResponse(q);
       const selectedIdx = resp ? resp.selectedIndex : null;
       const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
       const isCorrect = isAttempted && Number(selectedIdx) === Number(q.correctIndex);
+
+      const qSec = this._getQuestionTimeSeconds(q);
+      if (qSec !== null && qSec > 0) {
+        summedQuestionTime += qSec;
+      }
 
       const posMarks = q.marksForCorrect !== undefined ? q.marksForCorrect : (q.marks || 1);
       const negMarks = q.negativeMarks !== undefined ? q.negativeMarks : 0.25;
@@ -417,7 +452,10 @@ class OliveboardSolutionEngine {
     const finalScore = this.attempt.score !== undefined
       ? (typeof this.attempt.score === 'number' ? this.attempt.score : (this.attempt.score.netScore ?? this.attempt.score.total ?? totalScore))
       : totalScore;
-    const timeSpent = this.attempt.time_spent_seconds || (this.attempt.timing && this.attempt.timing.totalTimeSeconds) || 34;
+    const rawAttemptTime = this.attempt.time_spent_seconds ?? (this.attempt.timing && this.attempt.timing.totalTimeSeconds);
+    const timeSpent = summedQuestionTime > 0
+      ? summedQuestionTime
+      : ((rawAttemptTime !== undefined && rawAttemptTime !== null) ? Math.max(0, Number(rawAttemptTime) || 0) : 0);
 
     // Populate 7 Metric Cards in #sec-summary
     if (this.landingTotalQ) this.landingTotalQ.textContent = totalQuestions;
@@ -449,11 +487,10 @@ class OliveboardSolutionEngine {
 
   renderReviewTableRows() {
     if (!this.reviewRowsContainer) return;
-    const responses = this.attempt.responses || {};
 
     let html = '';
     this.allQuestions.forEach((q, idx) => {
-      const resp = responses[q.id] || responses[q.globalIndex + 1] || responses[`ibps-q-${q.globalIndex + 1}`];
+      const resp = this._getQuestionResponse(q);
       const selectedIdx = resp ? resp.selectedIndex : null;
       const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
       const isCorrect = isAttempted && Number(selectedIdx) === Number(q.correctIndex);
@@ -476,7 +513,7 @@ class OliveboardSolutionEngine {
 
       const qRaw = q.questionText || q.questionHTML || q.question_text || q.question || '';
       const snippet = this._stripHTML(qRaw).slice(0, 68) + '...';
-      const timeSpentSec = (resp && resp.timeSpentSeconds) ? `${resp.timeSpentSeconds}s` : (isAttempted ? '16s' : '--');
+      const timeSpentSec = this._formatQuestionTimeSpent(q);
 
       html += `
         <div class="review-row ${rowClass}" id="sol-review-row-${idx}" onclick="window.obSolutionEngine.goToQuestion(${idx})">
@@ -560,8 +597,7 @@ class OliveboardSolutionEngine {
     if (this.solViewQNo) this.solViewQNo.textContent = q.globalIndex + 1;
     if (this.solViewTotalQ) this.solViewTotalQ.textContent = this.allQuestions.length;
 
-    const resp = (this.attempt.responses || {})[q.id] || (this.attempt.responses || {})[q.globalIndex + 1];
-    const userTime = (resp && resp.timeSpentSeconds) ? `${resp.timeSpentSeconds}s` : (resp ? '16s' : '--');
+    const userTime = this._formatQuestionTimeSpent(q);
     if (this.solViewUserTime) this.solViewUserTime.textContent = userTime;
     if (this.solViewAcc) this.solViewAcc.textContent = q.accuracyPct || '74%';
     if (this.solViewDiffBadge) this.solViewDiffBadge.textContent = q.difficulty || 'Moderate';
@@ -720,8 +756,7 @@ class OliveboardSolutionEngine {
       }));
     }
 
-    const responses = this.attempt.responses || {};
-    const resp = responses[q.id] || responses[q.globalIndex + 1] || responses[`ibps-q-${q.globalIndex + 1}`];
+    const resp = this._getQuestionResponse(q);
     const userSelectedIdx = resp && resp.selectedIndex !== undefined ? resp.selectedIndex : null;
     const retryAttempt = this.retryAttempts[q.globalIndex];
     const corIdx = Number(q.correctIndex);
@@ -952,7 +987,6 @@ class OliveboardSolutionEngine {
 
   renderSidebarQuestionMap() {
     if (!this.questionMapContainer) return;
-    const responses = this.attempt.responses || {};
     const sections = this.testData.sections || [];
 
     let mapHtml = '';
@@ -963,7 +997,7 @@ class OliveboardSolutionEngine {
           <p style="font-size: 12px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">${sec.title}</p>
           <div class="box-inner" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
             ${secQs.map(q => {
-              const resp = responses[q.id] || responses[q.globalIndex + 1] || responses[`ibps-q-${q.globalIndex + 1}`];
+              const resp = this._getQuestionResponse(q);
               const selectedIdx = resp ? resp.selectedIndex : null;
               const isAttempted = selectedIdx !== null && selectedIdx !== undefined;
               const isCorrect = isAttempted && Number(selectedIdx) === Number(q.correctIndex);

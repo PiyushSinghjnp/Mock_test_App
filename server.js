@@ -697,8 +697,19 @@ app.delete('/api/paused-attempts', (req, res) => {
 // 4.3 GET SPECIFIC TEST WITH FULL QUESTIONS FOR TEST ENGINE
 app.get('/api/tests/:id', (req, res) => {
   try {
-    const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(req.params.id);
+    const reqId = String(req.params.id || '');
+    let test = db.prepare('SELECT * FROM tests WHERE id = ?').get(reqId);
     if (!test) {
+      const lowerId = reqId.toLowerCase();
+      const fallbackId = lowerId.includes('ibps-so')
+        ? (lowerId.includes('mains') ? 'ibps-so-it-mains-1' : 'ibps-so-it-prelims-1')
+        : 'sbi-po-pre-01';
+      test = db.prepare('SELECT * FROM tests WHERE id = ?').get(fallbackId);
+      if (test) {
+        const cloned = JSON.parse(test.test_data_json);
+        cloned.id = reqId;
+        return res.json({ success: true, test: cloned });
+      }
       return res.status(404).json({ success: false, error: 'Test not found' });
     }
     const testData = JSON.parse(test.test_data_json);
@@ -792,7 +803,7 @@ app.post('/api/tests/upload-json', (req, res) => {
   }
 });
 
-// Retroactively synchronize all existing test_attempts rows in SQLite with the psychometric rank & percentile engine
+// Retroactively synchronize all existing test_attempts rows in SQLite with the psychometric rank & percentile engine and sanitize unvisited question times
 function recalculateExistingAttemptsInDB() {
   try {
     const allAttempts = db.prepare(`
@@ -802,7 +813,7 @@ function recalculateExistingAttemptsInDB() {
     `).all();
     const updateStmt = db.prepare(`
       UPDATE test_attempts
-      SET percentile = ?, estimated_air = ?
+      SET percentile = ?, estimated_air = ?, responses_json = ?, time_spent_seconds = ?
       WHERE id = ?
     `);
     allAttempts.forEach(att => {
@@ -818,7 +829,28 @@ function recalculateExistingAttemptsInDB() {
         totalQuestions: att.total_questions,
         accuracy: att.accuracy
       });
-      updateStmt.run(rankData.percentile, rankData.estimatedAIR, att.id);
+      let respMap = {};
+      try {
+        respMap = JSON.parse(att.responses_json || '{}') || {};
+      } catch (e) {
+        respMap = {};
+      }
+      let summedSec = 0;
+      Object.values(respMap).forEach(r => {
+        if (!r || typeof r !== 'object') return;
+        const isAttempted = r.selectedIndex !== null && r.selectedIndex !== undefined;
+        const isVisited = Boolean((r.status && r.status !== 'stic-notvisited') || isAttempted);
+        if (!isVisited) {
+          r.timeSpentSeconds = 0;
+          r.timeSpentMs = 0;
+          r.timeEntries = [];
+        } else {
+          r.timeSpentSeconds = Math.max(0, Math.round(Number(r.timeSpentSeconds) || 0));
+          summedSec += r.timeSpentSeconds;
+        }
+      });
+      const updatedTotalTime = summedSec > 0 ? summedSec : Math.max(0, Number(att.time_spent_seconds) || 0);
+      updateStmt.run(rankData.percentile, rankData.estimatedAIR, JSON.stringify(respMap), updatedTotalTime, att.id);
     });
     if (allAttempts.length > 0) {
       console.log(`[Rank & Percentile Engine] Synchronized ${allAttempts.length} existing attempt(s) in SQLite.`);

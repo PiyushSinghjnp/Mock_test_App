@@ -1255,10 +1255,10 @@
        ======================================================== -->
   <div id="ob-live-browser-modal" style="display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(15, 23, 42, 0.85); flex-direction: column; font-family: Inter, sans-serif;">
     <!-- Top Control Bar -->
-    <div style="background: #0f172a; color: #fff; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #334155;">
+    <div style="background: #0f172a; color: #ffffff !important; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #334155;">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-weight: 800; font-size: 13px; color: #38bdf8;">🌐 Oliveboard Live Browser &amp; REA MCP Engine</span>
-        <span id="ob-live-stage-badge" style="font-size: 11px; background: #1e293b; color: #a7f3d0; padding: 3px 8px; border-radius: 4px; border: 1px solid #059669; font-weight: 600;">Connecting to oliveboard.in...</span>
+        <span style="font-weight: 800; font-size: 13px; color: #38bdf8 !important; letter-spacing: 0.2px;">🌐 Oliveboard Live Browser &amp; REA MCP Engine</span>
+        <span id="ob-live-stage-badge" style="font-size: 11px; background: #0284c7; color: #ffffff !important; padding: 3px 8px; border-radius: 4px; border: 1px solid #38bdf8; font-weight: 700;">Ready — Oliveboard Live Session</span>
       </div>
 
       <!-- URL & Navigation Controls -->
@@ -1266,12 +1266,12 @@
         <button id="btn-ob-nav-back" title="Back" style="padding: 4px 8px; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px; cursor: pointer; font-size: 12px;">◀</button>
         <button id="btn-ob-nav-reload" title="Reload" style="padding: 4px 8px; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px; cursor: pointer; font-size: 12px;">↻</button>
         <input type="text" id="ob-live-url-input" value="https://www.oliveboard.in/?next=https%3A%2F%2Fu1.oliveboard.in%2Fexams%2F%3Fc%3Dsbipopre19%26i%3Dbanking" style="flex: 1; padding: 5px 10px; background: #1e293b; color: #e2e8f0; border: 1px solid #475569; border-radius: 4px; font-size: 12px;">
-        <button id="btn-ob-nav-go" style="padding: 5px 10px; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer;">Go</button>
+        <button id="btn-ob-nav-go" style="padding: 5px 12px; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer;">Go</button>
       </div>
 
       <!-- Quick Text Input & Deep Reverse-Engineer Action -->
       <div style="display: flex; align-items: center; gap: 6px;">
-        <button id="btn-ob-bring-front" title="Bring native Chrome window to front on your Windows desktop for direct 1-click Google Sign-In" style="padding: 5px 9px; background: #4f46e5; color: #fff; border: 1px solid #818cf8; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">🪟 Native Chrome</button>
+        <button id="btn-ob-bring-front" title="Focus interactive Oliveboard viewport" style="padding: 5px 9px; background: #4f46e5; color: #fff; border: 1px solid #818cf8; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">🪟 Live Viewport</button>
         <input type="text" id="ob-live-type-input" placeholder="Type text (email/pwd/OTP) & Enter..." style="width: 180px; padding: 5px 8px; background: #1e293b; color: #fff; border: 1px solid #64748b; border-radius: 4px; font-size: 11px;">
         <button id="btn-ob-send-text" style="padding: 5px 9px; background: #0284c7; color: #fff; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">Send</button>
         <button id="btn-ob-scrape-now" style="padding: 6px 12px; background: #16a34a; color: #fff; border: 1px solid #86efac; border-radius: 4px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px;">📸 Snapshot &amp; Scrape (REA MCP)</button>
@@ -1281,25 +1281,26 @@
 
     <!-- Open Browser Tabs Strip (Handles Popup Windows for Take Test & Solutions) -->
     <div id="ob-live-tabs-bar" style="background: #1e293b; padding: 4px 14px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #334155; font-size: 11px; color: #cbd5e1; overflow-x: auto;">
-      <span>Open Tabs:</span>
+      <span style="color: #94a3b8; font-weight: 700;">Open Tabs:</span>
     </div>
 
     <!-- Quick Login & Credentials Assistant Bar -->
     <div id="ob-live-credentials-bar" style="background: #111827; padding: 6px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #374151; font-size: 11px; color: #cbd5e1; flex-wrap: wrap;">
-      <span style="font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 4px;">🔑 Login Assistant:</span>
+      <span style="font-weight: 800; color: #38bdf8 !important; display: flex; align-items: center; gap: 4px;">🔑 Login Assistant:</span>
       <input type="text" id="ob-cred-email" placeholder="Email / Mobile" style="padding: 4px 8px; background: #1f2937; color: #fff; border: 1px solid #4b5563; border-radius: 4px; font-size: 11px; width: 180px;">
       <input type="password" id="ob-cred-pass" placeholder="Password" style="padding: 4px 8px; background: #1f2937; color: #fff; border: 1px solid #4b5563; border-radius: 4px; font-size: 11px; width: 140px;">
       <button id="btn-ob-fill-login" style="padding: 4px 10px; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;">⚡ Fill &amp; Login</button>
       <button id="btn-ob-switch-login-tab" style="padding: 4px 10px; background: #374151; color: #e2e8f0; border: 1px solid #6b7280; border-radius: 4px; font-size: 11px; cursor: pointer;">🔄 Switch to Login Form</button>
       <button id="btn-ob-switch-signup-tab" style="padding: 4px 10px; background: #374151; color: #e2e8f0; border: 1px solid #6b7280; border-radius: 4px; font-size: 11px; cursor: pointer;">📝 Switch to Sign Up</button>
-      <span style="color: #94a3b8; font-size: 11px; margin-left: auto;">💡 Tip: You can also click directly on any input in the screen below to type!</span>
+      <span style="color: #94a3b8 !important; font-size: 11px; margin-left: auto;">💡 Tip: Click any stage tab or button in the live screen below to navigate!</span>
     </div>
 
-    <!-- Interactive Remote Viewport Canvas -->
-    <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; position: relative; background: #020617; padding: 6px;">
-      <div id="ob-live-viewport-wrapper" style="position: relative; width: 1280px; height: 760px; max-width: 100%; max-height: 100%; aspect-ratio: 1280 / 760; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,0.6); overflow: hidden; outline: none; cursor: crosshair;" tabindex="0">
+    <!-- Interactive Remote Viewport Canvas (Full-bleed Real Website Iframe) -->
+    <div style="flex: 1; display: flex; align-items: stretch; justify-content: stretch; overflow: hidden; position: relative; background: #0f172a; padding: 0;">
+      <div id="ob-live-viewport-wrapper" style="position: relative; width: 100%; height: 100%; flex: 1; background: #ffffff; overflow: hidden; outline: none;" tabindex="0">
+        <iframe id="ob-live-iframe" title="Oliveboard Live Website" style="width: 100%; height: 100%; border: none; display: block; background: #ffffff;"></iframe>
         <div id="ob-live-click-dot" style="display:none; position:absolute; width:18px; height:18px; border-radius:50%; background:rgba(56, 189, 248, 0.6); border:2px solid #38bdf8; transform:translate(-50%, -50%); pointer-events:none; z-index:99; transition:opacity 0.2s ease;"></div>
-        <img id="ob-live-screen-img" alt="Oliveboard Live Browser Stream" style="width: 100%; height: 100%; object-fit: fill; display: block; cursor: crosshair; user-select: none;" draggable="false">
+        <img id="ob-live-screen-img" alt="Oliveboard Live Browser Stream" style="width: 100%; height: 100%; object-fit: fill; display: none; cursor: pointer; user-select: none;" draggable="false">
       </div>
     </div>
 
@@ -1325,17 +1326,17 @@
 
     <!-- Status Footer -->
     <div id="ob-live-status-footer" style="background: #0f172a; color: #94a3b8; padding: 5px 14px; font-size: 11px; display: flex; justify-content: space-between; border-top: 1px solid #334155;">
-      <span id="ob-live-status-msg">Click anywhere on the Oliveboard page above to focus inputs, then type directly on your keyboard or use the "Type text" box above.</span>
-      <span id="ob-live-scrape-summary">Ready for Step 1 (Dashboard) → Step 2 (Live Mock) → Step 3 (Solution Window)</span>
+      <span id="ob-live-status-msg" style="color: #cbd5e1 !important;">Click anywhere on the real Oliveboard page above to interact, or type any URL and click Go.</span>
+      <span id="ob-live-scrape-summary" style="color: #38bdf8 !important;">Ready for Step 1 (Dashboard) → Step 2 (Live Mock) → Step 3 (Solution Window)</span>
     </div>
   </div>
 
   <!-- Scripts -->
-  <script src="js/exam-patterns-2026.js?v=20261026_1"></script>
-  <script src="js/data.js?v=20261026_1"></script>
-  <script src="js/data-manager.js?v=20261026_1"></script>
-  <script src="js/test-engine.js?v=20261026_1"></script>
-  <script src="js/solution-engine.js?v=20261026_1"></script>
-  <script src="js/app.js?v=20261026_1"></script>
+  <script src="js/exam-patterns-2026.js?v=20261026_4"></script>
+  <script src="js/data.js?v=20261026_4"></script>
+  <script src="js/data-manager.js?v=20261026_4"></script>
+  <script src="js/test-engine.js?v=20261026_4"></script>
+  <script src="js/solution-engine.js?v=20261026_4"></script>
+  <script src="js/app.js?v=20261026_4"></script>
 </body>
 </html>

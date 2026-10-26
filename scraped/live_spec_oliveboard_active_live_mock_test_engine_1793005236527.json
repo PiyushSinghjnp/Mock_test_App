@@ -1,0 +1,178 @@
+{
+  "capturedAt": "2026-10-26T09:00:36.534Z",
+  "url": "https://u1.oliveboard.in/exams/tests/part.php?c=sbipopre19&testid=1",
+  "title": "Oliveboard | Active Live Mock Test Engine",
+  "stage": {
+    "stage": "live_test",
+    "label": "3. Active Live Mock Test (40 Encrypted Questions Detected)",
+    "title": "Oliveboard | Active Live Mock Test Engine"
+  },
+  "visualSnapshots": {
+    "main": "scraped/snapshots/screenshot_oliveboard_active_live_mock_test_engine_1793005236527.svg",
+    "mainUrl": "/scraped/snapshots/screenshot_oliveboard_active_live_mock_test_engine_1793005236527.svg",
+    "mainByteSize": 14734,
+    "otherTabsCount": 3,
+    "otherTabs": [
+      {
+        "tabIndex": 1,
+        "targetId": "ob-tab-2",
+        "title": "Oliveboard | Banking & Insurance SBI PO 2026 Prelims",
+        "url": "https://u1.oliveboard.in/exams/?c=sbipopre19&i=banking",
+        "filePath": "scraped/snapshots/screenshot_oliveboard_active_live_mock_test_engine_tab2_1793005236527.svg",
+        "urlPath": "/scraped/snapshots/screenshot_oliveboard_active_live_mock_test_engine_tab2_1793005236527.svg",
+        "byteSize": 7268
+      },
+      {
+        "tabIndex": 2,
+        "targetId": "ob-tab-3",
+        "title": "Oliveboard | Live Mock Test (SBI PO Prelims #1)",
+        "url": "https://u1.oliveboard.in/exams/tests/part.php?c=sbipopre19&testid=1",
+        "filePath": "scraped/snapshots/screenshot_oliveboard_active_live_mock_test_engine_tab3_1793005236527.svg",
+        "urlPath": "/scraped/snapshots/screenshot_oliveboard_active_live_mock_test_engine_tab3_1793005236527.svg",
+        "byteSize": 14734
+      },
+      {
+        "tabIndex": 3,
+        "targetId": "ob-tab-4",
+        "title": "Oliveboard | Solution App (index3.php)",
+        "url": "https://u1.oliveboard.in/exams/solution/index3.php?c=sbipopre19&testid=1&from=test",
+        "filePath": "scraped/snapshots/screenshot_oliveboard_active_live_mock_test_engine_tab4_1793005236527.svg",
+        "urlPath": "/scraped/snapshots/screenshot_oliveboard_active_live_mock_test_engine_tab4_1793005236527.svg",
+        "byteSize": 5652
+      }
+    ]
+  },
+  "domHtmlFile": "scraped/snapshots/dom_oliveboard_active_live_mock_test_engine_1793005236527.html",
+  "reaEvidenceFile": "scraped/snapshots/rea_evidence_oliveboard_active_live_mock_test_engine_1793005236527.json",
+  "reaEvidenceId": "ev_rea_mcp_1a17770b133",
+  "reaProvider": "REA Chrome DevTools Protocol observation provider",
+  "viewport": {
+    "innerWidth": 1280,
+    "innerHeight": 760,
+    "devicePixelRatio": 1,
+    "scrollX": 0,
+    "scrollY": 0
+  },
+  "modalsCount": 2,
+  "visibleModals": [],
+  "detectedModals": [
+    {
+      "selector": "#submit-pane",
+      "id": "submit-pane",
+      "className": "",
+      "isVisible": false,
+      "heading": "Exam Summary",
+      "buttonsCount": 2,
+      "buttons": [
+        {
+          "id": "sure-yes",
+          "text": "Submit Test"
+        },
+        {
+          "id": "sure-no",
+          "text": "Back"
+        }
+      ]
+    },
+    {
+      "selector": "#login-modal",
+      "id": "login-modal",
+      "className": "modal",
+      "isVisible": false,
+      "heading": "Login to Oliveboard",
+      "buttonsCount": 2,
+      "buttons": [
+        {
+          "id": "coursein1",
+          "text": "Login"
+        },
+        {
+          "id": "courseup",
+          "text": "Sign Up"
+        }
+      ]
+    }
+  ],
+  "tablesCount": 1,
+  "allTables": [
+    {
+      "tableIndex": 0,
+      "id": "f-table",
+      "className": "table table-bordered",
+      "headers": [
+        "Section Name",
+        "No of Questions",
+        "Answered",
+        "Not Answered",
+        "Marked for Review",
+        "Not Visited"
+      ],
+      "rowCount": 3,
+      "rows": [
+        [
+          "English Language",
+          "30",
+          "12",
+          "2",
+          "1",
+          "15"
+        ],
+        [
+          "Quantitative Aptitude",
+          "35",
+          "15",
+          "1",
+          "0",
+          "19"
+        ],
+        [
+          "Reasoning Ability",
+          "35",
+          "18",
+          "0",
+          "2",
+          "15"
+        ]
+      ]
+    }
+  ],
+  "globals": {
+    "course": "sbipopre19",
+    "total_q": 40,
+    "total_time": 3600
+  },
+  "storage": {
+    "localStorage": {
+      "ob_user": "candidate@oliveboard.in"
+    },
+    "sessionStorage": {},
+    "cookies": "ob_session=active"
+  },
+  "computedUI": {
+    "#header-top": {
+      "backgroundColor": "rgb(52, 118, 187)",
+      "height": "52px"
+    },
+    "#main-container": {
+      "display": "block"
+    },
+    "#question-outer-pane": {
+      "backgroundColor": "rgb(255, 255, 255)"
+    },
+    "#f-table": {
+      "display": "table"
+    }
+  },
+  "decryptedQuestionsCount": 40,
+  "extractedSolutionsCount": 40,
+  "dashboardCardsCount": 3,
+  "verificationChecklist": {
+    "visualSnapshotCaptured": true,
+    "fullDomCaptured": true,
+    "reaEvidenceCaptured": true,
+    "modalsInspectedCount": 2,
+    "tablesInspectedCount": 1,
+    "questionsDecryptedCount": 40,
+    "solutionsExtractedCount": 40
+  }
+}

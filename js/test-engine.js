@@ -556,12 +556,13 @@ class OliveboardTestEngine {
   startActiveExam(isResume = false) {
     this.isExamActive = true;
     this.isConfirmPaneOpen = false;
+    this.isUtilityViewOpen = false;
     if (this.sendDataTimeoutId) {
       clearTimeout(this.sendDataTimeoutId);
       this.sendDataTimeoutId = null;
     }
     this.startTime = Date.now();
-    this.currentQuestionEntryTime = Date.now();
+    this.currentQuestionEntryTime = null;
 
     if (this.leftContainerPre) this.leftContainerPre.style.display = 'none';
     if (this.rightContainerPre) this.rightContainerPre.style.display = 'none';
@@ -593,26 +594,46 @@ class OliveboardTestEngine {
 
   /**
    * Record time spent on the active question before navigating (Spec 3.2)
+   * Tracks exact milliseconds spent while the question pane is actively visible,
+   * never inflating unvisited or sub-second skipped questions with artificial minimum seconds.
    */
   _recordCurrentQuestionTime() {
-    if (!this.currentQuestionEntryTime || !this.isExamActive) return;
-    const curSec = this.testData.sections && this.testData.sections[this.currentSectionIndex];
-    if (!curSec) return;
-    const curQ = curSec.questions && curSec.questions[this.currentQuestionIndex];
-    if (!curQ) return;
-
-    const elapsed = Math.max(1, Math.round((Date.now() - this.currentQuestionEntryTime) / 1000));
-    const resp = this.userResponses[curQ.id];
-    if (resp) {
-      resp.timeSpentSeconds = (resp.timeSpentSeconds || 0) + elapsed;
-      if (!resp.timeEntries) resp.timeEntries = [];
-      resp.timeEntries.push({
-        entry: new Date(this.currentQuestionEntryTime).toLocaleTimeString(),
-        exit: new Date().toLocaleTimeString(),
-        durationSeconds: elapsed
-      });
+    if (!this.currentQuestionEntryTime || !this.isExamActive || this.isPaused || this.isConfirmPaneOpen || this.isUtilityViewOpen) {
+      return;
     }
-    this.currentQuestionEntryTime = Date.now();
+    const curSec = this.testData.sections && this.testData.sections[this.currentSectionIndex];
+    if (!curSec) {
+      this.currentQuestionEntryTime = null;
+      return;
+    }
+    const curQ = curSec.questions && curSec.questions[this.currentQuestionIndex];
+    if (!curQ) {
+      this.currentQuestionEntryTime = null;
+      return;
+    }
+
+    const now = Date.now();
+    const elapsedMs = Math.max(0, now - this.currentQuestionEntryTime);
+    const resp = this.userResponses[curQ.id];
+    if (resp && resp.status !== 'stic-notvisited' && elapsedMs > 0) {
+      const priorMs = typeof resp.timeSpentMs === 'number'
+        ? resp.timeSpentMs
+        : ((Number(resp.timeSpentSeconds) || 0) * 1000);
+      resp.timeSpentMs = priorMs + elapsedMs;
+      const newTotalSec = Math.round(resp.timeSpentMs / 1000);
+      const prevSec = Number(resp.timeSpentSeconds) || 0;
+      const deltaSec = Math.max(0, newTotalSec - prevSec);
+      resp.timeSpentSeconds = newTotalSec;
+      if (deltaSec > 0) {
+        if (!resp.timeEntries) resp.timeEntries = [];
+        resp.timeEntries.push({
+          entry: new Date(this.currentQuestionEntryTime).toLocaleTimeString(),
+          exit: new Date(now).toLocaleTimeString(),
+          durationSeconds: deltaSec
+        });
+      }
+    }
+    this.currentQuestionEntryTime = now;
   }
 
   startTimer() {
@@ -691,6 +712,7 @@ class OliveboardTestEngine {
     const isLastSection = this.currentSectionIndex >= this.testData.sections.length - 1;
     if (!isLastSection && this.testData.hasSectionalTiming !== false) {
       this._recordCurrentQuestionTime();
+      this.currentQuestionEntryTime = null;
       this.completedSections.add(this.currentSectionIndex);
       this.switchSection(this.currentSectionIndex + 1);
     } else {
@@ -713,7 +735,9 @@ class OliveboardTestEngine {
 
   resumeTest() {
     this.isPaused = false;
-    this.currentQuestionEntryTime = Date.now();
+    if (this.isExamActive && !this.isConfirmPaneOpen && !this.isUtilityViewOpen) {
+      this.currentQuestionEntryTime = Date.now();
+    }
     if (this.questionInnerPane) this.questionInnerPane.style.opacity = '1';
     if (this.mainContainer) this.mainContainer.style.opacity = '1';
     if (this.pauseModal) this.pauseModal.style.display = 'none';
@@ -721,6 +745,8 @@ class OliveboardTestEngine {
   }
 
   async savePausedStateAndExit() {
+    this._recordCurrentQuestionTime();
+    this.currentQuestionEntryTime = null;
     this.isExamActive = false;
     this.isPaused = false;
     if (this.questionInnerPane) this.questionInnerPane.style.opacity = '1';
@@ -862,6 +888,10 @@ class OliveboardTestEngine {
 
   switchSection(sectionIndex, resetSectionTimer = true) {
     if (this.completedSections.has(sectionIndex)) return;
+    // Record time spent on the current section's active question BEFORE changing currentSectionIndex
+    this._recordCurrentQuestionTime();
+    this.currentQuestionEntryTime = null;
+
     this.currentSectionIndex = sectionIndex;
     this.currentQuestionIndex = 0;
 
@@ -885,8 +915,9 @@ class OliveboardTestEngine {
    * - Renders Variant 2 (.two-sided-wrapper) when question has passage/directions, or Variant 1 (.question-outer-div) when standalone
    */
   loadQuestion(sectionIndex, questionIndex) {
+    // Record time on the previously active question before switching indices
     this._recordCurrentQuestionTime();
-    this.currentQuestionEntryTime = Date.now();
+    this.currentQuestionEntryTime = null;
 
     // Ensure main question pane is visible if user clicked palette from Question Paper / Instructions / Profile view
     this.getAllBack();
@@ -903,6 +934,9 @@ class OliveboardTestEngine {
     if (response && response.status === 'stic-notvisited') {
       response.status = 'stic-notanswered';
     }
+
+    // Start timing the newly loaded question now that it is active
+    this.currentQuestionEntryTime = Date.now();
 
     // Restore DOM radio selection (draftSelectedIndex if touched, else committed selectedIndex)
     this.pendingSelectedIndex = response
@@ -1246,6 +1280,10 @@ class OliveboardTestEngine {
    * In-Pane Utility View #b1: getQuestionPaper() (oliveboard_live_player.html lines 281-320 & 900-917)
    */
   getQuestionPaper() {
+    this._recordCurrentQuestionTime();
+    this.currentQuestionEntryTime = null;
+    this.isUtilityViewOpen = true;
+
     if (this.b1El) { this.b1El.style.backgroundColor = '#2F72B7'; this.b1El.style.color = '#FFF'; }
     if (this.b2El) { this.b2El.style.backgroundColor = '#C7DCF0'; this.b2El.style.color = '#000'; }
     if (this.b3El) { this.b3El.style.backgroundColor = '#C7DCF0'; this.b3El.style.color = '#000'; }
@@ -1300,6 +1338,10 @@ class OliveboardTestEngine {
    * In-Pane Utility View #b2: getInstructions() (oliveboard_live_player.html lines 881-898)
    */
   getInstructions() {
+    this._recordCurrentQuestionTime();
+    this.currentQuestionEntryTime = null;
+    this.isUtilityViewOpen = true;
+
     if (this.b2El) { this.b2El.style.backgroundColor = '#2F72B7'; this.b2El.style.color = '#FFF'; }
     if (this.b1El) { this.b1El.style.backgroundColor = '#C7DCF0'; this.b1El.style.color = '#000'; }
     if (this.b3El) { this.b3El.style.backgroundColor = '#C7DCF0'; this.b3El.style.color = '#000'; }
@@ -1323,6 +1365,10 @@ class OliveboardTestEngine {
    * In-Pane Utility View #b3: getCandProfile() (oliveboard_live_player.html lines 919-936)
    */
   getCandProfile() {
+    this._recordCurrentQuestionTime();
+    this.currentQuestionEntryTime = null;
+    this.isUtilityViewOpen = true;
+
     if (this.b3El) { this.b3El.style.backgroundColor = '#2F72B7'; this.b3El.style.color = '#FFF'; }
     if (this.b1El) { this.b1El.style.backgroundColor = '#C7DCF0'; this.b1El.style.color = '#000'; }
     if (this.b2El) { this.b2El.style.backgroundColor = '#C7DCF0'; this.b2El.style.color = '#000'; }
@@ -1351,6 +1397,9 @@ class OliveboardTestEngine {
    * In-Pane Back Button: getAllBack() (oliveboard_live_player.html lines 938-956)
    */
   getAllBack() {
+    const wasUtilityOpen = Boolean(this.isUtilityViewOpen);
+    this.isUtilityViewOpen = false;
+
     if (this.b1El) { this.b1El.style.backgroundColor = '#C7DCF0'; this.b1El.style.color = '#000'; }
     if (this.b2El) { this.b2El.style.backgroundColor = '#C7DCF0'; this.b2El.style.color = '#000'; }
     if (this.b3El) { this.b3El.style.backgroundColor = '#C7DCF0'; this.b3El.style.color = '#000'; }
@@ -1363,6 +1412,10 @@ class OliveboardTestEngine {
     if (this.questionInnerPane) this.questionInnerPane.style.display = 'block';
     if (this.buttonHolder) this.buttonHolder.style.display = 'flex';
     if (this.questionNoBar) this.questionNoBar.style.display = 'flex';
+
+    if (wasUtilityOpen && this.isExamActive && !this.isPaused && !this.isConfirmPaneOpen) {
+      this.currentQuestionEntryTime = Date.now();
+    }
   }
 
   /**
@@ -1520,6 +1573,7 @@ class OliveboardTestEngine {
    */
   finalSubmit(forceSectionAdvance = false) {
     this._recordCurrentQuestionTime();
+    this.currentQuestionEntryTime = null;
     this.isConfirmPaneOpen = true;
     const isLastSection = this.currentSectionIndex >= this.testData.sections.length - 1;
     this.isSectionAdvanceConfirm = forceSectionAdvance && !isLastSection;
@@ -1635,7 +1689,9 @@ class OliveboardTestEngine {
       this.sendDataTimeoutId = null;
     }
     this.targetSectionIndexForAdvance = undefined;
-    this.currentQuestionEntryTime = Date.now();
+    if (this.isExamActive && !this.isPaused && !this.isUtilityViewOpen) {
+      this.currentQuestionEntryTime = Date.now();
+    }
     if (this.leftContainerPre) this.leftContainerPre.style.display = 'none';
     if (this.rightContainerPre) this.rightContainerPre.style.display = 'none';
     if (this.submitPane) this.submitPane.style.display = 'none';
@@ -1706,12 +1762,23 @@ class OliveboardTestEngine {
     this.isConfirmPaneOpen = false;
 
     const endTime = Date.now();
+    // Guarantee unvisited questions always have 0 timeSpentSeconds
+    Object.values(this.userResponses || {}).forEach(r => {
+      if (!r) return;
+      if (r.status === 'stic-notvisited' && (r.selectedIndex === null || r.selectedIndex === undefined)) {
+        r.timeSpentSeconds = 0;
+        r.timeSpentMs = 0;
+        r.timeEntries = [];
+      } else {
+        r.timeSpentSeconds = Math.max(0, Math.round(Number(r.timeSpentSeconds) || 0));
+      }
+    });
     const summedQuestionSeconds = Object.values(this.userResponses || {}).reduce(
       (sum, r) => sum + (Number(r && r.timeSpentSeconds) || 0),
       0
     );
-    const sessionWallSeconds = Math.max(1, Math.round((endTime - (this.startTime || endTime)) / 1000));
-    const totalTimeSeconds = Math.max(1, summedQuestionSeconds > 0 ? summedQuestionSeconds : sessionWallSeconds);
+    const sessionWallSeconds = Math.max(0, Math.round((endTime - (this.startTime || endTime)) / 1000));
+    const totalTimeSeconds = summedQuestionSeconds > 0 ? summedQuestionSeconds : sessionWallSeconds;
 
     // Compute detailed scoring using 2026 official per-question / per-section marking scheme
     const allQuestions = [];
@@ -2052,7 +2119,9 @@ class OliveboardTestEngine {
         ? `<span class="pill-cleared">CLEARED</span>`
         : `<span class="pill-missed">MISSED</span>`;
       const scoreStr = score >= 0 ? `+${score.toFixed(2)}` : score.toFixed(2);
-      const timeSpentSec = sec.timeSpentSeconds || Math.round((totalTimeSeconds || 1200) / Math.max(1, sectionBreakdownArr.length));
+      const timeSpentSec = (sec.timeSpentSeconds !== undefined && sec.timeSpentSeconds !== null)
+        ? Math.max(0, Number(sec.timeSpentSeconds) || 0)
+        : 0;
       const timeStr = this._formatTime(timeSpentSec);
 
       return `

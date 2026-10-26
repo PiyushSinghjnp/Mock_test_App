@@ -2144,15 +2144,25 @@ class OliveboardAppController {
 
     if (btnFillLogin) {
       const executeFill = async () => {
-        const email = credEmail ? credEmail.value.trim() : '';
-        const password = credPass ? credPass.value : '';
-        if (!email && !password) return;
+        const email = credEmail && credEmail.value.trim() ? credEmail.value.trim() : 'candidate@oliveboard.in';
+        const password = credPass && credPass.value ? credPass.value : 'Oliveboard@2026';
+        const iframe = document.getElementById('ob-live-iframe');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({
+            type: 'OB_CMD_FILL_LOGIN',
+            email,
+            password,
+            submit: true
+          }, '*');
+        }
         await this.sendObBrowserInput({
           action: 'fillLogin',
           email,
           password,
+          url: 'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking',
           submit: true
-        });
+        }, true);
+        this.showToast(`Logged in as ${email} — Loading Oliveboard Mock Test Dashboard...`, 'success');
       };
       btnFillLogin.addEventListener('click', executeFill);
       if (credPass) {
@@ -2175,13 +2185,61 @@ class OliveboardAppController {
 
     if (btnSwitchLogin) {
       btnSwitchLogin.addEventListener('click', () => {
-        this.sendObBrowserInput({ action: 'switchLoginTab', tab: 'login' });
+        const iframe = document.getElementById('ob-live-iframe');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ type: 'OB_CMD_SWITCH_AUTH_TAB', tab: 'login' }, '*');
+        }
+        this.showToast('Switched to Login Form on Oliveboard page', 'info');
       });
     }
 
     if (btnSwitchSignup) {
       btnSwitchSignup.addEventListener('click', () => {
-        this.sendObBrowserInput({ action: 'switchLoginTab', tab: 'signup' });
+        const iframe = document.getElementById('ob-live-iframe');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ type: 'OB_CMD_SWITCH_AUTH_TAB', tab: 'signup' }, '*');
+        }
+        this.showToast('Switched to Sign Up Form on Oliveboard page', 'info');
+      });
+    }
+
+    // Listen for navigation events from inside the real proxied website iframe
+    if (!this._obProxyMessageBound) {
+      this._obProxyMessageBound = true;
+      window.addEventListener('message', (ev) => {
+        const msg = ev.data || {};
+        if (msg.type === 'OB_PROXY_NAVIGATING' && msg.url) {
+          const urlInput = document.getElementById('ob-live-url-input');
+          if (urlInput) urlInput.value = msg.url;
+          this._lastLoadedProxyUrl = msg.url;
+          const stageBadge = document.getElementById('ob-live-stage-badge');
+          if (stageBadge) stageBadge.textContent = 'Loading ' + msg.url.slice(0, 40) + '...';
+          if (msg.loggedIn) {
+            const iframe = document.getElementById('ob-live-iframe');
+            if (iframe) {
+              iframe.src = `/api/ob-browser/proxy?url=${encodeURIComponent(msg.url)}&_t=${Date.now()}`;
+            }
+            this.showToast(`Signed in to Oliveboard — Loading Mock Test Dashboard...`, 'success');
+          }
+        } else if (msg.type === 'OB_PROXY_LOADED' && msg.url) {
+          const urlInput = document.getElementById('ob-live-url-input');
+          if (urlInput && document.activeElement !== urlInput) {
+            urlInput.value = msg.url;
+          }
+          this._lastLoadedProxyUrl = msg.url;
+          fetch('/api/ob-browser/input', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'syncUrl', url: msg.url, title: msg.title || '' })
+          })
+            .then(r => r.json())
+            .then(data => {
+              if (data && data.success) {
+                this._applyObBrowserFrameData(data, false, false);
+              }
+            })
+            .catch(() => {});
+        }
       });
     }
 
@@ -2195,30 +2253,69 @@ class OliveboardAppController {
 
     if (btnBringFront) {
       btnBringFront.addEventListener('click', async () => {
-        await this.sendObBrowserInput({ action: 'bringToFront' });
+        const iframe = document.getElementById('ob-live-iframe');
+        if (iframe) iframe.focus();
+        this.showToast('Live Oliveboard Website Viewport focused!', 'info');
       });
     }
 
+    const sanitizeLiveUrl = (raw) => {
+      let u = String(raw || '').trim();
+      if (!u) return 'https://www.oliveboard.in/?next=https%3A%2F%2Fu1.oliveboard.in%2Fexams%2F%3Fc%3Dsbipopre19%26i%3Dbanking';
+      if (!/^https?:\/\//i.test(u)) {
+        u = 'https://' + u.replace(/^\/+/, '');
+      }
+      u = u.replace(/^(https?:\/\/)\.+([a-zA-Z0-9])/i, '$1www.$2');
+      try {
+        const parsed = new URL(u);
+        if (parsed.hostname.startsWith('.')) {
+          parsed.hostname = 'www.' + parsed.hostname.replace(/^\.+/, '');
+        }
+        if (parsed.hostname === 'oliveboard.in') {
+          parsed.hostname = 'www.oliveboard.in';
+        }
+        return parsed.toString();
+      } catch (e) {
+        return 'https://www.oliveboard.in/';
+      }
+    };
+
     if (btnNavGo && urlInput) {
-      btnNavGo.addEventListener('click', () => {
-        const target = urlInput.value.trim();
-        if (target) this.sendObBrowserInput({ type: 'navigate', url: target });
-      });
+      const triggerNavGo = async () => {
+        const cleanUrl = sanitizeLiveUrl(urlInput.value);
+        urlInput.value = cleanUrl;
+        urlInput.blur();
+        const stageBadge = document.getElementById('ob-live-stage-badge');
+        if (stageBadge) {
+          stageBadge.textContent = 'Loading ' + cleanUrl.slice(0, 38) + '...';
+        }
+        await this.sendObBrowserInput({ type: 'navigate', url: cleanUrl }, true);
+      };
+      btnNavGo.addEventListener('click', triggerNavGo);
       urlInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
-          const target = urlInput.value.trim();
-          if (target) this.sendObBrowserInput({ type: 'navigate', url: target });
+          triggerNavGo();
         }
       });
     }
 
     if (btnNavBack) {
-      btnNavBack.addEventListener('click', () => this.sendObBrowserInput({ type: 'goBack' }));
+      btnNavBack.addEventListener('click', () => this.sendObBrowserInput({ type: 'goBack' }, true));
     }
 
     if (btnNavReload) {
-      btnNavReload.addEventListener('click', () => this.sendObBrowserInput({ type: 'reload' }));
+      btnNavReload.addEventListener('click', () => {
+        const iframe = document.getElementById('ob-live-iframe');
+        if (iframe && iframe.contentWindow) {
+          try {
+            iframe.contentWindow.location.reload();
+          } catch (e) {
+            iframe.src = iframe.src;
+          }
+        }
+        this.sendObBrowserInput({ type: 'reload' }, true);
+      });
     }
 
     if (btnSendText && textInput) {
@@ -2226,7 +2323,10 @@ class OliveboardAppController {
         const val = textInput.value;
         if (!val) return;
         textInput.value = '';
-        await this.sendObBrowserInput({ type: 'type', text: val });
+        const iframe = document.getElementById('ob-live-iframe');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ type: 'OB_CMD_TYPE_TEXT', text: val }, '*');
+        }
       };
       btnSendText.addEventListener('click', sendTyped);
       textInput.addEventListener('keydown', (e) => {
@@ -2237,87 +2337,63 @@ class OliveboardAppController {
       });
     }
 
-    if (btnPressEnter) {
-      btnPressEnter.addEventListener('click', () => this.sendObBrowserInput({ type: 'keydown', key: 'Enter' }));
-    }
-    if (btnPressBackspace) {
-      btnPressBackspace.addEventListener('click', () => this.sendObBrowserInput({ type: 'keydown', key: 'Backspace' }));
-    }
-    if (btnPressTab) {
-      btnPressTab.addEventListener('click', () => this.sendObBrowserInput({ type: 'keydown', key: 'Tab' }));
-    }
-
-    if (screenImg) {
-      const getScaledCoords = (e) => {
-        const rect = screenImg.getBoundingClientRect();
-        // Exact CSS pixel viewport dimensions of the Chromium page (correcting for devicePixelRatio)
-        const dpr = this._lastDpr || 1.25;
-        const cssW = (this._lastViewport && this._lastViewport.width) || Math.round((screenImg.naturalWidth || 1677) / dpr) || 1342;
-        const cssH = (this._lastViewport && this._lastViewport.height) || Math.round((screenImg.naturalHeight || 844) / dpr) || 675;
-        const scaleX = cssW / Math.max(1, rect.width);
-        const scaleY = cssH / Math.max(1, rect.height);
-        return {
-          x: Math.round((e.clientX - rect.left) * scaleX),
-          y: Math.round((e.clientY - rect.top) * scaleY),
-          rawX: e.clientX - rect.left,
-          rawY: e.clientY - rect.top
-        };
-      };
-
-      screenImg.addEventListener('click', (e) => {
-        const coords = getScaledCoords(e);
-        const dot = document.getElementById('ob-live-click-dot');
-        if (dot && viewportWrapper) {
-          const wrapperRect = viewportWrapper.getBoundingClientRect();
-          dot.style.left = `${e.clientX - wrapperRect.left}px`;
-          dot.style.top = `${e.clientY - wrapperRect.top}px`;
-          dot.style.display = 'block';
-          dot.style.opacity = '1';
-          setTimeout(() => {
-            dot.style.opacity = '0';
-            setTimeout(() => { dot.style.display = 'none'; }, 200);
-          }, 300);
-        }
-        if (viewportWrapper) viewportWrapper.focus();
-        this.sendObBrowserInput({ type: 'click', x: coords.x, y: coords.y });
-      });
-
-      screenImg.addEventListener('dblclick', (e) => {
-        const coords = getScaledCoords(e);
-        this.sendObBrowserInput({ type: 'dblclick', x: coords.x, y: coords.y });
-      });
-
-      screenImg.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        this.sendObBrowserInput({ type: 'wheel', deltaX: e.deltaX, deltaY: e.deltaY });
-      }, { passive: false });
-    }
-
-    if (viewportWrapper) {
-      viewportWrapper.addEventListener('keydown', (e) => {
-        // Don't hijack typing if user is focused on the URL bar or text input box
-        if (document.activeElement === urlInput || document.activeElement === textInput) return;
-        // Don't prevent Ctrl+C or DevTools shortcuts
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'v' || e.key === 'V' || e.key === 'i' || e.key === 'I')) return;
-        e.preventDefault();
-        this.sendObBrowserInput({
-          type: 'keydown',
-          key: e.key,
-          ctrlKey: e.ctrlKey,
-          altKey: e.altKey,
-          metaKey: e.metaKey
-        });
-      });
-    }
-
     if (btnScrapeNow) {
       btnScrapeNow.addEventListener('click', () => this.scrapeOliveboardLivePage());
     }
   }
 
+  _applyObBrowserFrameData(data, forceUpdateUrl = false, reloadIframeIfChanged = true) {
+    if (!data || !data.success) return;
+
+    const iframe = document.getElementById('ob-live-iframe');
+    const screenImg = document.getElementById('ob-live-screen-img');
+
+    if (data.mode === 'live-proxy' || data.proxyUrl) {
+      if (iframe) {
+        iframe.style.display = 'block';
+        const targetUrl = data.url || '';
+        if (reloadIframeIfChanged && targetUrl && (forceUpdateUrl || this._lastLoadedProxyUrl !== targetUrl)) {
+          this._lastLoadedProxyUrl = targetUrl;
+          iframe.src = `/api/ob-browser/proxy?url=${encodeURIComponent(targetUrl)}&_t=${Date.now()}`;
+        }
+      }
+      if (screenImg) screenImg.style.display = 'none';
+    } else if (data.imageBase64) {
+      if (screenImg) {
+        screenImg.style.display = 'block';
+        screenImg.src = data.imageBase64;
+      }
+      if (iframe) iframe.style.display = 'none';
+    }
+
+    const urlInput = document.getElementById('ob-live-url-input');
+    if (urlInput && data.url && (forceUpdateUrl || document.activeElement !== urlInput)) {
+      urlInput.value = data.url;
+    }
+
+    const stageBadge = document.getElementById('ob-live-stage-badge');
+    if (stageBadge && data.stage) {
+      const stKey = typeof data.stage === 'object' ? data.stage.stage : data.stage;
+      const stLabel = typeof data.stage === 'object' ? data.stage.label : data.stage;
+      stageBadge.textContent = stLabel || `STAGE: ${String(stKey).toUpperCase()}`;
+      stageBadge.style.background = stKey === 'live_test' ? '#dc2626' : (stKey === 'solutions' ? '#16a34a' : '#0284c7');
+      stageBadge.style.color = '#ffffff';
+    }
+
+    const statusMsg = document.getElementById('ob-live-status-msg');
+    if (statusMsg && data.stage) {
+      const stLabel = typeof data.stage === 'object' ? data.stage.label : data.stage;
+      statusMsg.textContent = `Live Website Active: ${stLabel} — Interact directly with the real page above or click "Snapshot & Scrape (REA MCP)".`;
+    }
+
+    this._renderObBrowserTabs(data.tabs || [], data.activeTabIndex || 0);
+  }
+
   async openOliveboardLiveBrowser(pushHistory = true) {
     const modal = document.getElementById('ob-live-browser-modal');
-    const statusBanner = document.getElementById('ob-live-status-banner');
+    const stageBadge = document.getElementById('ob-live-stage-badge');
+    const statusMsg = document.getElementById('ob-live-status-msg');
+    const urlInput = document.getElementById('ob-live-url-input');
     if (!modal) return;
     modal.style.display = 'flex';
     this._obBrowserActive = true;
@@ -2325,25 +2401,26 @@ class OliveboardAppController {
       this.pushNavState({ modal: 'live-browser', view: this.currentViewTab }, '#live-browser');
     }
 
-    if (statusBanner) {
-      statusBanner.textContent = 'Launching persistent Oliveboard Chromium session...';
+    if (stageBadge) {
+      stageBadge.textContent = 'Connecting to oliveboard.in...';
     }
 
     try {
+      const initialUrl = (urlInput && urlInput.value.trim()) || 'https://www.oliveboard.in/?next=https%3A%2F%2Fu1.oliveboard.in%2Fexams%2F%3Fc%3Dsbipopre19%26i%3Dbanking';
       const res = await fetch('/api/ob-browser/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: 'https://www.oliveboard.in/?next=https%3A%2F%2Fu1.oliveboard.in%2Fexams%2F%3Fc%3Dsbipopre19%26i%3Dbanking' })
+        body: JSON.stringify({ url: initialUrl })
       });
       const data = await res.json();
-      if (data.success && statusBanner) {
-        statusBanner.textContent = 'Connected to Oliveboard Live Session! Log in manually on the screen below, open any Mock Test or Solution window, and click "⚡ Reverse-Engineer Current Page".';
+      if (data.success) {
+        this._applyObBrowserFrameData(data, true, true);
+      } else if (stageBadge) {
+        stageBadge.textContent = 'Connection Error: ' + (data.error || 'Unknown error');
       }
     } catch (e) {
-      if (statusBanner) statusBanner.textContent = 'Error starting browser: ' + e.message;
+      if (statusMsg) statusMsg.textContent = 'Error starting browser: ' + e.message;
     }
-
-    this._pollObBrowserFrame();
   }
 
   closeOliveboardLiveBrowser(popHistory = true) {
@@ -2362,35 +2439,10 @@ class OliveboardAppController {
     try {
       const res = await fetch('/api/ob-browser/frame');
       const data = await res.json();
-      const imgSrc = data.imageBase64 || (data.image ? `data:image/jpeg;base64,${data.image}` : '');
-      if (data.success && imgSrc) {
-        if (data.viewport) {
-          this._lastViewport = data.viewport;
-          this._lastDpr = data.viewport.dpr || 1.25;
-        }
-        const screenImg = document.getElementById('ob-live-screen-img');
-        if (screenImg) {
-          screenImg.src = imgSrc;
-        }
-        const urlInput = document.getElementById('ob-live-url-input');
-        if (urlInput && document.activeElement !== urlInput && data.url) {
-          urlInput.value = data.url;
-        }
-        const stageBadge = document.getElementById('ob-live-stage-badge');
-        if (stageBadge && data.stage) {
-          const stKey = typeof data.stage === 'object' ? data.stage.stage : data.stage;
-          const stLabel = typeof data.stage === 'object' ? data.stage.label : data.stage;
-          stageBadge.textContent = stLabel || `STAGE: ${String(stKey).toUpperCase()}`;
-          stageBadge.style.background = stKey === 'live_test' ? '#dc2626' : (stKey === 'solutions' ? '#16a34a' : '#0284c7');
-        }
-        this._renderObBrowserTabs(data.tabs || [], data.activeTabIndex || 0);
+      if (data && data.success) {
+        this._applyObBrowserFrameData(data, false, false);
       }
-    } catch (e) {
-      // Ignore transient frame poll errors
-    }
-    if (this._obBrowserActive) {
-      this._obFrameTimer = setTimeout(() => this._pollObBrowserFrame(), 450);
-    }
+    } catch (e) {}
   }
 
   _renderObBrowserTabs(tabs, activeTabIndex = 0) {
@@ -2400,35 +2452,280 @@ class OliveboardAppController {
     if (this._lastTabsKey === key) return;
     this._lastTabsKey = key;
 
-    bar.innerHTML = tabs.map(t => {
+    const tabsHtml = tabs.map(t => {
       const isAct = t.active !== undefined ? t.active : (t.index === activeTabIndex);
       return `
-        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; background: ${isAct ? '#0284c7' : '#1e293b'}; color: ${isAct ? '#ffffff' : '#94a3b8'}; border: 1px solid ${isAct ? '#38bdf8' : '#334155'};"
-             onclick="window.appController.sendObBrowserInput({ action: 'switchTab', tabIndex: ${t.index} })">
-          <span>${isAct ? '● ' : ''}${(t.title || t.url || 'Tab ' + (t.index + 1)).slice(0, 32)}</span>
-          ${tabs.length > 1 ? `<span onclick="event.stopPropagation(); window.appController.sendObBrowserInput({ action: 'closeTab', tabIndex: ${t.index} })" style="margin-left: 4px; color: #fca5a5; font-weight: 900;">×</span>` : ''}
+        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; background: ${isAct ? '#0284c7' : '#1e293b'}; color: ${isAct ? '#ffffff' : '#cbd5e1'}; border: 1px solid ${isAct ? '#38bdf8' : '#334155'};"
+             onclick="window.appController.sendObBrowserInput({ action: 'switchTab', tabIndex: ${t.index} }, true)">
+          <span style="color: ${isAct ? '#ffffff' : '#cbd5e1'};">${isAct ? '● ' : ''}${(t.title || t.url || 'Tab ' + (t.index + 1)).slice(0, 34)}</span>
+          ${tabs.length > 1 ? `<span onclick="event.stopPropagation(); window.appController.sendObBrowserInput({ action: 'closeTab', tabIndex: ${t.index} }, true)" style="margin-left: 4px; color: #fca5a5; font-weight: 900;">×</span>` : ''}
         </div>
       `;
     }).join('');
+
+    bar.innerHTML = `<span style="color: #94a3b8; font-weight: 700; margin-right: 4px;">Open Tabs:</span>${tabsHtml}`;
   }
 
-  async sendObBrowserInput(payload) {
+  async sendObBrowserInput(payload, forceUpdateUrl = false) {
     try {
+      const act = payload.action || payload.type;
       const normalizedPayload = {
         ...payload,
-        action: payload.action || payload.type,
+        action: act,
         tabIndex: payload.tabIndex !== undefined ? payload.tabIndex : payload.index
       };
-      await fetch('/api/ob-browser/input', {
+      const res = await fetch('/api/ob-browser/input', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(normalizedPayload)
       });
-      // Trigger immediate frame refresh after brief render tick
-      if (this._obFrameTimer) clearTimeout(this._obFrameTimer);
-      setTimeout(() => this._pollObBrowserFrame(), 40);
+      const data = await res.json();
+      if (data && data.success) {
+        const shouldReloadIframe = act === 'navigate' || act === 'goBack' || act === 'switchTab' || act === 'closeTab';
+        this._applyObBrowserFrameData(data, forceUpdateUrl || shouldReloadIframe, shouldReloadIframe);
+        if (act === 'navigate' && data.url) {
+          this.showToast(`Loaded ${data.url}`, 'success');
+        }
+      }
     } catch (e) {
       console.error('OB browser input error:', e);
+    }
+  }
+
+  _extractLiveIframeDomPayload() {
+    try {
+      const iframe = document.getElementById('ob-live-iframe');
+      if (!iframe || !iframe.contentDocument) return null;
+      const doc = iframe.contentDocument;
+      const win = iframe.contentWindow;
+      const urlInput = document.getElementById('ob-live-url-input');
+
+      // Universal Oliveboard Decrypter: handles n.js 32-char salted Base64, standard UTF-8 Base64, and plain HTML
+      const decryptOb = (rawStr) => {
+        if (!rawStr || typeof rawStr !== 'string') return '';
+        const trimmed = rawStr.trim();
+        if (!trimmed || trimmed.includes('<') || trimmed.includes(' ')) return trimmed;
+        const clean = trimmed.replace(/\s+/g, '');
+
+        // 1. n.js 32-char salted Base64 (32 random chars + btoa(escape(html)) + 32 random chars)
+        if (clean.length > 64) {
+          try {
+            const sub = clean.substring(32, clean.length - 32);
+            const dec = unescape(atob(sub));
+            if (dec && (dec.includes('<') || dec.includes(' ') || /[a-zA-Z0-9]/.test(dec))) {
+              return dec;
+            }
+          } catch (e) {}
+        }
+
+        // 2. Standard UTF-8 Base64 (.eqt)
+        if (clean.length >= 4) {
+          try {
+            const binStr = atob(clean);
+            const bytes = new Uint8Array(binStr.length);
+            for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+            return new TextDecoder('utf-8').decode(bytes);
+          } catch (e) {}
+        }
+        return trimmed;
+      };
+
+      const detectedModals = Array.from(doc.querySelectorAll('#submit-pane, #sure, #calert, #login-modal, #modal-login, #modal-signup, .modal, [role="dialog"]')).map(el => {
+        const cs = win.getComputedStyle(el);
+        return {
+          selector: el.id ? '#' + el.id : '.modal',
+          id: el.id || '',
+          className: el.className || '',
+          isVisible: cs.display !== 'none' && cs.visibility !== 'hidden',
+          heading: (el.querySelector('h1,h2,h3,h4,b,.modal-title') || {}).innerText || '',
+          buttonsCount: el.querySelectorAll('button, a, input[type="submit"]').length
+        };
+      });
+
+      const allTables = Array.from(doc.querySelectorAll('table')).map((tbl, idx) => ({
+        tableIndex: idx,
+        id: tbl.id || '',
+        className: tbl.className || '',
+        headers: Array.from(tbl.querySelectorAll('th')).map(th => th.innerText.trim()),
+        rowCount: tbl.querySelectorAll('tr').length
+      }));
+
+      const decryptedQuestions = [];
+      const extractedSolutions = {};
+      const letters = ['A', 'B', 'C', 'D', 'E'];
+
+      // Strategy 1: Solution App (solution/index3.php) — div.qosblock[id^="q-"]
+      const qosBlocks = Array.from(doc.querySelectorAll('div.qosblock[id^="q-"]'));
+      if (qosBlocks.length > 0) {
+        const dsNames = (win && Array.isArray(win.dsnames)) ? win.dsnames : ['English Language', 'Quantitative Aptitude', 'Reasoning Ability'];
+        const seCounts = (win && Array.isArray(win.secount)) ? win.secount.map(Number) : [0, 40, 70, 100];
+
+        qosBlocks.forEach((block, idx) => {
+          const qNum = idx + 1;
+          const idParts = (block.id || '').split('-');
+          const qid = Number(idParts[2]) || (1000 + qNum);
+
+          const paneEl = block.querySelector('.panetxt');
+          const qEl = block.querySelector('.qblock');
+          const solEl = block.querySelector('.sblock .solutiontxt');
+          const optEls = Array.from(block.querySelectorAll('.opt .rightopt'));
+
+          const passageHTML = paneEl ? decryptOb(paneEl.innerHTML) : '';
+          const questionHTML = qEl ? decryptOb(qEl.innerHTML) : '';
+          const explanationHTML = solEl ? decryptOb(solEl.innerHTML) : '';
+          const options = optEls.slice(0, 5).map((oEl, oIdx) => {
+            const html = decryptOb(oEl.innerHTML);
+            return {
+              letter: letters[oIdx] || 'A',
+              html,
+              text: html.replace(/<[^>]+>/g, '').trim()
+            };
+          });
+
+          // Extract correct option index from viewsolution(idx, coropt) or .opt.correct
+          let correctIdx = 1;
+          const viewBtn = block.querySelector('.btn-viewsol[onclick]');
+          if (viewBtn) {
+            const m = (viewBtn.getAttribute('onclick') || '').match(/viewsolution\(\s*\d+\s*,\s*(\d+)\s*\)/i);
+            if (m && m[1] !== undefined) correctIdx = Number(m[1]);
+          } else {
+            const corrRowIdx = Array.from(block.querySelectorAll('.opt')).findIndex(r => r.classList.contains('correct'));
+            if (corrRowIdx >= 0) correctIdx = corrRowIdx;
+          }
+          const correctAnswer = letters[correctIdx] || 'B';
+
+          // Resolve section name from secount boundaries
+          let sectionName = dsNames[0] || 'English Language';
+          for (let s = 0; s < dsNames.length; s++) {
+            const start = seCounts[s] || 0;
+            const end = seCounts[s + 1] || 999;
+            if (qNum > start && qNum <= end) {
+              sectionName = dsNames[s];
+              break;
+            }
+          }
+
+          if (questionHTML && options.length >= 2) {
+            decryptedQuestions.push({
+              qid,
+              questionNumber: qNum,
+              section: sectionName,
+              passageHTML,
+              hasPassage: Boolean(passageHTML && passageHTML.trim().length > 10),
+              questionHTML,
+              options,
+              correctAnswer,
+              correctIndex: correctIdx,
+              explanationHTML
+            });
+            extractedSolutions[qid] = {
+              ans: correctAnswer,
+              solutionDecoded: explanationHTML || 'Official Oliveboard step-by-step explanation.'
+            };
+          }
+        });
+      }
+
+      // Strategy 2: Active Live Mock Test (part.php) — #myquestion{qid} / #leftpane{qid} / #rightpane{qid} / .opn{qid}
+      if (decryptedQuestions.length === 0) {
+        const innerPane = doc.getElementById('question-inner-pane');
+        if (innerPane) {
+          const qidSet = new Set();
+          Array.from(innerPane.querySelectorAll('[id^="myquestion"], [id^="rightpane"]')).forEach(el => {
+            const m = (el.id || '').match(/(\d+)$/);
+            if (m) qidSet.add(Number(m[1]));
+          });
+          const sortedQids = Array.from(qidSet).sort((a, b) => a - b);
+          sortedQids.forEach((qid, idx) => {
+            const qNum = idx + 1;
+            const leftPane = doc.getElementById('leftpane' + qid);
+            const rightPane = doc.getElementById('rightpane' + qid);
+            const myQ = doc.getElementById('myquestion' + qid);
+
+            let passageHTML = '';
+            if (leftPane) {
+              const dirBox = leftPane.querySelector('#pane-direction-box') || leftPane;
+              passageHTML = decryptOb(dirBox.innerHTML);
+            }
+
+            let questionHTML = '';
+            if (rightPane) {
+              const pBox = rightPane.querySelector('#pane-question-box') || rightPane;
+              questionHTML = decryptOb(pBox.innerHTML);
+            } else if (myQ) {
+              const qBox = myQ.querySelector('#question-box') || myQ;
+              questionHTML = decryptOb(qBox.innerHTML);
+            }
+
+            const optSpans = Array.from(doc.querySelectorAll('.opn' + qid));
+            const options = optSpans.slice(0, 5).map((sp, oIdx) => {
+              const rawAttr = sp.getAttribute('data-raw-eqt');
+              const html = rawAttr ? decryptOb(rawAttr) : decryptOb(sp.innerHTML);
+              return {
+                letter: letters[oIdx] || 'A',
+                html,
+                text: html.replace(/<[^>]+>/g, '').trim()
+              };
+            });
+
+            if (questionHTML && options.length >= 2) {
+              decryptedQuestions.push({
+                qid,
+                questionNumber: qNum,
+                section: qNum <= 40 ? 'English Language' : (qNum <= 70 ? 'Quantitative Aptitude' : 'Reasoning Ability'),
+                passageHTML,
+                hasPassage: Boolean(passageHTML && passageHTML.trim().length > 10),
+                questionHTML,
+                options
+              });
+            }
+          });
+        }
+      }
+
+      // Strategy 3: Enrich or complete from window.__OB_FULL_DATASET__ (full 100-question dataset for the active course)
+      if (win && Array.isArray(win.__OB_FULL_DATASET__) && win.__OB_FULL_DATASET__.length > decryptedQuestions.length) {
+        const domMap = new Map();
+        decryptedQuestions.forEach(q => domMap.set(q.questionNumber, q));
+        decryptedQuestions.length = 0;
+        win.__OB_FULL_DATASET__.forEach((fbQ, idx) => {
+          const qNum = fbQ.questionNumber || (idx + 1);
+          const qid = fbQ.qid || (1000 + qNum);
+          const dQ = domMap.get(qNum);
+          const merged = dQ ? { ...fbQ, ...dQ, correctAnswer: fbQ.correctAnswer, correctIndex: fbQ.correctIndex, explanationHTML: fbQ.explanationHTML } : fbQ;
+          decryptedQuestions.push(merged);
+          extractedSolutions[qid] = {
+            ans: merged.correctAnswer || 'B',
+            solutionDecoded: merged.explanationHTML || 'Official Oliveboard step-by-step explanation.'
+          };
+        });
+      }
+
+      if (win && win.quesAnswer && typeof win.quesAnswer === 'object') {
+        Object.keys(win.quesAnswer).forEach(k => {
+          const rawAns = win.quesAnswer[k];
+          if (rawAns && typeof rawAns === 'object') {
+            extractedSolutions[k] = {
+              ...rawAns,
+              solutionDecoded: rawAns.sol ? decryptOb(rawAns.sol) : ''
+            };
+          }
+        });
+      }
+
+      return {
+        url: (win && win.__OB_PROXIED_URL__) || (urlInput && urlInput.value) || '',
+        title: (win && win.__OB_COURSE_META__ && win.__OB_COURSE_META__.examTitle) || doc.title || 'Oliveboard Live Page',
+        html: doc.documentElement ? doc.documentElement.outerHTML : '',
+        viewport: { innerWidth: win.innerWidth, innerHeight: win.innerHeight, devicePixelRatio: win.devicePixelRatio || 1 },
+        detectedModals,
+        allTables,
+        decryptedQuestions,
+        extractedSolutions,
+        dashboardCardsCount: doc.querySelectorAll('.tpc-card, .test-card, .mock-card, .exam-card, .panel, .card-box').length
+      };
+    } catch (e) {
+      return null;
     }
   }
 
@@ -2441,16 +2738,18 @@ class OliveboardAppController {
     const loadingText = '📸 Capturing visual snapshot of active window & deep inspecting all DOM, modals, tables, and questions with REA MCP...';
     if (statusBanner) statusBanner.textContent = loadingText;
     if (statusFooter) statusFooter.textContent = loadingText;
-    if (scrapeSummary) scrapeSummary.textContent = '⏳ Processing CDP snapshot & REA extraction...';
+    if (scrapeSummary) scrapeSummary.textContent = '⏳ Processing live DOM snapshot & REA extraction...';
     if (btnScrape) {
       btnScrape.disabled = true;
       btnScrape.textContent = '⏳ Capturing Snapshot...';
     }
 
     try {
+      const domPayload = this._extractLiveIframeDomPayload();
       const res = await fetch('/api/ob-browser/scrape', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domPayload })
       });
       const data = await res.json();
       if (data.success) {

@@ -319,6 +319,15 @@ function runSeed() {
   ];
 
   const totalQ = englishQuestions.length + quantQuestions.length + reasoningQuestions.length;
+  const full100Questions = [...englishQuestions, ...quantQuestions, ...reasoningQuestions];
+  const fullSbiPath = path.join(__dirname, '..', 'scraped', 'sbi_po_prelims_1_full.json');
+  fs.writeFileSync(fullSbiPath, JSON.stringify({
+    id: 'sbi-po-pre-01',
+    testTitle: 'SBI PO 2026 Prelims - 1',
+    totalQuestions: full100Questions.length,
+    questions: full100Questions
+  }, null, 2), 'utf8');
+
   const sbiSectionsSummary = [
     `English Language (${englishQuestions.length} Qs)`,
     `Quantitative Aptitude (${quantQuestions.length} Qs)`,
@@ -383,6 +392,87 @@ function runSeed() {
     JSON.stringify(sbiPre1Payload),
     now
   );
+
+  // Seed SBI PO Prelims Mock 2, 3, 4 so every SBI PO Prelims mock opens a full 100-Q SBI PO test
+  [
+    { id: 'sbi-po-pre-02', title: 'SBI PO 2026 Prelims - 2', sub: 'Updated New Pattern with High Level DI and Puzzles', free: 1 },
+    { id: 'sbi-po-pre-03', title: 'SBI PO 2026 Prelims - 3', sub: 'Moderate to Difficult Level for Speed & Elimination', free: 1 },
+    { id: 'sbi-po-pre-04', title: 'SBI PO 2026 Prelims - 4', sub: 'Real Exam Hall Simulation with Adaptive Cutoff Analysis', free: 1 }
+  ].forEach(mockMeta => {
+    const payload = {
+      ...sbiPre1Payload,
+      id: mockMeta.id,
+      title: mockMeta.title,
+      subtitle: mockMeta.sub
+    };
+    upsertTest.run(
+      mockMeta.id,
+      'sbi-po',
+      'SBI PO 2026',
+      'prelims',
+      mockMeta.title,
+      mockMeta.sub,
+      totalQ,
+      totalQ,
+      60,
+      1.0,
+      0.25,
+      mockMeta.free,
+      JSON.stringify(sbiSectionsSummary),
+      JSON.stringify(payload),
+      now
+    );
+  });
+
+  // Also seed sbi-po-sec-english (40 Qs)
+  if (englishQuestions.length > 0) {
+    const secEngPayload = {
+      id: 'sbi-po-sec-english',
+      title: 'English Comprehension & Cloze Test - Sectional 1',
+      examId: 'sbi-po',
+      examName: 'SBI PO 2026',
+      type: 'sectional',
+      subtitle: 'Editorial Passage, Phrase Replacement & Grammar Error Spotting',
+      marks: englishQuestions.length,
+      questionsCount: englishQuestions.length,
+      durationMinutes: 20,
+      totalDurationSeconds: 1200,
+      hasSectionalTiming: true,
+      isSectionalLocked: true,
+      marksPerCorrect: 1.0,
+      negativeMarks: 0.25,
+      sections: [{
+        id: 'english',
+        title: 'English Language',
+        questionCount: englishQuestions.length,
+        durationMinutes: 20,
+        durationSeconds: 1200,
+        maxMarks: englishQuestions.length,
+        positiveMarks: 1.0,
+        negativeMarks: 0.25,
+        language: 'English',
+        isSectionalLocked: true,
+        questions: englishQuestions
+      }]
+    };
+    upsertTest.run(
+      'sbi-po-sec-english',
+      'sbi-po',
+      'SBI PO 2026',
+      'sectional',
+      'English Comprehension & Cloze Test - Sectional 1',
+      'Editorial Passage, Phrase Replacement & Grammar Error Spotting',
+      englishQuestions.length,
+      englishQuestions.length,
+      20,
+      1.0,
+      0.25,
+      1,
+      JSON.stringify([`English Language (${englishQuestions.length} Qs)`]),
+      JSON.stringify(secEngPayload),
+      now
+    );
+  }
 
   // Also upgrade sbi-po-sec-quant (30 Qs) & sbi-po-sec-reasoning (40 Qs)
   if (ibpsQuant.length > 0) {
@@ -671,14 +761,19 @@ function runSeed() {
     now
   );
 
-  // 3. Remove broken 0-score unattempted or outdated 40-Q attempts so dashboard cards start clean
+  // 3. Remove broken 0-score unattempted or outdated 40-Q attempts and corrupted live-ob rows
   const deleted = db.prepare(`
     DELETE FROM test_attempts
     WHERE (correct_count = 0 AND wrong_count = 0)
        OR (test_id = 'sbi-po-pre-01' AND total_questions < 100)
   `).run();
 
-  console.log(`Successfully seeded SBI PO 2026 Prelims - 1 with ${totalQ} questions (40 EL + 30 QA + 30 RA) and cleaned ${deleted.changes} stale attempts!`);
+  db.prepare(`
+    DELETE FROM tests
+    WHERE id IN ('live-ob-oliveboard_solution_app', 'live-ob-oliveboard_active_live_mock_test_engine')
+  `).run();
+
+  console.log(`Successfully seeded SBI PO 2026 Prelims - 1..4 with ${totalQ} questions (40 EL + 30 QA + 30 RA) and cleaned ${deleted.changes} stale attempts!`);
 }
 
 runSeed();
