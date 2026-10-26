@@ -17,7 +17,13 @@ class OliveboardAppController {
   async init() {
     // 1. Initialize user management from database
     if (window.obDataManager) {
-      await window.obDataManager.init();
+      const activeUser = await window.obDataManager.init();
+      if (activeUser && activeUser.target_exam && window.OB_TEST_APP && Array.isArray(window.OB_TEST_APP.exams)) {
+        const matchedExam = window.OB_TEST_APP.exams.find(e => e.id === activeUser.target_exam);
+        if (matchedExam) {
+          this.currentExamId = matchedExam.id;
+        }
+      }
     }
 
     // 2. Initial renders
@@ -27,7 +33,7 @@ class OliveboardAppController {
     this.renderFilterTabs();
     this.renderStatusFilterPills();
     await this.loadAndRenderMockCards();
-    this.renderLeaderboard();
+    await this.renderLeaderboard();
     await this.renderAnalytics();
 
     // 3. Bind UI events
@@ -222,7 +228,8 @@ class OliveboardAppController {
     // A mock test must only be started/resumed via explicit user button click, never via popstate.
     if (!isTestOpen && state.view === 'test-engine') {
       this.replaceNavState({ view: 'tests' }, window.location.pathname);
-      this.switchAppView('tests', false);
+      this.switchAppView('tests', false, true);
+      if (this.lastActiveTestId) this.restoreActiveTestScroll(this.lastActiveTestId);
       return;
     }
 
@@ -237,7 +244,8 @@ class OliveboardAppController {
     // Prevent Browser Forward / Back from jumping back into closed Solutions Console via stale history
     if (!isSolnOpen && (state.view === 'solutions' || state.view === 'solution-detail')) {
       this.replaceNavState({ view: 'tests' }, window.location.pathname);
-      this.switchAppView('tests', false);
+      this.switchAppView('tests', false, true);
+      if (this.lastActiveTestId) this.restoreActiveTestScroll(this.lastActiveTestId);
       return;
     }
 
@@ -367,15 +375,24 @@ class OliveboardAppController {
       }
 
       // 3. For all other views (tests, analytics, leaderboard):
+      const wasOverlayOpen = Boolean(
+        (solnOverlay && solnOverlay.classList.contains('active')) ||
+        (testOverlay && testOverlay.classList.contains('active'))
+      );
       if (solnOverlay && solnOverlay.classList.contains('active')) {
-        if (window.obSolutionEngine) window.obSolutionEngine._doExit();
+        if (window.obSolutionEngine) window.obSolutionEngine._doExit(true);
       }
       if (testOverlay && testOverlay.classList.contains('active')) {
-        if (this.testEngine) this.testEngine._doExitTest();
+        if (this.testEngine) this.testEngine._doExitTest(true);
       }
 
-      // Switch Main View Tab
-      this.switchAppView(view, false);
+      // Switch Main View Tab (preserve scroll if returning to tests)
+      this.switchAppView(view, false, view === 'tests' && (wasOverlayOpen || Boolean(this.lastActiveTestId)));
+      if (view === 'tests' && wasOverlayOpen) {
+        await this.refreshAnalytics(this.lastActiveTestId);
+      } else if (view === 'tests' && this.lastActiveTestId && !targetModal) {
+        this.restoreActiveTestScroll(this.lastActiveTestId);
+      }
 
     } finally {
       this._isApplyingState = false;
@@ -475,34 +492,49 @@ class OliveboardAppController {
 
     if (hasModalOpen || hasOverlayOpen) {
       this.closeAllModalsAndOverlays();
-      this.switchAppView('tests', false);
+      this.switchAppView('tests', false, true);
       window.history.replaceState({ view: 'tests', navStep: 0, appInitialized: true }, '', window.location.pathname);
+      if (this.lastActiveTestId) {
+        this.restoreActiveTestScroll(this.lastActiveTestId);
+      }
     } else if (isSubView) {
-      this.switchAppView('tests', false);
+      this.switchAppView('tests', false, Boolean(this.lastActiveTestId));
       window.history.replaceState({ view: 'tests', navStep: 0, appInitialized: true }, '', window.location.pathname);
+      if (this.lastActiveTestId) {
+        this.restoreActiveTestScroll(this.lastActiveTestId);
+      }
     } else {
       this.showToast('You are on the Home dashboard', 'info');
     }
   }
 
-  exitTestToDashboard(fromPopstate = false) {
+  async exitTestToDashboard(fromPopstate = false) {
+    const targetTestId = (this.testEngine && this.testEngine.testData && this.testEngine.testData.id) || this.lastActiveTestId;
+    if (targetTestId) {
+      this.lastActiveTestId = targetTestId;
+    }
     if (this.testEngine) {
-      this.testEngine._doExitTest();
+      this.testEngine._doExitTest(true);
     }
     const testOverlay = document.getElementById('test-modal-overlay');
     if (testOverlay) {
       testOverlay.classList.remove('active');
     }
-    this.switchAppView('tests', false);
+    this.switchAppView('tests', false, true);
     this.replaceNavState({ view: 'tests' }, window.location.pathname);
     if (fromPopstate) {
       this.pushNavState({ view: 'tests' }, window.location.pathname);
     }
+    await this.refreshAnalytics(targetTestId);
   }
 
-  exitSolutionsToTests(fromPopstate = false) {
+  async exitSolutionsToTests(fromPopstate = false) {
+    const targetTestId = (window.obSolutionEngine && window.obSolutionEngine.testData && window.obSolutionEngine.testData.id) || this.lastActiveTestId;
+    if (targetTestId) {
+      this.lastActiveTestId = targetTestId;
+    }
     if (window.obSolutionEngine) {
-      window.obSolutionEngine._doExit();
+      window.obSolutionEngine._doExit(true);
     }
     const solnOverlay = document.getElementById('solution-console-overlay');
     if (solnOverlay) {
@@ -512,11 +544,12 @@ class OliveboardAppController {
     const scorecardModal = document.getElementById('scorecard-modal-overlay');
     if (scorecardModal) scorecardModal.classList.remove('active');
 
-    this.switchAppView('tests', false);
+    this.switchAppView('tests', false, true);
     this.replaceNavState({ view: 'tests' }, window.location.pathname);
     if (fromPopstate) {
       this.pushNavState({ view: 'tests' }, window.location.pathname);
     }
+    await this.refreshAnalytics(targetTestId);
   }
 
   // ==========================================
@@ -530,23 +563,34 @@ class OliveboardAppController {
     const nameEl = document.getElementById('header-user-name');
     const rollEl = document.getElementById('header-user-roll');
     const avatarEl = document.getElementById('header-user-avatar');
+    const dropdownAvatarEl = document.getElementById('dropdown-user-avatar');
+    const avatarChar = user.avatar || (user.name ? user.name.charAt(0).toUpperCase() : 'U');
 
     if (nameEl) nameEl.textContent = user.name;
     if (rollEl) rollEl.textContent = user.roll_no;
-    if (avatarEl) avatarEl.textContent = user.avatar || user.name.charAt(0).toUpperCase();
+    if (avatarEl) avatarEl.textContent = avatarChar;
+    if (dropdownAvatarEl) dropdownAvatarEl.textContent = avatarChar;
+
+    const coinsEl = document.getElementById('header-user-coins');
+    if (coinsEl) coinsEl.textContent = user.coins !== undefined ? user.coins : 300;
 
     const tagEl = document.getElementById('analytics-user-tag');
     if (tagEl) tagEl.textContent = `Showing performance analytics for: ${user.name} (${user.roll_no})`;
   }
 
-  renderUserProfileModal(pushHistory = true) {
+  async renderUserProfileModal(pushHistory = true) {
     const modal = document.getElementById('user-profile-modal');
     const activeBox = document.getElementById('active-user-profile-box');
     const usersList = document.getElementById('users-selection-list');
     if (!modal || !activeBox || !usersList) return;
 
+    if (window.obDataManager && typeof window.obDataManager.loadUsers === 'function') {
+      await window.obDataManager.loadUsers();
+    }
+
     const activeUser = window.obDataManager.getActiveUser();
     const allUsers = window.obDataManager.users || [];
+    if (!activeUser) return;
 
     // Active candidate banner
     activeBox.innerHTML = `
@@ -556,7 +600,7 @@ class OliveboardAppController {
         </div>
         <div>
           <div style="font-size: 15px; font-weight: 800; color: #0f172a;">${activeUser.name} <span style="font-size: 10px; background: #008479; color: #ffffff; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">ACTIVE CANDIDATE</span></div>
-          <div style="font-size: 12px; color: #64748b;">${activeUser.roll_no} • Target: ${activeUser.target_exam.toUpperCase()}</div>
+          <div style="font-size: 12px; color: #64748b;">${activeUser.roll_no} • Target: ${(activeUser.target_exam || 'ibps-so').toUpperCase()}</div>
         </div>
       </div>
     `;
@@ -570,7 +614,7 @@ class OliveboardAppController {
           </div>
           <div>
             <div style="font-size: 13px; font-weight: 700; color: #1e293b;">${u.name}</div>
-            <div style="font-size: 11px; color: #64748b;">${u.roll_no}</div>
+            <div style="font-size: 11px; color: #64748b;">${u.roll_no} • ${(u.target_exam || 'ibps-so').toUpperCase()}</div>
           </div>
         </div>
         <div style="text-align: right;">
@@ -588,19 +632,51 @@ class OliveboardAppController {
     }
   }
 
+  _resetPerCandidateUIState() {
+    // Clear per-candidate interactive bookmark attempts & filters
+    this.bookmarkAttempts = {};
+    this.activeBookmarkSubject = 'ALL';
+    this.activeBookmarkTag = 'ALL';
+    this.bookmarkSearchQuery = '';
+
+    // Sync bookmarked question maps on active engine instances
+    const bmMap = window.obDataManager ? window.obDataManager.getBookmarkedMap() : {};
+    if (this.testEngine) {
+      this.testEngine.bookmarkedQuestions = bmMap;
+    }
+    if (window.obSolutionEngine) {
+      window.obSolutionEngine.bookmarkedQuestions = { ...bmMap };
+      window.obSolutionEngine.retryAttempts = {};
+    }
+
+    // Sync currentExamId with active candidate's target_exam
+    const activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+    if (activeUser && activeUser.target_exam && window.OB_TEST_APP && Array.isArray(window.OB_TEST_APP.exams)) {
+      const matchedExam = window.OB_TEST_APP.exams.find(e => e.id === activeUser.target_exam);
+      if (matchedExam) {
+        this.currentExamId = matchedExam.id;
+      }
+    }
+  }
+
   async switchCandidate(userId) {
-    window.obDataManager.setActiveUser(userId);
+    const switchedUser = window.obDataManager.setActiveUser(userId);
     const modal = document.getElementById('user-profile-modal');
     if (modal) modal.classList.remove('active');
 
+    this._resetPerCandidateUIState();
     this.renderUserProfileHeader();
+    this.renderHeader();
+    this.renderExamHero();
     await this.loadAndRenderMockCards();
     await this.renderAnalytics();
-    this.renderLeaderboard();
+    await this.renderLeaderboard();
     if (this.currentViewTab === 'bookmarks') {
       this.renderBookmarks();
+    } else if (this.currentViewTab === 'courses') {
+      this.renderCourses();
     }
-    this.showToast('Switched active candidate profile', 'success');
+    this.showToast(`Switched active candidate to ${switchedUser ? switchedUser.name : 'candidate'}`, 'success');
   }
 
   async handleCreateCandidate(name, targetExam, rollNo) {
@@ -610,15 +686,23 @@ class OliveboardAppController {
         target_exam: targetExam,
         roll_no: rollNo
       });
+      const formEl = document.getElementById('form-create-user');
+      if (formEl) formEl.reset();
+
       const modal = document.getElementById('user-profile-modal');
       if (modal) modal.classList.remove('active');
 
+      this._resetPerCandidateUIState();
       this.renderUserProfileHeader();
+      this.renderHeader();
+      this.renderExamHero();
       await this.loadAndRenderMockCards();
       await this.renderAnalytics();
-      this.renderLeaderboard();
+      await this.renderLeaderboard();
       if (this.currentViewTab === 'bookmarks') {
         this.renderBookmarks();
+      } else if (this.currentViewTab === 'courses') {
+        this.renderCourses();
       }
       this.showToast(`Created candidate profile for ${name}`, 'success');
     } catch (e) {
@@ -729,7 +813,7 @@ class OliveboardAppController {
     });
   }
 
-  async loadAndRenderMockCards() {
+  async loadAndRenderMockCards(focusTestId = null) {
     const cardsContainer = document.getElementById('mock-cards-container');
     const countLabel = document.getElementById('active-tab-tests-count');
     if (!cardsContainer) return;
@@ -843,7 +927,7 @@ class OliveboardAppController {
       }
 
       return `
-        <div class="mock-test-card ${isAttempted ? 'card-attempted' : (isPaused ? 'card-paused' : '')}">
+        <div class="mock-test-card ${isAttempted ? 'card-attempted' : (isPaused ? 'card-paused' : '')}" id="mock-card-${pack.id}" data-test-id="${pack.id}">
           <div>
             <div class="card-top-row">
               <h4 class="mock-title">${pack.title}</h4>
@@ -931,6 +1015,34 @@ class OliveboardAppController {
         </div>
       `;
     }).join('');
+
+    const targetFocusId = focusTestId || this._pendingFocusTestId;
+    if (targetFocusId) {
+      this._pendingFocusTestId = null;
+      this.restoreActiveTestScroll(targetFocusId);
+    }
+  }
+
+  restoreActiveTestScroll(testId) {
+    if (!testId) return;
+    requestAnimationFrame(() => {
+      const cardEl = document.getElementById(`mock-card-${testId}`) ||
+                     document.querySelector(`.mock-test-card[data-test-id="${CSS.escape ? CSS.escape(testId) : testId}"]`);
+      if (cardEl) {
+        cardEl.scrollIntoView({ behavior: 'instant', block: 'center' });
+        cardEl.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+        cardEl.style.borderColor = '#008479';
+        cardEl.style.boxShadow = '0 0 0 3px rgba(0, 132, 121, 0.28), 0 8px 20px rgba(0, 132, 121, 0.12)';
+        setTimeout(() => {
+          if (cardEl) {
+            cardEl.style.borderColor = '';
+            cardEl.style.boxShadow = '';
+          }
+        }, 2200);
+      } else if (typeof this.savedTestsScrollY === 'number' && this.savedTestsScrollY > 0) {
+        window.scrollTo({ top: this.savedTestsScrollY, behavior: 'instant' });
+      }
+    });
   }
 
   // ==========================================
@@ -943,6 +1055,11 @@ class OliveboardAppController {
 
     const data = await window.obDataManager.getUserAnalytics();
     const stats = data.stats || data;
+
+    const streakEl = document.getElementById('header-user-streak');
+    if (streakEl) {
+      streakEl.textContent = `${stats.streakDays !== undefined ? stats.streakDays : 1}d`;
+    }
 
     container.innerHTML = `
       <div class="analytics-top-grid">
@@ -992,16 +1109,45 @@ class OliveboardAppController {
     `;
   }
 
-  renderLeaderboard() {
+  async renderLeaderboard() {
     const list = document.getElementById('leaderboard-list-container');
     if (!list) return;
 
     const baseLeaderboard = [...(window.OB_TEST_APP.leaderboard || [])];
     const activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+    const activeUserId = activeUser ? activeUser.id : null;
 
-    // Incorporate active candidate's best completed attempt into the live leaderboard
-    let candidateBest = null;
-    if (this.testsCache && this.testsCache.length > 0) {
+    // Fetch real multi-user attempts from SQLite across all registered candidates
+    const dbEntries = window.obDataManager && typeof window.obDataManager.getLeaderboard === 'function'
+      ? await window.obDataManager.getLeaderboard('all')
+      : [];
+
+    const combined = baseLeaderboard.map(u => ({
+      ...u,
+      rawScoreDisplay: `${u.score} / 100`,
+      isCurrentUser: false,
+      isRegisteredCandidate: false
+    }));
+
+    const addedUserIds = new Set();
+    if (Array.isArray(dbEntries) && dbEntries.length > 0) {
+      dbEntries.forEach(entry => {
+        const isCurrent = activeUserId && entry.userId === activeUserId;
+        addedUserIds.add(entry.userId);
+        combined.push({
+          name: `${entry.userName} (${isCurrent ? 'You • ' : 'Candidate • '}${entry.testTitle})`,
+          score: entry.normScore,
+          rawScoreDisplay: `${Number(entry.rawScore).toFixed(2)} / ${entry.maxScore}`,
+          accuracy: entry.accuracy,
+          time: entry.time,
+          isCurrentUser: Boolean(isCurrent),
+          isRegisteredCandidate: true
+        });
+      });
+    }
+
+    // Fallback: if active candidate has a local attempt in testsCache not yet in dbEntries
+    if (activeUserId && !addedUserIds.has(activeUserId) && this.testsCache && this.testsCache.length > 0) {
       const attemptedPacks = this.testsCache.filter(p => p.isAttempted && p.userAttempt);
       if (attemptedPacks.length > 0) {
         attemptedPacks.sort((a, b) => Number(b.userAttempt.score || 0) - Number(a.userAttempt.score || 0));
@@ -1012,25 +1158,16 @@ class OliveboardAppController {
         const secs = att.time_spent_seconds || 2400;
         const m = Math.floor(secs / 60);
         const s = secs % 60;
-        candidateBest = {
+        combined.push({
           name: `${activeUser ? activeUser.name : 'You'} (You • ${bestPack.title})`,
           score: normScore,
           rawScoreDisplay: `${Number(att.score || 0).toFixed(2)} / ${maxM}`,
           accuracy: `${att.accuracy ?? 0}%`,
           time: `${m}m ${s}s`,
-          isCurrentUser: true
-        };
+          isCurrentUser: true,
+          isRegisteredCandidate: true
+        });
       }
-    }
-
-    const combined = baseLeaderboard.map(u => ({
-      ...u,
-      rawScoreDisplay: `${u.score} / 100`,
-      isCurrentUser: false
-    }));
-
-    if (candidateBest) {
-      combined.push(candidateBest);
     }
 
     combined.sort((a, b) => Number(b.score) - Number(a.score));
@@ -1039,7 +1176,7 @@ class OliveboardAppController {
     });
 
     list.innerHTML = combined.map(u => `
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: ${u.isCurrentUser ? '#f0fdfa' : '#ffffff'}; border-radius: 10px; border: ${u.isCurrentUser ? '1.5px solid #008479' : '1px solid var(--ob-app-border)'}; margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: ${u.isCurrentUser ? '#f0fdfa' : (u.isRegisteredCandidate ? '#f8fafc' : '#ffffff')}; border-radius: 10px; border: ${u.isCurrentUser ? '1.5px solid #008479' : (u.isRegisteredCandidate ? '1px solid #94a3b8' : '1px solid var(--ob-app-border)')}; margin-bottom: 8px;">
         <div style="display: flex; align-items: center; gap: 14px;">
           <div style="width: 32px; height: 32px; border-radius: 50%; background: ${u.rank === 1 ? '#ffd700' : (u.rank === 2 ? '#e0e0e0' : (u.rank === 3 ? '#cd7f32' : (u.isCurrentUser ? '#008479' : '#f1f5f9')))}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: ${u.isCurrentUser && u.rank > 3 ? '#ffffff' : '#1e293b'};">
             ${u.rank}
@@ -1057,7 +1194,7 @@ class OliveboardAppController {
     `).join('');
   }
 
-  switchAppView(viewName, pushHistory = true) {
+  switchAppView(viewName, pushHistory = true, preserveScroll = false) {
     let target = viewName;
     if (target === 'dashboard') target = 'analytics';
 
@@ -1146,7 +1283,9 @@ class OliveboardAppController {
       }
     }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!preserveScroll) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     if (target === 'analytics') {
       this.renderAnalytics();
@@ -1856,22 +1995,64 @@ class OliveboardAppController {
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
+        if (query && this.currentViewTab !== 'tests') {
+          this.switchAppView('tests', false, true);
+        }
         const cards = document.querySelectorAll('#mock-cards-container .mock-test-card');
+        let visibleCount = 0;
         cards.forEach(c => {
           const text = c.innerText.toLowerCase();
-          c.style.display = text.includes(query) ? '' : 'none';
+          const matches = !query || text.includes(query);
+          c.style.display = matches ? '' : 'none';
+          if (matches) visibleCount++;
         });
+        const countEl = document.getElementById('active-tab-tests-count');
+        if (countEl && cards.length > 0) {
+          countEl.textContent = query
+            ? `${visibleCount} Matching Test${visibleCount === 1 ? '' : 's'}`
+            : `${cards.length} Tests Available`;
+        }
       });
     }
 
-    // Candidate profile switcher modal
+    // Candidate profile dropdown & switcher modal
     const btnUserProfile = document.getElementById('btn-user-profile');
+    const profileDropdown = document.getElementById('profileDropdownMenu');
+    const btnOpenCandidateModal = document.getElementById('btn-open-candidate-modal');
     const userModal = document.getElementById('user-profile-modal');
     const btnCloseUserModal = document.getElementById('btn-close-user-modal');
     const formCreateUser = document.getElementById('form-create-user');
 
     if (btnUserProfile) {
-      btnUserProfile.addEventListener('click', () => {
+      btnUserProfile.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (profileDropdown) {
+          const isOpen = profileDropdown.style.display === 'block';
+          profileDropdown.style.display = isOpen ? 'none' : 'block';
+        } else {
+          this.renderUserProfileModal();
+        }
+      });
+    }
+
+    if (profileDropdown) {
+      profileDropdown.querySelectorAll('.upd-nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          profileDropdown.style.display = 'none';
+        });
+      });
+      document.addEventListener('click', (e) => {
+        if (profileDropdown.style.display === 'block' && !profileDropdown.contains(e.target) && e.target !== btnUserProfile) {
+          profileDropdown.style.display = 'none';
+        }
+      });
+    }
+
+    if (btnOpenCandidateModal) {
+      btnOpenCandidateModal.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (profileDropdown) profileDropdown.style.display = 'none';
         this.renderUserProfileModal();
       });
     }
@@ -2366,13 +2547,16 @@ class OliveboardAppController {
 
   async selectExam(examId) {
     this.currentExamId = examId;
+    if (window.obDataManager && typeof window.obDataManager.updateUserTargetExam === 'function') {
+      await window.obDataManager.updateUserTargetExam(examId);
+    }
     const modal = document.getElementById('exam-switcher-modal');
     if (modal) modal.classList.remove('active');
 
     this.renderHeader();
     this.renderExamHero();
     await this.loadAndRenderMockCards();
-    this.renderLeaderboard();
+    await this.renderLeaderboard();
   }
 
   // ==========================================
@@ -2380,6 +2564,9 @@ class OliveboardAppController {
   // ==========================================
 
   async startMockTest(testId, forceFresh = false, pushHistory = true) {
+    this.lastActiveTestId = testId;
+    this.savedTestsScrollY = window.scrollY;
+
     if (forceFresh && window.obDataManager) {
       await window.obDataManager.clearPausedAttempt(testId);
     }
@@ -2405,6 +2592,9 @@ class OliveboardAppController {
   }
 
   async resumeMockTest(testId, pushHistory = true) {
+    this.lastActiveTestId = testId;
+    this.savedTestsScrollY = window.scrollY;
+
     let testData = await window.obDataManager.getTestById(testId);
     if (!testData && window.OB_TEST_APP.mockQuestions && window.OB_TEST_APP.mockQuestions[testId]) {
       testData = window.OB_TEST_APP.mockQuestions[testId];
@@ -2457,6 +2647,9 @@ class OliveboardAppController {
   }
 
   async viewSolutions(attemptId, testId, pushHistory = true) {
+    this.lastActiveTestId = testId;
+    this.savedTestsScrollY = window.scrollY;
+
     try {
       const { attempt, testData } = await this._resolveAttemptAndTest(attemptId, testId);
 
@@ -2474,6 +2667,9 @@ class OliveboardAppController {
   }
 
   async viewAttemptScorecard(attemptId, testId, pushHistory = true) {
+    this.lastActiveTestId = testId;
+    this.savedTestsScrollY = window.scrollY;
+
     try {
       const { attempt, testData } = await this._resolveAttemptAndTest(attemptId, testId);
 
@@ -2491,10 +2687,11 @@ class OliveboardAppController {
     }
   }
 
-  async refreshAnalytics() {
-    await this.loadAndRenderMockCards();
+  async refreshAnalytics(focusTestId = null) {
+    const targetId = focusTestId || this.lastActiveTestId || null;
+    await this.loadAndRenderMockCards(targetId);
     await this.renderAnalytics();
-    this.renderLeaderboard();
+    await this.renderLeaderboard();
   }
 }
 

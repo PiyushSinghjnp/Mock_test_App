@@ -604,7 +604,7 @@ a:hover {
 
 .fltr-lang-btn.active {
     background-color: #E8EFF6; /* Very light blueish grey */
-    color: #2B2F38);
+    color: #2B2F38;
     font-weight: 600;
 }
 
@@ -1286,7 +1286,7 @@ a:hover {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    align-items: anchor-center;
+    align-items: center;
     cursor:pointer;
 }
 .up-cards .btn-grp .extra-btn-group .ex-row .img-bx{

@@ -58,15 +58,21 @@ class OBTestDataManager {
       const data = await res.json();
       if (data.success) {
         this.users = data.users;
+        if (this.activeUser) {
+          const freshActive = this.users.find(u => u.id === this.activeUser.id);
+          if (freshActive) this.activeUser = freshActive;
+        }
         return this.users;
       }
     } catch (e) {
       console.warn('Failed to fetch users from backend, using fallback:', e);
-      this.users = [
-        { id: 'user-rahul', name: 'Aspirant Rahul Sharma', roll_no: 'OB-2026-9041', avatar: 'R', target_exam: 'ibps-so', attempts_count: 0 },
-        { id: 'user-priya', name: 'Priya Verma', roll_no: 'OB-2026-8812', avatar: 'P', target_exam: 'sbi-po', attempts_count: 0 },
-        { id: 'user-vikram', name: 'Vikram Malhotra', roll_no: 'OB-2026-4421', avatar: 'V', target_exam: 'ssc-cgl', attempts_count: 0 }
-      ];
+      if (!this.users || this.users.length === 0) {
+        this.users = [
+          { id: 'user-rahul', name: 'Aspirant Rahul Sharma', roll_no: 'OB-2026-9041', avatar: 'R', target_exam: 'ibps-so', attempts_count: 0 },
+          { id: 'user-priya', name: 'Priya Verma', roll_no: 'OB-2026-8812', avatar: 'P', target_exam: 'sbi-po', attempts_count: 0 },
+          { id: 'user-vikram', name: 'Vikram Malhotra', roll_no: 'OB-2026-4421', avatar: 'V', target_exam: 'ssc-cgl', attempts_count: 0 }
+        ];
+      }
     }
     return this.users;
   }
@@ -89,6 +95,30 @@ class OBTestDataManager {
       console.error('Error creating candidate:', e);
       throw e;
     }
+  }
+
+  async updateUserTargetExam(examId) {
+    if (!examId) return null;
+    const active = this.getActiveUser();
+    if (!active) return null;
+    active.target_exam = examId;
+    try {
+      const res = await fetch(`${this.API_BASE}/api/users/${encodeURIComponent(active.id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_exam: examId })
+      });
+      const data = await res.json();
+      if (data && data.success && data.user) {
+        const idx = this.users.findIndex(u => u.id === active.id);
+        if (idx !== -1) this.users[idx] = data.user;
+        this.activeUser = data.user;
+        return data.user;
+      }
+    } catch (e) {
+      console.warn('Could not persist target_exam update:', e);
+    }
+    return active;
   }
 
   // ===============================================
@@ -130,14 +160,14 @@ class OBTestDataManager {
     try {
       const res = await fetch(`${this.API_BASE}/api/exam-patterns-2026`);
       const data = await res.json();
-      if (data.success) return data.exams;
+      if (data.success) return data.patterns || data.exams || {};
     } catch (e) {
       console.warn('Failed to fetch 2026 exam patterns:', e);
     }
     return {};
   }
 
-  async uploadQuestionPaperJson({ rawPaper, examId, stage, customTitle, customTestId }) {
+  async uploadQuestionPaperJson({ rawPaper, examId, stage, customTitle, customTestId, title, testId, subtitle, filename }) {
     const res = await fetch(`${this.API_BASE}/api/tests/upload-json`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -145,8 +175,12 @@ class OBTestDataManager {
         rawPaper,
         examId,
         stage,
-        customTitle,
-        customTestId
+        title: customTitle || title,
+        testId: customTestId || testId,
+        customTitle: customTitle || title,
+        customTestId: customTestId || testId,
+        subtitle,
+        filename
       })
     });
     const data = await res.json();
@@ -193,13 +227,16 @@ class OBTestDataManager {
       if (data.success) {
         console.log(`[Permanent DB] Test result saved successfully in SQLite: ${data.attemptId}`);
         result.attemptId = data.attemptId;
+        await this.loadUsers();
       }
     } catch (e) {
       console.error('Failed to save result to backend DB, saving to localStorage as fallback:', e);
       const key = `ob_attempts_${activeUserId}`;
       const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      payload.id = payload.id || `local-att-${Date.now()}`;
       existing.push(payload);
       localStorage.setItem(key, JSON.stringify(existing));
+      result.attemptId = payload.id;
     }
 
     // Clear local paused state
@@ -281,7 +318,28 @@ class OBTestDataManager {
         return data.attempts;
       }
     } catch (e) {
-      console.warn('Failed to load user attempts from API:', e);
+      console.warn('Failed to load user attempts from API, checking localStorage fallback:', e);
+    }
+    try {
+      const localRaw = localStorage.getItem(`ob_attempts_${uId}`);
+      if (localRaw) {
+        return JSON.parse(localRaw);
+      }
+    } catch (err) {
+      // ignore
+    }
+    return [];
+  }
+
+  async getLeaderboard(examId = 'all') {
+    try {
+      const res = await fetch(`${this.API_BASE}/api/leaderboard?examId=${encodeURIComponent(examId)}`);
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.entries)) {
+        return data.entries;
+      }
+    } catch (e) {
+      console.warn('Failed to load multi-user leaderboard from API:', e);
     }
     return [];
   }

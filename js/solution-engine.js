@@ -323,7 +323,7 @@ class OliveboardSolutionEngine {
           localIndex: lIdx + 1,
           questionNumber: q.questionNumber || q.qNo || (gIdx + 1),
           correctIndex: this._normalizeCorrectIdx(q),
-          difficulty: q.difficulty || (q.globalIndex % 3 === 0 ? 'Difficult' : (q.globalIndex % 2 === 0 ? 'Easy' : 'Moderate')),
+          difficulty: q.difficulty || (gIdx % 3 === 0 ? 'Difficult' : (gIdx % 2 === 0 ? 'Easy' : 'Moderate')),
           accuracyPct: q.accuracyPct || (q.timeacc && q.timeacc[1]) || `${Math.min(92, Math.max(18, 50 + (gIdx * 7) % 43))}%`,
           topperTimeSec: q.topperTimeSec || (q.timeacc && q.timeacc[0] !== '--' ? q.timeacc[0] : 18)
         };
@@ -474,12 +474,12 @@ class OliveboardSolutionEngine {
         }
       }
 
-      const qRaw = q.questionText || q.questionHTML || q.question || '';
+      const qRaw = q.questionText || q.questionHTML || q.question_text || q.question || '';
       const snippet = this._stripHTML(qRaw).slice(0, 68) + '...';
       const timeSpentSec = (resp && resp.timeSpentSeconds) ? `${resp.timeSpentSeconds}s` : (isAttempted ? '16s' : '--');
 
       html += `
-        <div class="review-row ${rowClass}" onclick="window.obSolutionEngine.goToQuestion(${idx})">
+        <div class="review-row ${rowClass}" id="sol-review-row-${idx}" onclick="window.obSolutionEngine.goToQuestion(${idx})">
           <div class="reviewcol-group" style="width: 55%; display: flex;">
             <div class="review-col" style="width: 60px;">
               <p class="mobcard headingtxt hide-heading borbot">No.</p>
@@ -589,8 +589,8 @@ class OliveboardSolutionEngine {
     const rawPassage = q.passage || q.passageHTML || q.passage_text || '';
     const hasPassage = Boolean(rawPassage && this._stripHTML(rawPassage).trim().length > 15);
 
-    const rawQuestion = q.questionText || q.questionHTML || q.question || '';
-    const rawExplanation = q.explanation || q.explanationHTML || '';
+    const rawQuestion = q.questionText || q.questionHTML || q.question_text || q.question || '';
+    const rawExplanation = q.explanation || q.explanationHTML || q.explanation_text || q.solution || '';
     const formattedPassage = this._formatContent(rawPassage);
     let formattedQuestion = this._formatContent(rawQuestion);
     if (q.imageUrls && Array.isArray(q.imageUrls) && q.imageUrls.length > 0 && !rawQuestion.includes('<img')) {
@@ -855,7 +855,12 @@ class OliveboardSolutionEngine {
     if (this.viewSolDetail) this.viewSolDetail.style.display = 'none';
     if (this.viewLanding) {
       this.viewLanding.style.display = 'block';
-      this.viewLanding.scrollTop = 0;
+      requestAnimationFrame(() => {
+        const targetRow = document.getElementById(`sol-review-row-${this.currentQuestionIndex}`);
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: 'instant', block: 'center' });
+        }
+      });
     }
     if (pushHistory && window.history && this.isOpen) {
       const testId = this.testData ? this.testData.id : 'test';
@@ -1009,13 +1014,14 @@ class OliveboardSolutionEngine {
   }
 
   exit(fromPopstate = false) {
-    this._doExit();
     if (!fromPopstate && window.appController) {
       window.appController.exitSolutionsToTests();
+    } else {
+      this._doExit(false);
     }
   }
 
-  _doExit() {
+  _doExit(skipRefresh = false) {
     this.isOpen = false;
     if (this.overlay) {
       this.overlay.classList.remove('active');
@@ -1023,8 +1029,8 @@ class OliveboardSolutionEngine {
     }
     document.body.style.overflow = 'auto';
 
-    if (window.appController) {
-      window.appController.refreshAnalytics();
+    if (!skipRefresh && window.appController) {
+      window.appController.refreshAnalytics(this.testData ? this.testData.id : null);
     }
   }
 }

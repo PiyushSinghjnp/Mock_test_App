@@ -949,7 +949,7 @@ width: calc(100% - 320px);
         .discuss-slider .group-home .dis-content .box-discuss .otherquery:hover .img-delete {
           display: block; }
       .discuss-slider .group-home .dis-content .selfquery {
-        disply: flex;
+        display: flex;
         flex-direction: column; }
         .discuss-slider .group-home .dis-content .selfquery .selfq-group {
           display: flex;

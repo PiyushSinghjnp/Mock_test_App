@@ -461,6 +461,35 @@ app.post('/api/users', (req, res) => {
   }
 });
 
+app.patch('/api/users/:id', (req, res) => {
+  try {
+    const { target_exam, name, roll_no } = req.body || {};
+    const userId = req.params.id;
+    const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    const nextExam = target_exam || existing.target_exam;
+    const nextName = (name && name.trim()) ? name.trim() : existing.name;
+    const nextRoll = (roll_no && roll_no.trim()) ? roll_no.trim() : existing.roll_no;
+    db.prepare(`
+      UPDATE users
+      SET target_exam = ?, name = ?, roll_no = ?
+      WHERE id = ?
+    `).run(nextExam, nextName, nextRoll, userId);
+
+    const updated = db.prepare(`
+      SELECT u.*, 
+        (SELECT COUNT(*) FROM test_attempts a WHERE a.user_id = u.id) as attempts_count
+      FROM users u
+      WHERE u.id = ?
+    `).get(userId);
+    res.json({ success: true, user: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 4.2 TESTS CATALOG API (WITH USER-SPECIFIC ATTEMPT & PAUSED STATUS)
 app.get('/api/tests', (req, res) => {
   try {
@@ -697,7 +726,7 @@ app.get('/api/exam-patterns-2026', (req, res) => {
 // 4.3c UPLOAD QUESTION PAPER JSON & AUTO-APPLY 2026 SECTIONAL TIMINGS & MARKING SCHEME
 app.post('/api/tests/upload-json', (req, res) => {
   try {
-    const { rawPaper, examId, stage, title, subtitle, filename } = req.body;
+    const { rawPaper, examId, stage, title, customTitle, subtitle, filename, testId, customTestId } = req.body;
     if (!rawPaper) {
       return res.status(400).json({ success: false, error: 'rawPaper JSON payload is required' });
     }
@@ -706,7 +735,8 @@ app.post('/api/tests/upload-json', (req, res) => {
     const normalizedTest = examPatterns2026.apply2026PatternToQuestionPaper(parsedPaper, {
       examId: examId || undefined,
       stage: stage || undefined,
-      title: title || undefined,
+      title: customTitle || title || undefined,
+      testId: customTestId || testId || undefined,
       subtitle: subtitle || undefined,
       filename: filename || undefined
     });
@@ -1078,7 +1108,8 @@ app.get('/api/analytics', (req, res) => {
     const uniqueDayNumbers = Array.from(new Set(
       attempts
         .map(a => {
-          const ts = a.submitted_at ? new Date(a.submitted_at) : null;
+          const rawTs = a.completed_at || a.started_at || a.submitted_at;
+          const ts = rawTs ? new Date(rawTs) : null;
           if (!ts || isNaN(ts.getTime())) return null;
           return Math.floor(Date.UTC(ts.getUTCFullYear(), ts.getUTCMonth(), ts.getUTCDate()) / 86400000);
         })
@@ -1138,6 +1169,61 @@ app.get('/api/analytics', (req, res) => {
         streakDays: Math.max(1, streakDays),
         sectionBreakdowns: sectionBreakdowns
       }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4.8 MULTI-USER LEADERBOARD API (AGGREGATES TOP ATTEMPT PER CANDIDATE FROM SQLITE)
+app.get('/api/leaderboard', (req, res) => {
+  try {
+    const examId = req.query.examId || req.query.exam;
+    let query = `
+      SELECT a.*, u.name as user_name, u.roll_no as user_roll_no, u.avatar as user_avatar, t.exam_id as test_exam_id
+      FROM test_attempts a
+      JOIN users u ON a.user_id = u.id
+      LEFT JOIN tests t ON a.test_id = t.id
+    `;
+    const params = [];
+    if (examId && examId !== 'all') {
+      query += ' WHERE (t.exam_id = ? OR t.exam_id IS NULL)';
+      params.push(examId);
+    }
+    query += ' ORDER BY a.completed_at DESC';
+
+    const rows = db.prepare(query).all(...params);
+
+    // Pick best normalized score attempt per candidate
+    const bestByUser = new Map();
+    rows.forEach(r => {
+      const maxS = Math.max(1, Number(r.max_score) || 100);
+      const normScore = Number(((Number(r.score || 0) / maxS) * 100).toFixed(2));
+      const prev = bestByUser.get(r.user_id);
+      if (!prev || normScore > prev.normScore) {
+        const secs = Math.max(1, Number(r.time_spent_seconds) || 1800);
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        bestByUser.set(r.user_id, {
+          userId: r.user_id,
+          userName: r.user_name,
+          rollNo: r.user_roll_no,
+          avatar: r.user_avatar,
+          testId: r.test_id,
+          testTitle: r.test_title,
+          rawScore: Number(r.score || 0),
+          maxScore: maxS,
+          normScore,
+          accuracy: `${Number(r.accuracy || 0).toFixed(1)}%`,
+          time: `${m}m ${s}s`,
+          completedAt: r.completed_at
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      entries: Array.from(bestByUser.values())
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

@@ -209,20 +209,22 @@ class OliveboardTestEngine {
     }
 
     // Bottom 2x2 Utility Grid (#b1 Question Paper, #b2 Instructions, #b3 Profile, #b4 Next Section / Submit - Spec 3.7 & 4.2)
-    const handleB1 = (e) => { e.preventDefault(); this.getQuestionPaper(); };
+    // Note: #b1..#b4 are inside #btn-bottom-paper..#btn-submit-exam; bind only on the outer anchor (or stopPropagation) so handlers never fire twice
+    const handleB1 = (e) => { e.preventDefault(); e.stopPropagation(); this.getQuestionPaper(); };
     if (this.btnBottomPaper) this.btnBottomPaper.onclick = handleB1;
-    if (this.b1El) this.b1El.onclick = handleB1;
+    else if (this.b1El) this.b1El.onclick = handleB1;
 
-    const handleB2 = (e) => { e.preventDefault(); this.getInstructions(); };
+    const handleB2 = (e) => { e.preventDefault(); e.stopPropagation(); this.getInstructions(); };
     if (this.btnBottomInstructions) this.btnBottomInstructions.onclick = handleB2;
-    if (this.b2El) this.b2El.onclick = handleB2;
+    else if (this.b2El) this.b2El.onclick = handleB2;
 
-    const handleB3 = (e) => { e.preventDefault(); this.getCandProfile(); };
+    const handleB3 = (e) => { e.preventDefault(); e.stopPropagation(); this.getCandProfile(); };
     if (this.btnBottomProfile) this.btnBottomProfile.onclick = handleB3;
-    if (this.b3El) this.b3El.onclick = handleB3;
+    else if (this.b3El) this.b3El.onclick = handleB3;
 
     const handleB4 = (e) => {
       e.preventDefault();
+      e.stopPropagation();
       const isLastSection = this.currentSectionIndex >= this.testData.sections.length - 1;
       if (!isLastSection) {
         this.targetSectionIndexForAdvance = this.currentSectionIndex + 1;
@@ -232,7 +234,7 @@ class OliveboardTestEngine {
       }
     };
     if (this.btnSubmitExam) this.btnSubmitExam.onclick = handleB4;
-    if (this.b4El) this.b4El.onclick = handleB4;
+    else if (this.b4El) this.b4El.onclick = handleB4;
 
     if (this.btnGetAllBack) {
       this.btnGetAllBack.onclick = (e) => { e.preventDefault(); this.getAllBack(); };
@@ -309,8 +311,9 @@ class OliveboardTestEngine {
     }
 
     const triggerWheelTooltip = () => {
-      if (!this.isExamActive || this.scrollTooltipShown) return;
-      this.scrollTooltipShown = true;
+      const activeEngine = window.currentTestEngine || this;
+      if (!activeEngine.isExamActive || activeEngine.scrollTooltipShown) return;
+      activeEngine.scrollTooltipShown = true;
       if (scrollTooltip) {
         scrollTooltip.style.display = 'block';
         setTimeout(() => {
@@ -320,7 +323,7 @@ class OliveboardTestEngine {
     };
     [this.questionInnerPane, this.leftPane, this.rightPane, this.singleWrapper].forEach(pane => {
       if (pane) {
-        pane.addEventListener('wheel', triggerWheelTooltip, { passive: true });
+        pane.onwheel = triggerWheelTooltip;
       }
     });
 
@@ -336,16 +339,25 @@ class OliveboardTestEngine {
         li.onclick = (e) => {
           e.stopPropagation();
           const lang = li.dataset.lang;
-          const text = li.textContent;
-          const selectedItem = btnLangDrop.querySelector('.dd-selected-item');
-          if (selectedItem) selectedItem.textContent = text;
           langMenu.style.display = 'none';
           this.setLanguage(lang);
         };
       });
+    }
+
+    if (!window._obTestEngineDocListenersBound) {
+      window._obTestEngineDocListenersBound = true;
       document.addEventListener('click', () => {
-        if (langMenu) langMenu.style.display = 'none';
-        if (this.instrLangMenu) this.instrLangMenu.style.display = 'none';
+        const lMenu = document.getElementById('lang-dropdown-menu');
+        const iMenu = document.getElementById('instr-lang-menu');
+        if (lMenu) lMenu.style.display = 'none';
+        if (iMenu) iMenu.style.display = 'none';
+      });
+      document.addEventListener('fullscreenchange', () => {
+        const btnToggle = document.getElementById('btn-screen-toggle');
+        if (!document.fullscreenElement && btnToggle) {
+          btnToggle.textContent = 'Enter Full Screen';
+        }
       });
     }
 
@@ -362,13 +374,6 @@ class OliveboardTestEngine {
         }
       };
     }
-
-    // Fullscreen change listener
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement && this.btnScreenToggle) {
-        this.btnScreenToggle.textContent = 'Enter Full Screen';
-      }
-    });
   }
 
   /**
@@ -750,8 +755,18 @@ class OliveboardTestEngine {
   }
 
   setLanguage(lang) {
-    this.currentLang = lang;
-    if (lang === 'hqt') {
+    this.currentLang = lang === 'hqt' ? 'hqt' : 'eqt';
+    const labelText = this.currentLang === 'hqt' ? 'Hindi' : 'English';
+    const btnLangDrop = document.getElementById('dropdownMenu2');
+    if (btnLangDrop) {
+      const sel = btnLangDrop.querySelector('.dd-selected-item');
+      if (sel) sel.textContent = labelText;
+    }
+    if (this.instrDropdownMenu) {
+      const sel = this.instrDropdownMenu.querySelector('.dd-selected-item');
+      if (sel) sel.textContent = labelText;
+    }
+    if (this.currentLang === 'hqt') {
       document.querySelectorAll('.hqt').forEach(el => el.style.setProperty('display', 'inline', 'important'));
       document.querySelectorAll('.eqt').forEach(el => el.style.setProperty('display', 'none', 'important'));
     } else {
@@ -1276,6 +1291,7 @@ class OliveboardTestEngine {
         };
       });
       this.questionListOnButton.style.display = 'block';
+      this.setLanguage(this.currentLang);
     }
     if (this.mainBackButton) this.mainBackButton.style.display = 'flex';
   }
@@ -1298,6 +1314,7 @@ class OliveboardTestEngine {
     if (this.instructionsOnButton && innerInstr) {
       this.instructionsOnButton.innerHTML = innerInstr.innerHTML;
       this.instructionsOnButton.style.display = 'block';
+      this.setLanguage(this.currentLang);
     }
     if (this.mainBackButton) this.mainBackButton.style.display = 'flex';
   }
@@ -1934,7 +1951,47 @@ class OliveboardTestEngine {
     setEl('metric-unanswered', unansweredCount);
     setEl('metric-time', this._formatTime(timeSpent));
 
-    const breakdown = attempt.section_breakdown || attempt.sectionBreakdown || [];
+    let breakdown = attempt.section_breakdown || attempt.sectionBreakdown || [];
+    if (typeof breakdown === 'string') {
+      try { breakdown = JSON.parse(breakdown); } catch (e) { breakdown = []; }
+    }
+    if ((!Array.isArray(breakdown) || breakdown.length === 0) && testData && Array.isArray(testData.sections)) {
+      let respMap = attempt.responses || attempt.responses_json || {};
+      if (typeof respMap === 'string') {
+        try { respMap = JSON.parse(respMap); } catch (e) { respMap = {}; }
+      }
+      breakdown = testData.sections.map(sec => {
+        const posMark = Number(sec.positiveMarks || testData.marksPerCorrect || 1);
+        const negMark = Number(sec.negativeMarks !== undefined ? sec.negativeMarks : (testData.negativeMarks || 0.25));
+        let sCorrect = 0, sWrong = 0, sUnans = 0, sTime = 0;
+        (sec.questions || []).forEach(q => {
+          const r = respMap[q.id];
+          const corrIdx = this._getNormalizedCorrectIndex(q);
+          if (r && r.timeSpentSeconds) sTime += r.timeSpentSeconds;
+          if (!r || r.selectedIndex === null || r.selectedIndex === undefined) {
+            sUnans++;
+          } else if (Number(r.selectedIndex) === Number(corrIdx)) {
+            sCorrect++;
+          } else {
+            sWrong++;
+          }
+        });
+        const sScore = (sCorrect * posMark) - (sWrong * negMark);
+        const sAcc = (sCorrect + sWrong) > 0 ? ((sCorrect / (sCorrect + sWrong)) * 100).toFixed(1) : '0.0';
+        return {
+          sectionId: sec.id,
+          sectionName: sec.title,
+          total: (sec.questions || []).length,
+          maxMarks: Number(((sec.questions || []).length * posMark).toFixed(2)),
+          correct: sCorrect,
+          wrong: sWrong,
+          unanswered: sUnans,
+          score: Number(sScore.toFixed(2)),
+          accuracy: sAcc,
+          timeSpentSeconds: sTime
+        };
+      });
+    }
     this._renderScorecardSectionalTable(breakdown, timeSpent);
 
     const breakdownEl = document.getElementById('scorecard-section-breakdown');
@@ -1949,8 +2006,7 @@ class OliveboardTestEngine {
       `).join('');
     }
 
-    const solutionsContainer = document.getElementById('scorecard-solutions-list');
-    if (solutionsContainer && testData && testData.sections) {
+    if (testData && testData.sections) {
       const allQuestions = [];
       testData.sections.forEach(sec => sec.questions.forEach(q => {
         q.correctIndex = this._getNormalizedCorrectIndex(q);
@@ -1959,7 +2015,10 @@ class OliveboardTestEngine {
 
       this._renderScorecardTopicBreakdown(breakdown, allQuestions);
       this._renderTopperComparisonModule(netScore, maxScore, parseFloat(accuracy), timeSpent, allQuestions.length, breakdown, rankData);
+    }
 
+    const solutionsContainer = document.getElementById('scorecard-solutions-list');
+    if (solutionsContainer) {
       solutionsContainer.innerHTML = '';
     }
 
@@ -2180,7 +2239,7 @@ class OliveboardTestEngine {
 
     const renderSectionsTab = () => {
       container.innerHTML = (sectionArr || []).map(sec => {
-        const secMax = sec.total || 30;
+        const secMax = sec.maxMarks || sec.total || 30;
         const secScore = sec.score !== undefined ? sec.score : 0;
         const secAvg = (secMax * 0.45).toFixed(1);
         const secTop = (secMax * 0.88).toFixed(1);
@@ -2188,7 +2247,7 @@ class OliveboardTestEngine {
           <div class="comp-card">
             <div class="comp-title">
               <span>${sec.sectionName}</span>
-              <span style="font-size: 11px; color: #15803d;">Score: ${secScore.toFixed(2)}</span>
+              <span style="font-size: 11px; color: #15803d;">Score: ${secScore.toFixed(2)} / ${secMax}</span>
             </div>
             <div class="bar-row">
               <span class="lbl">You:</span>
@@ -2236,13 +2295,14 @@ class OliveboardTestEngine {
   }
 
   exitTest(fromPopstate = false) {
-    this._doExitTest();
     if (!fromPopstate && window.appController && window.appController.exitTestToDashboard) {
       window.appController.exitTestToDashboard(false);
+    } else {
+      this._doExitTest(false);
     }
   }
 
-  _doExitTest() {
+  _doExitTest(skipRefresh = false) {
     clearInterval(this.timerInterval);
     this.isExamActive = false;
     this.isPaused = false;
@@ -2253,8 +2313,8 @@ class OliveboardTestEngine {
     }
     document.body.style.overflow = 'auto';
 
-    if (window.appController) {
-      window.appController.refreshAnalytics();
+    if (!skipRefresh && window.appController) {
+      window.appController.refreshAnalytics(this.testData ? this.testData.id : null);
     }
   }
 }

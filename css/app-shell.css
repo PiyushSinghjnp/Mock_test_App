@@ -939,13 +939,19 @@ body {
   height: 16px;
 }
 
-/* 3-Color Progress Bar for Completed Attempts */
-.card-attempt-banner {
+/* 3-Color Progress Bar for Completed & Paused Attempts */
+.card-attempt-banner,
+.card-paused-banner {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 12px;
+}
+
+.card-paused-banner {
+  background: #f0f9ff;
+  border-color: #bae6fd;
 }
 
 .attempt-3color-bar {
