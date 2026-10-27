@@ -37,16 +37,65 @@ let lastCapturedArtifacts = [];
 const CDP_ENDPOINT = 'http://127.0.0.1:9222';
 
 // Persistent Cookie Jar for live HTTP proxy requests to oliveboard.in
+const COOKIE_JAR_PATH = path.join(SCRAPED_DIR, '.cookie_jar.json');
 const proxyCookieJar = new Map();
+
+function loadCookiesFromDisk() {
+  try {
+    if (fs.existsSync(COOKIE_JAR_PATH)) {
+      const data = JSON.parse(fs.readFileSync(COOKIE_JAR_PATH, 'utf8'));
+      if (data && typeof data === 'object') {
+        for (const [k, v] of Object.entries(data)) {
+          proxyCookieJar.set(k, v);
+        }
+      }
+    }
+  } catch (e) {}
+}
+
+function saveCookiesToDisk() {
+  try {
+    const obj = Object.fromEntries(proxyCookieJar.entries());
+    fs.writeFileSync(COOKIE_JAR_PATH, JSON.stringify(obj, null, 2), 'utf8');
+  } catch (e) {}
+}
+
+// Helper to save cookies from HTTP responses
+function saveResponseCookies(res) {
+  let changed = false;
+  const setCookies = typeof res.headers.getSetCookie === 'function' ? res.headers.getSetCookie() : [];
+  if (setCookies.length === 0 && res.headers.get && res.headers.get('set-cookie')) {
+    setCookies.push(...res.headers.get('set-cookie').split(', '));
+  }
+  setCookies.forEach(sc => {
+    const firstPart = String(sc).split(';')[0];
+    const eqIdx = firstPart.indexOf('=');
+    if (eqIdx > 0) {
+      const name = firstPart.slice(0, eqIdx).trim();
+      const val = firstPart.slice(eqIdx + 1).trim();
+      proxyCookieJar.set(name, val);
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveCookiesToDisk();
+  }
+}
+
+// Load cookies from disk on engine startup
+loadCookiesFromDisk();
 
 /**
  * Normalize and sanitize user-supplied URLs (fixes e.g. "https://.oliveboard.in" -> "https://www.oliveboard.in/")
+ * Cleans &amp; HTML entity corruption and extracts destination URLs from ?next= parameters
  */
 function normalizeOliveboardUrl(rawInput) {
   let u = String(rawInput || '').trim();
   if (!u) {
-    return 'https://www.oliveboard.in/?next=https%3A%2F%2Fu1.oliveboard.in%2Fexams%2F%3Fc%3Dsbipopre19%26i%3Dbanking';
+    return 'https://www.oliveboard.in/';
   }
+  // Sanitize any HTML entities (&amp; -> &)
+  u = u.replace(/&amp;/g, '&');
   if (!/^https?:\/\//i.test(u)) {
     u = 'https://' + u.replace(/^\/+/, '');
   }
@@ -67,46 +116,196 @@ function normalizeOliveboardUrl(rawInput) {
 }
 
 /**
+ * Format any Oliveboard course code into a clean, human-readable exam title
+ */
+function formatOliveboardCourseTitle(code) {
+  if (!code) return 'Mock Tests';
+  let s = String(code).trim();
+  // Separate words and digits: e.g. "sbiclerkpre2020" -> "sbiclerkpre 2020"
+  s = s.replace(/([a-zA-Z])([0-9]+)/g, '$1 $2');
+  s = s.replace(/([0-9]+)([a-zA-Z])/g, '$1 $2');
+  s = s.replace(/pre(lim)?\b/gi, ' Prelims');
+  s = s.replace(/mains?\b/gi, ' Mains');
+  s = s.replace(/pyp\b/gi, ' Previous Year Paper');
+  s = s.replace(/live\b/gi, ' Live');
+  s = s.replace(/off\b/gi, ' Officer');
+  s = s.replace(/asst\b/gi, ' Assistant');
+  return s.split(/\s+/).map(w => {
+    const lw = w.toLowerCase();
+    if (['sbi', 'ibps', 'rbi', 'ssc', 'rrb', 'lic', 'epfo', 'esic', 'uiic', 'nicl', 'niacl', 'pnb', 'bob', 'fci', 'cwc', 'nabard', 'idbi', 'cgl', 'chsl', 'cpo', 'mts', 'ntpc', 'po', 'so', 'it', 'cbo', 'ao', 'je', 'lbo', 'am', 'da', 'jam', 'pgdbf'].includes(lw)) {
+      return lw.toUpperCase();
+    }
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(' ');
+}
+
+// Comprehensive dictionary of official Oliveboard exam course slugs
+const OLIVEBOARD_COURSE_NAMES = {
+  sbipopre19: 'SBI PO 2026 Prelims',
+  sbipomains: 'SBI PO 2026 Mains',
+  sbiclerkpre2020: 'SBI Clerk Prelims',
+  sbiclerklivepy: 'SBI Clerk Live PYP',
+  ibpsclerkprelim: 'IBPS Clerk Prelims',
+  ibpsclerkpre2019: 'IBPS Clerk 2026 Prelims',
+  ibpsrrbscp: 'IBPS RRB Officer Scale 1 Prelims',
+  ibpsrrbasp: 'IBPS RRB Office Assistant Prelims',
+  ibpsprelim: 'IBPS PO Prelims',
+  ibpspopre2019: 'IBPS PO 2026 Prelims',
+  ibpssopre: 'IBPS SO Prelims',
+  ibpssopreit: 'IBPS SO Prelims [IT]',
+  ibpssoit1: 'IBPS SO IT Officer',
+  uiicao: 'UIIC AO',
+  cwcp: 'CWC JE',
+  cwcasst: 'CWC Assistant Manager',
+  niclasst: 'NICL Assistant',
+  rbiassistantp: 'RBI Assistant Prelims',
+  rbiasspre2020: 'RBI Assistant 2026 Prelims',
+  rbigradeb: 'RBI Grade B Phase 1',
+  rbigradebp1: 'RBI Grade B Phase 1',
+  rbigradebp2: 'RBI Grade B Phase 2',
+  bob: 'Bank of Baroda LBO',
+  ioblbo: 'IOB LBO',
+  pnblbo: 'PNB LBO',
+  pnbsindlbo: 'Punjab and Sind Bank LBO',
+  rrbscale2offit: 'RRB Scale 2 Officer IT',
+  rrbscale2offle: 'RRB Scale 2 Officer Legal',
+  rrbscale2offen: 'RRB Scale 2 Officer [Eng]',
+  rrbscale2offhi: 'RRB Scale 2 Officer [Hin]',
+  rrbscale3offen: 'RRB Scale 3 Officer [Eng]',
+  rrbscale3offhi: 'RRB Scale 3 Officer [Hin]',
+  mscoop: 'Maharashtra Co-Op Bank',
+  nabasst: 'NABARD Development Assistant',
+  nabardgradea: 'NABARD Grade A',
+  nainmt: 'Nainital Bank PO',
+  naincl: 'Nainital Bank Clerk',
+  mpcbpom: 'MP Coop Bank Manager',
+  mpcbclm: 'MP Coop Staff Assistant',
+  oiclao: 'OICL AO',
+  licap: 'LIC AAO Prelims',
+  licaao: 'LIC AAO',
+  oiclasst: 'OICL Assistant',
+  niacl: 'NIACL AO',
+  repco: 'Repco Bank',
+  nicl: 'NICL AO',
+  sbicbo: 'SBI CBO',
+  bscbpop: 'Bihar Coop Assistant Manager',
+  bscbclp: 'Bihar CoOp Assistant',
+  boicroff: 'Bank of India Credit Officer',
+  unionsoit: 'Union Bank SO IT',
+  unioncr: 'Union Bank Credit Officer',
+  idbiasst: 'IDBI Jr. Assistant Manager Grade O',
+  ucolbo: 'UCO Bank LBO',
+  tmb: 'Tamilnad Mercantile Bank',
+  cbipgdbf: 'Central Bank of India PGDBF',
+  idbiex: 'IDBI JAM PGDBF',
+  niaclasstpre: 'NIACL Assistant',
+  rbiattendant: 'RBI Office Attendant',
+  aic: 'AIC MT',
+  aicit: 'AIC IT',
+  gic: 'GIC Officer',
+  sbiso: 'SBI SO',
+  unlbo: 'Union Bank LBO',
+  ecgc: 'ECGC PO',
+  indlbo: 'Indian Bank LBO',
+  epfopa: 'EPFO Personal Assistant',
+  hpcooppre: 'HP Coop Bank Jr. Clerk',
+  pnbcroff: 'PNB SO Credit Officer',
+  licase: 'LIC Assistant',
+  lichfl: 'LIC HFL Assistant',
+  nhb: 'National Housing Bank',
+  epfsp: 'EPFO SSA',
+  epfoeo: 'EPFO EO / AO',
+  uiicasst: 'UIIC Assistant',
+  csir1: 'CSIR Assistant',
+  fcip: 'Food Corporation of India',
+  fcim3: 'FCI Category III',
+  licadp: 'LIC ADO Prelims',
+  suprcrt: 'Supreme Court Junior Court Assistant',
+  lichflam: 'LIC HFL Assistant Manager',
+  sibcl: 'South Indian Bank Clerk',
+  icarasst: 'ICAR IARI Assistant',
+  esicpre: 'ESIC SSO',
+  esmts: 'ESIC MTS',
+  tscbpo: 'Telangana CoOp Assistant Manager',
+  tscbclm: 'Telangana CoOp Staff Assistant',
+  pscb: 'Punjab State Cooperative Bank',
+  esudp: 'ESIC UDC',
+  licjem: 'LIC AE/AAO SO(IT) Mains',
+  oscbpop: 'Odisha CoOp Assistant Manager',
+  oscbclp: 'Odisha CoOp Assistant Grade II',
+  sibpo: 'South Indian Bank PO',
+  sbiappr: 'SBI Apprentice',
+  indpopre: 'Indian Bank PO',
+  fcimp: 'FCI Manager',
+  epfp: 'EPFO Assistant',
+  pnbit: 'PNB IT Officer',
+  canara: 'Canara Bank PO',
+  synpo: 'Syndicate Bank PO',
+  licjep: 'LIC AE/AAO SO',
+  ssccgl: 'SSC CGL Tier 1',
+  ssct2np: 'SSC CGL Tier 2',
+  sscchsl: 'SSC CHSL',
+  ssccpo: 'SSC CPO',
+  sscmts: 'SSC MTS',
+  sscgd: 'SSC GD Constable',
+  rrbntpc: 'RRB NTPC CBT 1',
+  rrbntpc2: 'RRB NTPC CBT 2',
+  ntpc1: 'RRB NTPC 1',
+  rrbgrp: 'RRB Group D',
+  rrbje: 'RRB JE',
+  rrbpolive: 'RRB PO Live',
+  licpyp: 'LIC AAO PYP',
+  ugc1: 'UGC Paper 1'
+};
+
+/**
  * Resolve course code, test ID, human-readable exam title, and dashboard URL from any Oliveboard URL
  */
 function resolveCourseMeta(rawUrl, updateSession = false) {
-  let courseCode = (liveProxySession && liveProxySession.currentCourse) || 'sbipopre19';
-  let categoryCode = (liveProxySession && liveProxySession.currentCategory) || 'banking';
-  let testId = (liveProxySession && liveProxySession.currentTestId) || '1';
+  let courseCode = '';
+  let categoryCode = '';
+  let testId = '';
 
   try {
-    const u = new URL(String(rawUrl || ''), 'https://u1.oliveboard.in');
-    const cParam = (u.searchParams.get('c') || '').trim();
-    const iParam = (u.searchParams.get('i') || '').trim();
-    const tParam = (u.searchParams.get('testid') || u.searchParams.get('t') || '').trim();
+    const clean = String(rawUrl || '').replace(/&amp;/g, '&');
+    const u = new URL(clean, 'https://www.oliveboard.in');
+    const cParam = (u.searchParams.get('c') || u.searchParams.get('amp;c') || '').trim();
+    const iParam = (u.searchParams.get('i') || u.searchParams.get('amp;i') || '').trim();
+    const tParam = (u.searchParams.get('testid') || u.searchParams.get('amp;testid') || u.searchParams.get('t') || u.searchParams.get('amp;t') || '').trim();
     if (cParam) courseCode = cParam;
     if (iParam) categoryCode = iParam;
     if (tParam) testId = tParam;
+
+    // Check pathname if c was not a query parameter (e.g. /ssc-cgl/ or /rbi-grade-b/)
+    if (!cParam) {
+      const p = u.pathname.toLowerCase();
+      if (p.includes('rbi-grade-b')) courseCode = 'rbigradeb';
+      else if (p.includes('ssc-cgl')) courseCode = 'ssccgl';
+      else if (p.includes('ssc-chsl')) courseCode = 'sscchsl';
+      else if (p.includes('rrb-ntpc')) courseCode = 'rrbntpc';
+      else if (p.includes('sbi-clerk')) courseCode = 'sbiclerkpre2020';
+      else if (p.includes('sbi-po')) courseCode = 'sbipopre19';
+      else if (p.includes('ibps-so')) courseCode = 'ibpssopreit';
+      else if (p.includes('ibps-po')) courseCode = 'ibpsprelim';
+      else if (p.includes('ibps-clerk')) courseCode = 'ibpsclerkprelim';
+      else if (p.includes('epfo')) courseCode = 'epfsp';
+      else if (p.includes('lic-aao')) courseCode = 'licap';
+    }
   } catch (e) {}
 
-  if (updateSession && liveProxySession) {
+  if (updateSession && liveProxySession && courseCode) {
     liveProxySession.currentCourse = courseCode;
-    liveProxySession.currentCategory = categoryCode;
-    liveProxySession.currentTestId = testId;
+    if (categoryCode) liveProxySession.currentCategory = categoryCode;
+    if (testId) liveProxySession.currentTestId = testId;
   }
 
   const lowerCourse = courseCode.toLowerCase();
   const isIbpsSo = lowerCourse.includes('ibpsso');
   const isIbps = lowerCourse.includes('ibps');
 
-  const courseNameMap = {
-    sbipopre19: 'SBI PO 2026 Prelims',
-    sbipomains: 'SBI PO 2026 Mains',
-    sbiclerkpre2020: 'SBI Clerk 2026 Prelims',
-    ibpssopreit: 'IBPS SO Prelims [IT]',
-    ibpspopre2019: 'IBPS PO 2026 Prelims',
-    ibpsclerkpre2019: 'IBPS Clerk 2026 Prelims',
-    rbiasspre2020: 'RBI Assistant 2026 Prelims'
-  };
-
-  const examPrefix = courseNameMap[lowerCourse] || (isIbpsSo ? 'IBPS SO Prelims [IT]' : 'SBI PO 2026 Prelims');
-  const examTitle = `${examPrefix} - ${testId}`;
-  const dashboardUrl = `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(courseCode)}&i=${encodeURIComponent(categoryCode)}`;
+  const examPrefix = courseCode ? (OLIVEBOARD_COURSE_NAMES[lowerCourse] || formatOliveboardCourseTitle(courseCode)) : 'Oliveboard';
+  const examTitle = courseCode ? (testId ? `${examPrefix} - ${testId}` : examPrefix) : 'Oliveboard';
+  const dashboardUrl = courseCode ? `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(courseCode)}&i=${encodeURIComponent(categoryCode || 'banking')}` : 'https://www.oliveboard.in/';
 
   return {
     courseCode,
@@ -130,49 +329,56 @@ function classifyUrlStage(url) {
   if (u.includes('solution') || u.includes('index3.php')) {
     return {
       stage: 'solutions',
-      label: `5. Post-Submit Solution Window (${meta.examTitle})`,
-      title: `Oliveboard | Solution App (${meta.examTitle})`
+      label: `Solutions (${meta.examTitle})`,
+      title: `Oliveboard | Solutions (${meta.examTitle})`
     };
   }
   if (u.includes('submit') || u.includes('summary')) {
     return {
       stage: 'submit_dialog',
-      label: `3.5. Test Submission Summary (${meta.examTitle})`,
-      title: `Oliveboard | Submit Summary (${meta.examTitle})`
+      label: `Submission Summary (${meta.examTitle})`,
+      title: `Oliveboard | Summary (${meta.examTitle})`
     };
   }
   if (u.includes('analysis') || u.includes('scorecard')) {
     return {
       stage: 'analysis',
-      label: `4. Performance Scorecard (${meta.examTitle})`,
+      label: `Scorecard (${meta.examTitle})`,
       title: `Oliveboard | Scorecard (${meta.examTitle})`
     };
   }
   if (u.includes('instructions=1')) {
     return {
       stage: 'instructions',
-      label: `2. Pre-Test Instructions (${meta.examTitle})`,
+      label: `Instructions (${meta.examTitle})`,
       title: `Oliveboard | Instructions (${meta.examTitle})`
     };
   }
   if (u.includes('part.php') || u.includes('testid=')) {
     return {
       stage: 'live_test',
-      label: `3. Active Live Mock Test (${meta.examTitle})`,
+      label: `Live Mock Test (${meta.examTitle})`,
       title: `Oliveboard | Live Mock Test (${meta.examTitle})`
+    };
+  }
+  if (u.includes('?next=') || u.includes('&next=')) {
+    return {
+      stage: 'login_challenge',
+      label: 'Login Required to Access Test',
+      title: 'Oliveboard | Login Required'
     };
   }
   if (u.includes('u1.oliveboard.in')) {
     return {
       stage: 'dashboard',
-      label: `1. Oliveboard Mock Test Dashboard (${meta.examPrefix})`,
-      title: `Oliveboard | ${meta.examPrefix} Mock Tests`
+      label: `Mock Tests (${meta.examPrefix})`,
+      title: `Oliveboard | ${meta.examPrefix}`
     };
   }
   if (u.includes('oliveboard.in')) {
     return {
       stage: 'login',
-      label: '0. Oliveboard Live Website (www.oliveboard.in)',
+      label: 'Oliveboard Live Website',
       title: "Oliveboard - India's Top Exam Preparation Platform"
     };
   }
@@ -191,66 +397,24 @@ const liveProxySession = {
   started: false,
   activeTabIndex: 0,
   isLoggedIn: false,
-  email: 'candidate@oliveboard.in',
-  currentCourse: 'sbipopre19',
-  currentCategory: 'banking',
-  currentTestId: '1',
+  email: '',
+  currentCourse: '',
+  currentCategory: '',
+  currentTestId: '',
   tabs: []
 };
 
-/**
- * Ensure that once a user has logged in or entered u1.oliveboard.in,
- * going "Back" in tab history NEVER returns to the logged-out www.oliveboard.in landing page!
- */
-function sanitizeTabHistoryAfterLogin(tab) {
-  if (!tab) return;
-  const dashUrl = `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse || 'sbipopre19')}&i=${encodeURIComponent(liveProxySession.currentCategory || 'banking')}`;
-  const curUrl = tab.url || dashUrl;
-  if (curUrl.includes('/tests/?') || curUrl.includes('/exams/?') || curUrl === dashUrl) {
-    tab.history = [curUrl];
-  } else {
-    tab.history = [dashUrl, curUrl];
-  }
-}
-
 function ensureProxySessionInitialized(initialUrl) {
-  const startUrl = normalizeOliveboardUrl(initialUrl);
+  const startUrl = normalizeOliveboardUrl(initialUrl || 'https://www.oliveboard.in/');
   if (!liveProxySession.started || liveProxySession.tabs.length === 0) {
     const st0 = classifyUrlStage(startUrl);
     liveProxySession.tabs = [
       {
-        id: 'tab-ob-main',
+        id: 'tab-' + Date.now(),
         url: startUrl,
-        title: st0.title,
+        title: st0.title || 'Oliveboard',
         stageObj: st0,
         history: [startUrl]
-      },
-      {
-        id: 'tab-ob-dash',
-        url: 'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking',
-        title: 'Oliveboard | SBI PO 2026 Prelims Dashboard',
-        stageObj: classifyUrlStage('https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking'),
-        history: ['https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking']
-      },
-      {
-        id: 'tab-ob-test',
-        url: 'https://u1.oliveboard.in/exams/tests/part.php?c=sbipopre19&testid=1',
-        title: 'Oliveboard | Live Mock Test (SBI PO 2026 Prelims - 1)',
-        stageObj: classifyUrlStage('https://u1.oliveboard.in/exams/tests/part.php?c=sbipopre19&testid=1'),
-        history: [
-          'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking',
-          'https://u1.oliveboard.in/exams/tests/part.php?c=sbipopre19&testid=1'
-        ]
-      },
-      {
-        id: 'tab-ob-sol',
-        url: 'https://u1.oliveboard.in/exams/solution/index3.php?c=sbipopre19&testid=1&from=test',
-        title: 'Oliveboard | Solution App (SBI PO 2026 Prelims - 1)',
-        stageObj: classifyUrlStage('https://u1.oliveboard.in/exams/solution/index3.php?c=sbipopre19&testid=1&from=test'),
-        history: [
-          'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking',
-          'https://u1.oliveboard.in/exams/solution/index3.php?c=sbipopre19&testid=1&from=test'
-        ]
       }
     ];
     liveProxySession.activeTabIndex = 0;
@@ -280,388 +444,17 @@ function instrumentProxiedHtml(rawHtml, targetUrl, extraScripts = '') {
     baseHref = `${u.origin}${pathname}`;
   } catch (e) {}
 
-  // Rewrite Oliveboard inline login onclick handlers so they never hang on cross-origin "Please Wait"
-  html = html
-    .replace(/onclick="courseInValidation1\(\)\s*;?"/gi, 'onclick="return window.__obHandleLoginSubmit && window.__obHandleLoginSubmit(this, event);"')
-    .replace(/onclick="courseInValidation\([^"]*\)\s*;?"/gi, 'onclick="return window.__obHandleLoginSubmit && window.__obHandleLoginSubmit(this, event);"')
-    .replace(/onclick="courseUpValidation\([^"]*\)\s*;?"/gi, 'onclick="return window.__obHandleLoginSubmit && window.__obHandleLoginSubmit(this, event);"');
-
+  const bridgeScriptPath = path.join(__dirname, 'js', 'ob-proxy-bridge.js');
+  let bridgeScriptCode = '';
+  try {
+    bridgeScriptCode = fs.readFileSync(bridgeScriptPath, 'utf8');
+  } catch (e) {
+    bridgeScriptCode = '';
+  }
   const bridgeScript = `
-<style data-ob-proxy-login-fix="1">
-  /* Ensure password input group inside Oliveboard #modal-login is visible so user can enter email & password smoothly */
-  #modal-login #loginnext-group {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    height: auto !important;
-  }
-  #modal-login .disable-loginemail {
-    pointer-events: auto !important;
-    opacity: 1 !important;
-  }
-  #modal-login #coursein {
-    display: none !important;
-  }
-  #modal-login #coursein1 {
-    display: block !important;
-    width: 100% !important;
-    cursor: pointer !important;
-  }
-</style>
 <script data-ob-proxy-bridge="1">
-(function() {
-  window.__OB_PROXIED_URL__ = ${JSON.stringify(targetUrl)};
-
-  function getProxyOrigin() {
-    try {
-      return window.location.origin || '';
-    } catch (e) {
-      return '';
-    }
-  }
-
-  function toProxyUrl(rawHref) {
-    if (!rawHref) return null;
-    const str = String(rawHref).trim();
-    if (!str || str.startsWith('javascript:') || str.startsWith('#') || str.startsWith('mailto:') || str.startsWith('tel:')) {
-      return null;
-    }
-    try {
-      const abs = new URL(str, window.__OB_PROXIED_URL__).toString();
-      if (abs.includes('/api/ob-browser/proxy')) return abs;
-      return getProxyOrigin() + '/api/ob-browser/proxy?url=' + encodeURIComponent(abs);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function toAjaxProxyUrl(rawUrl) {
-    if (!rawUrl) return rawUrl;
-    const str = String(rawUrl).trim();
-    if (str.startsWith('/api/ob-browser/') || str.startsWith('data:') || str.startsWith('blob:')) {
-      return str;
-    }
-    try {
-      const abs = new URL(str, window.__OB_PROXIED_URL__).toString();
-      if (abs.includes('oliveboard.in')) {
-        return getProxyOrigin() + '/api/ob-browser/ajax-proxy?url=' + encodeURIComponent(abs);
-      }
-    } catch (e) {}
-    return rawUrl;
-  }
-
-  // Intercept XMLHttpRequest & fetch so Oliveboard AJAX calls route through our server-side CORS-free proxy
-  try {
-    const origXhrOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(method, url) {
-      const args = Array.prototype.slice.call(arguments);
-      args[1] = toAjaxProxyUrl(url);
-      return origXhrOpen.apply(this, args);
-    };
-  } catch (e) {}
-
-  try {
-    const origFetch = window.fetch;
-    if (origFetch) {
-      window.fetch = function(input, init) {
-        if (typeof input === 'string') {
-          input = toAjaxProxyUrl(input);
-        }
-        return origFetch.call(this, input, init);
-      };
-    }
-  } catch (e) {}
-
-  // Determine post-login destination URL (honors ?next=... query param or defaults to SBI PO 2026 Prelims Mock Test Dashboard)
-  function getPostLoginRedirectUrl() {
-    try {
-      const cur = new URL(window.__OB_PROXIED_URL__);
-      const nextParam = cur.searchParams.get('next');
-      if (nextParam) {
-        const decoded = decodeURIComponent(nextParam);
-        if (decoded.startsWith('http')) {
-          // Point to the rich SBI PO 2026 Prelims Mock Tests dashboard on u1.oliveboard.in
-          if (decoded.includes('u1.oliveboard.in')) {
-            return 'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking';
-          }
-          return decoded;
-        }
-      }
-    } catch (e) {}
-    return 'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking';
-  }
-
-  let loginRedirectInProgress = false;
-  window.__obHandleLoginSubmit = function(btnEl, ev) {
-    if (ev && ev.preventDefault) ev.preventDefault();
-    if (ev && ev.stopPropagation) ev.stopPropagation();
-    if (loginRedirectInProgress) return false;
-
-    const emailEl = document.querySelector('#course-email, #course-uemail, input[type="email"], input[name="email"]');
-    const passEl = document.querySelector('#course-password, #course-upassword, input[type="password"], input[name="pwd"]');
-    const emailVal = (emailEl && emailEl.value ? emailEl.value.trim() : '') || 'candidate@oliveboard.in';
-    const passVal = (passEl && passEl.value ? passEl.value.trim() : '');
-
-    // Ensure password field is visible if user hasn't seen it yet
-    const nextGroup = document.getElementById('loginnext-group');
-    if (nextGroup) {
-      nextGroup.style.setProperty('display', 'block', 'important');
-    }
-
-    const activeBtn = btnEl || document.getElementById('coursein1') || document.getElementById('coursein') || document.getElementById('courseup');
-    if (activeBtn) {
-      activeBtn.innerHTML = 'Signing in to Oliveboard...';
-      activeBtn.style.backgroundColor = '#059669';
-    }
-
-    loginRedirectInProgress = true;
-    const destUrl = getPostLoginRedirectUrl();
-
-    // Notify parent & backend session of login
-    try {
-      fetch(getProxyOrigin() + '/api/ob-browser/input', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'fillLogin', email: emailVal, password: passVal, url: destUrl })
-      }).catch(function(){});
-    } catch (e) {}
-
-    try {
-      window.parent.postMessage({
-        type: 'OB_PROXY_NAVIGATING',
-        url: destUrl,
-        loggedIn: true,
-        email: emailVal
-      }, '*');
-    } catch (e) {}
-
-    setTimeout(function() {
-      window.location.href = getProxyOrigin() + '/api/ob-browser/proxy?url=' + encodeURIComponent(destUrl);
-    }, 180);
-
-    return false;
-  };
-
-  // Override Oliveboard global login validators so they never get stuck on "Please Wait"
-  window.courseInValidation1 = function() { return window.__obHandleLoginSubmit(document.getElementById('coursein1')); };
-  window.courseInValidation = function() { return window.__obHandleLoginSubmit(document.getElementById('coursein')); };
-  window.courseUpValidation = function() { return window.__obHandleLoginSubmit(document.getElementById('courseup')); };
-  window.handleOnetapResponse = function() { return window.__obHandleLoginSubmit(document.getElementById('coursein1')); };
-
-  // Also define window.openwin used by Oliveboard u1.oliveboard.in "Start Test" & "Solutions" cards
-  window.openwin = function(url) {
-    const proxied = toProxyUrl(url);
-    if (proxied) {
-      try {
-        const abs = new URL(url, window.__OB_PROXIED_URL__).toString();
-        window.parent.postMessage({ type: 'OB_PROXY_NAVIGATING', url: abs, popup: true }, '*');
-      } catch (e) {}
-      window.location.href = proxied;
-    }
-  };
-
-  // Notify parent modal of current URL & title
-  function notifyParent() {
-    try {
-      window.parent.postMessage({
-        type: 'OB_PROXY_LOADED',
-        url: window.__OB_PROXIED_URL__,
-        title: document.title || window.__OB_PROXIED_URL__
-      }, '*');
-    } catch (e) {}
-  }
-
-  function installLoginEnhancements() {
-    // Re-bind global functions in case coursecommon.js overwrote them when body scripts loaded
-    window.courseInValidation1 = function() { return window.__obHandleLoginSubmit(document.getElementById('coursein1')); };
-    window.courseInValidation = function() { return window.__obHandleLoginSubmit(document.getElementById('coursein')); };
-    window.courseUpValidation = function() { return window.__obHandleLoginSubmit(document.getElementById('courseup')); };
-    window.openwin = function(url) {
-      const proxied = toProxyUrl(url);
-      if (proxied) {
-        try {
-          const abs = new URL(url, window.__OB_PROXIED_URL__).toString();
-          window.parent.postMessage({ type: 'OB_PROXY_NAVIGATING', url: abs, popup: true }, '*');
-        } catch (e) {}
-        window.location.href = proxied;
-      }
-    };
-
-    const btn1 = document.getElementById('coursein1');
-    if (btn1 && btn1.textContent.trim().toLowerCase() === 'next') {
-      btn1.textContent = 'Login';
-    }
-
-    // Watchdog: if any Oliveboard script sets #coursein1 / #coursein / #courseup to "Please Wait", immediately advance!
-    ['coursein1', 'coursein', 'courseup'].forEach(function(id) {
-      const el = document.getElementById(id);
-      if (el && /please\s*wait/i.test(el.textContent || '')) {
-        window.__obHandleLoginSubmit(el);
-      }
-    });
-  }
-
-  window.addEventListener('DOMContentLoaded', function() {
-    notifyParent();
-    installLoginEnhancements();
-  });
-  window.addEventListener('load', function() {
-    notifyParent();
-    installLoginEnhancements();
-  });
-  setTimeout(function() {
-    notifyParent();
-    installLoginEnhancements();
-  }, 200);
-  setInterval(installLoginEnhancements, 400);
-
-  // Intercept clicks in capture phase: Login buttons, Google Sign-In, inline onclick location changes, and links
-  document.addEventListener('click', function(e) {
-    const target = e.target;
-    if (!target || !target.closest) return;
-
-    // 1. Intercept Oliveboard Login / Register / Google Sign-In buttons inside #modal-login or #modal-signup
-    const loginBtn = target.closest('#coursein1, #coursein, #courseup, .g_id_signin, #btn-googlesignin1');
-    if (loginBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      window.__obHandleLoginSubmit(loginBtn, e);
-      return;
-    }
-
-    // 2. Intercept elements with inline onclick="window.location.href='...'" or onclick="openwin('...')"
-    const onclickEl = target.closest('[onclick]');
-    if (onclickEl) {
-      const rawOnclick = onclickEl.getAttribute('onclick') || '';
-      const locMatch = rawOnclick.match(/window\.location\.href\s*=\s*['"]([^'"]+)['"]/i) ||
-                       rawOnclick.match(/openwin\(\s*['"]([^'"]+)['"]\s*\)/i);
-      if (locMatch && locMatch[1]) {
-        const proxied = toProxyUrl(locMatch[1]);
-        if (proxied) {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-          try {
-            const abs = new URL(locMatch[1], window.__OB_PROXIED_URL__).toString();
-            window.parent.postMessage({ type: 'OB_PROXY_NAVIGATING', url: abs }, '*');
-          } catch (err) {}
-          window.location.href = proxied;
-          return;
-        }
-      }
-    }
-
-    // 3. Intercept standard <a href="..."> links
-    const a = target.closest('a[href]');
-    if (!a) return;
-    const rawHref = a.getAttribute('href');
-    if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('javascript:')) return;
-    const proxied = toProxyUrl(rawHref);
-    if (proxied) {
-      e.preventDefault();
-      e.stopPropagation();
-      try {
-        const abs = new URL(rawHref, window.__OB_PROXIED_URL__).toString();
-        window.parent.postMessage({ type: 'OB_PROXY_NAVIGATING', url: abs }, '*');
-      } catch (err) {}
-      window.location.href = proxied;
-    }
-  }, true);
-
-  // Intercept Enter key inside login email/password inputs
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      const active = document.activeElement;
-      if (active && (active.id === 'course-email' || active.id === 'course-password' || active.id === 'course-uemail' || active.id === 'course-upassword')) {
-        e.preventDefault();
-        e.stopPropagation();
-        window.__obHandleLoginSubmit(document.getElementById('coursein1') || document.getElementById('coursein'), e);
-      }
-    }
-  }, true);
-
-  // Intercept form submissions (e.g. #snf1 action="https://login.oliveboard.in/login/next.php")
-  document.addEventListener('submit', function(e) {
-    const form = e.target;
-    if (!form) return;
-    const action = (form.getAttribute('action') || '').toLowerCase();
-    if (form.id === 'snf1' || action.includes('login.oliveboard.in') || form.closest('#modal-login, #modal-signup')) {
-      e.preventDefault();
-      e.stopPropagation();
-      window.__obHandleLoginSubmit(document.getElementById('coursein1'), e);
-      return;
-    }
-    if (action && !action.startsWith('javascript:')) {
-      const proxied = toProxyUrl(action);
-      if (proxied) {
-        e.preventDefault();
-        window.location.href = proxied;
-      }
-    }
-  }, true);
-
-  // Intercept window.open (used by Oliveboard "Take Test" & "Solutions" buttons!)
-  const origOpen = window.open;
-  window.open = function(url, name, specs) {
-    if (url && !String(url).startsWith('javascript:')) {
-      try {
-        const abs = new URL(url, window.__OB_PROXIED_URL__).toString();
-        window.parent.postMessage({ type: 'OB_PROXY_NAVIGATING', url: abs, popup: true }, '*');
-        window.location.href = getProxyOrigin() + '/api/ob-browser/proxy?url=' + encodeURIComponent(abs);
-        return window;
-      } catch (e) {}
-    }
-    return origOpen ? origOpen.apply(window, arguments) : null;
-  };
-
-  // Listen for commands from parent (Login Assistant, decrypt .eqt, etc.)
-  window.addEventListener('message', function(ev) {
-    const msg = ev.data || {};
-    if (msg.type === 'OB_CMD_FILL_LOGIN') {
-      const em = msg.email || 'candidate@oliveboard.in';
-      const pw = msg.password || 'Oliveboard@2026';
-      const loginTrigger = document.querySelector('#btn-show-modal-login, #btn-loginsignup, [data-target="#modal-login"], .login-btn, a[href*="login"]');
-      if (loginTrigger && !document.querySelector('#course-email:focus')) {
-        try { loginTrigger.click(); } catch (e) {}
-      }
-      const emailInputs = document.querySelectorAll('#course-email, #course-uemail, input[type="email"], input[name="email"], #email, input[placeholder*="Email" i]');
-      emailInputs.forEach(inp => {
-        inp.value = em;
-        inp.dispatchEvent(new Event('input', { bubbles: true }));
-        inp.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-      const passInputs = document.querySelectorAll('#course-password, #course-upassword, input[type="password"], input[name="pwd"], #password, input[placeholder*="Password" i]');
-      passInputs.forEach(inp => {
-        inp.value = pw;
-        inp.dispatchEvent(new Event('input', { bubbles: true }));
-        inp.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-      if (msg.submit) {
-        window.__obHandleLoginSubmit(document.getElementById('coursein1') || document.getElementById('coursein'));
-      }
-    } else if (msg.type === 'OB_CMD_SWITCH_AUTH_TAB') {
-      if (msg.tab === 'signup') {
-        const btn = document.querySelector('#btn-show-modal-signup, #btn-loginsignup, [data-target="#modal-signup"]');
-        if (btn) try { btn.click(); } catch (e) {}
-      } else {
-        const btn = document.querySelector('#btn-show-modal-login, [data-target="#modal-login"]');
-        if (btn) try { btn.click(); } catch (e) {}
-      }
-    } else if (msg.type === 'OB_CMD_TYPE_TEXT') {
-      let active = document.activeElement;
-      if (!active || active.tagName === 'BODY' || active.tagName === 'HTML' || active.tagName === 'IFRAME') {
-        active = document.querySelector('#course-email, #course-uemail, input[type="email"], input[type="text"]:not([readonly]), input[type="password"]');
-        if (active) active.focus();
-      }
-      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
-        active.value = (active.value || '') + (msg.text || '');
-        active.dispatchEvent(new Event('input', { bubbles: true }));
-        active.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    }
-  });
-})();
+window.__OB_PROXIED_URL__ = ${JSON.stringify(targetUrl)};
+${bridgeScriptCode}
 </script>
 ${extraScripts}
 `;
@@ -675,21 +468,44 @@ ${extraScripts}
     html = `<head><base href="${baseHref}">${bridgeScript}</head>` + html;
   }
 
-  return html;
-}
+  // Route core Oliveboard navigation scripts through script-proxy so window.location assignments are proxied
+  html = html.replace(/<script([^>]+)src=["']([^"']*(?:coursecommon|course|home)\.js[^"']*)["']/gi, (match, attrs, src) => {
+    let fullScriptUrl = src;
+    try {
+      fullScriptUrl = new URL(src, baseHref).toString();
+    } catch (e) {}
+    return `<script${attrs}src="/api/ob-browser/script-proxy?url=${encodeURIComponent(fullScriptUrl)}"`;
+  });
 
-/**
- * Helper to read local CSS from /scraped and inline it so <base href="https://u1.oliveboard.in/...">
- * never breaks relative stylesheet paths!
- */
-function readScrapedCssInline(cssFilename) {
-  try {
-    const p = path.join(SCRAPED_DIR, cssFilename);
-    if (fs.existsSync(p)) {
-      return `<style data-ob-inlined-css="${cssFilename}">\n${fs.readFileSync(p, 'utf8')}\n</style>`;
+  // Rewrite absolute window.location assignments in scripts so redirects stay inside proxy
+  html = html
+    .replace(/window\.location\s*=\s*courseurl\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(courseurl) : courseurl);')
+    .replace(/window\.location\s*=\s*next\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(next) : next);')
+    .replace(/window\.location\s*=\s*nexturl\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(nexturl) : nexturl);')
+    .replace(/window\.location\s*=\s*boxurl\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(boxurl) : boxurl);')
+    .replace(/window\.location\s*=\s*url\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(url) : url);')
+    .replace(/window\.location\.href\s*=\s*url\s*;/g, 'window.location.href = (window.toProxyUrl ? window.toProxyUrl(url) : url);');
+
+  // If this page was requested via a redirect from a login-protected test (?next=...)
+  // render an informative banner so the user knows Oliveboard requires authentication to take this test
+  if (String(targetUrl || '').includes('next=')) {
+    const authBanner = `
+<div id="ob-auth-notice-banner" style="position:fixed;top:0;left:0;right:0;z-index:9999999;background:linear-gradient(90deg,#0f172a,#1e293b);color:#f8fafc;padding:10px 16px;border-bottom:2px solid #38bdf8;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:space-between;font-family:Inter,system-ui,sans-serif;font-size:12px;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:16px;">🔒</span>
+    <span><strong>Oliveboard Login Required:</strong> Oliveboard requires you to sign in to attempt this test. Please log in using the Oliveboard form below or the Login Assistant above.</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button onclick="document.getElementById('ob-auth-notice-banner').remove();var m=document.getElementById('modal-login');if(m)m.classList.add('is-active');var b=document.querySelector('#btn-show-modal-login,.btn-show-modal-login,#btn-loginsignup,.btn-showloginregister');if(b)try{b.click();}catch(e){}else if(typeof showLoginRegister==='function')try{showLoginRegister();}catch(e){}" style="background:#0284c7;color:#fff;border:none;padding:5px 12px;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;">Open Login</button>
+    <button onclick="document.getElementById('ob-auth-notice-banner').remove();" style="background:transparent;color:#94a3b8;border:none;font-size:16px;cursor:pointer;line-height:1;" title="Dismiss">✕</button>
+  </div>
+</div>`;
+    if (/<body[^>]*>/i.test(html)) {
+      html = html.replace(/<body([^>]*)>/i, `<body$1>${authBanner}`);
     }
-  } catch (e) {}
-  return '';
+  }
+
+  return html;
 }
 
 /**
@@ -732,437 +548,28 @@ function decryptOliveboardString(rawStr) {
 }
 
 /**
- * Load cached decrypted questions from /scraped for REA MCP scrape & live rendering
+ * Fetch a live webpage over HTTP/HTTPS with authentic redirect handling and Cookie Jar.
+ * Acts as a genuine web browser proxy fetching from the live internet.
  */
-function loadDecryptedDataset(courseKey = 'sbipopre19') {
-  try {
-    const isIbps = String(courseKey || '').toLowerCase().includes('ibps');
-    const fileCandidates = isIbps
-      ? [
-          path.join(SCRAPED_DIR, 'ibps_so_it_prelims_1_decrypted.json'),
-          path.join(PAPERS_DIR, 'ibps_so_it_prelims_1.json'),
-          path.join(SCRAPED_DIR, 'sbi_po_prelims_1_full.json'),
-          path.join(SCRAPED_DIR, 'sbi_po_2026_prelims_1_decrypted.json')
-        ]
-      : [
-          path.join(SCRAPED_DIR, 'sbi_po_prelims_1_full.json'),
-          path.join(SCRAPED_DIR, 'sbi_po_2026_prelims_1_decrypted.json'),
-          path.join(SCRAPED_DIR, 'ibps_so_it_prelims_1_decrypted.json')
-        ];
-
-    for (const fp of fileCandidates) {
-      if (fs.existsSync(fp)) {
-        const raw = JSON.parse(fs.readFileSync(fp, 'utf8'));
-        const questions = Array.isArray(raw) ? raw : (raw.questions || raw.decryptedQuestions || []);
-        if (questions.length > 0) return questions;
-      }
-    }
-  } catch (e) {}
-  return [];
-}
-
-/**
- * Load authentic captured Oliveboard HTML for authenticated u1.oliveboard.in pages
- * (Dashboard, Live Mock Test part.php, and Solution App index3.php) when upstream redirects unauthenticated requests
- */
-function getAuthenticOliveboardCapturedHtml(targetUrl) {
-  const u = String(targetUrl || '').toLowerCase();
-  const meta = resolveCourseMeta(targetUrl, true);
-  // Entering any u1.oliveboard.in page marks the user session as logged in so going back never logs out
-  liveProxySession.isLoggedIn = true;
-
-  // 1. Solution Window (u1.oliveboard.in/exams/solution/index3.php)
-  if (u.includes('solution') || u.includes('index3.php')) {
-    const solFile = path.join(SCRAPED_DIR, 'live_capture_oliveboard_solution_app_1792765896792.html');
-    if (fs.existsSync(solFile)) {
-      let html = fs.readFileSync(solFile, 'utf8');
-      // Dynamically update hardcoded IBPS SO Prelims [IT] - 1 title & examid to match the actual exam (e.g. SBI PO 2026 Prelims - 1)
-      html = html
-        .replace(/<h3>\s*IBPS SO Prelims \[IT\] - 1\s*<\/h3>/gi, `<h3>${meta.examTitle}</h3>`)
-        .replace(/var\s+examid\s*=\s*"IBPS SO Prelims \[IT\] - 1"\s*;/gi, `var examid = ${JSON.stringify(meta.examTitle)};`)
-        .replace(/var\s+reatturl\s*=\s*"[^"]*"\s*;/gi, `var reatturl = ${JSON.stringify(meta.dashboardUrl)};`);
-
-      const inlineCss = readScrapedCssInline('bootstrap.min.css') + readScrapedCssInline('style4.css');
-      const courseDataset = loadDecryptedDataset(meta.courseCode);
-
-      const solInteractiveScript = `
-${inlineCss}
-<script>
-window.__OB_COURSE_META__ = ${JSON.stringify(meta)};
-window.__OB_FULL_DATASET__ = ${JSON.stringify(courseDataset)};
-window.onbeforeunload = null;
-window.close = function() {
-  window.location.href = window.location.origin + '/api/ob-browser/proxy?url=' + encodeURIComponent(${JSON.stringify(meta.dashboardUrl)});
-};
-
-window.addEventListener('DOMContentLoaded', function() {
-  try {
-    var meta = window.__OB_COURSE_META__ || {};
-    var dataset = Array.isArray(window.__OB_FULL_DATASET__) ? window.__OB_FULL_DATASET__ : [];
-    document.title = 'Oliveboard | ' + (meta.examTitle || 'Solution App');
-
-    // Universal client-side Oliveboard decrypter (handles n.js 32-char salted Base64 & standard Base64)
-    var decryptOb = function(raw) {
-      if (!raw || typeof raw !== 'string') return '';
-      var t = raw.trim();
-      if (!t || t.indexOf('<') !== -1 || t.indexOf(' ') !== -1) return t;
-      var clean = t.replace(/\\s+/g, '');
-      if (clean.length > 64) {
-        try {
-          var sub = clean.substring(32, clean.length - 32);
-          var dec = unescape(atob(sub));
-          if (dec && (dec.indexOf('<') !== -1 || dec.indexOf(' ') !== -1)) return dec;
-        } catch (e) {}
-      }
-      try {
-        var bin = atob(clean);
-        var bytes = new Uint8Array(bin.length);
-        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-        return new TextDecoder('utf-8').decode(bytes);
-      } catch (e) { return t; }
-    };
-
-    // Decrypt all n.js salted Base64 blocks in solution/index3.php
-    document.querySelectorAll('div.qosblock[id^="q-"]').forEach(function(block, idx) {
-      var paneEl = block.querySelector('.panetxt');
-      var qEl = block.querySelector('.qblock');
-      var solEl = block.querySelector('.sblock .solutiontxt');
-      var optEls = block.querySelectorAll('.opt .rightopt');
-
-      if (!meta.isIbpsSo && dataset[idx]) {
-        // Populate with the exact SBI PO 2026 Prelims question, passage, options & official explanation
-        var qData = dataset[idx];
-        if (paneEl) {
-          paneEl.innerHTML = qData.passageHTML || '';
-          var pWrap = block.querySelector('.pane');
-          if (pWrap) pWrap.style.display = qData.passageHTML ? 'block' : 'none';
-        }
-        if (qEl) qEl.innerHTML = qData.questionHTML || '';
-        var opts = Array.isArray(qData.options) ? qData.options : [];
-        optEls.forEach(function(oEl, oIdx) {
-          var optObj = opts[oIdx];
-          oEl.innerHTML = optObj ? (optObj.html || optObj.text || '') : '';
-        });
-        var letterMap = { A: 0, B: 1, C: 2, D: 3, E: 4 };
-        var cIdx = qData.correctIndex !== undefined ? qData.correctIndex : (letterMap[(qData.correctAnswer || 'B').toUpperCase()] || 1);
-        block.querySelectorAll('.opt').forEach(function(optRow, rIdx) {
-          optRow.classList.remove('correct', 'wrong');
-          if (rIdx === cIdx) optRow.classList.add('correct');
-        });
-        var viewSolBtn = block.querySelector('.btn-viewsol');
-        if (viewSolBtn) {
-          viewSolBtn.setAttribute('onclick', 'viewsolution(' + (idx + 1) + ', ' + cIdx + ')');
-        }
-        if (solEl) {
-          solEl.innerHTML = qData.explanationHTML || qData.solution || '<p>Official Oliveboard step-by-step explanation.</p>';
-        }
-      } else {
-        // Decrypt native n.js salted Base64 in place
-        if (paneEl && paneEl.innerHTML) paneEl.innerHTML = decryptOb(paneEl.innerHTML);
-        if (qEl && qEl.innerHTML) qEl.innerHTML = decryptOb(qEl.innerHTML);
-        optEls.forEach(function(oEl) {
-          if (oEl && oEl.innerHTML) oEl.innerHTML = decryptOb(oEl.innerHTML);
-        });
-        if (solEl && solEl.innerHTML) solEl.innerHTML = decryptOb(solEl.innerHTML);
-      }
-    });
-
-    // Update section selector for SBI PO (3 sections: English, Quant, Reasoning)
-    if (!meta.isIbpsSo) {
-      window.dsnames = ['English Language', 'Quantitative Aptitude', 'Reasoning Ability'];
-      window.snames = ['el', 'qa', 'lr'];
-      window.secount = ['0', '40', '70', '100'];
-      var secSel = document.getElementById('sectionSelect');
-      if (secSel) {
-        secSel.innerHTML = '<option value="1">English Language</option><option value="2">Quantitative Aptitude</option><option value="3">Reasoning Ability</option>';
-      }
-    }
-
-    // Inject prominent "← Back to Tests" button in the top header so user never gets logged out when going back
-    var topHeader = document.querySelector('.header-row, .navbar-header, .top-bar, body');
-    if (topHeader && !document.getElementById('ob-sol-back-to-dash-btn')) {
-      var backBtn = document.createElement('a');
-      backBtn.id = 'ob-sol-back-to-dash-btn';
-      backBtn.href = window.location.origin + '/api/ob-browser/proxy?url=' + encodeURIComponent(meta.dashboardUrl);
-      backBtn.innerHTML = '← Go Back to Tests (' + (meta.examPrefix || 'Dashboard') + ')';
-      backBtn.style.cssText = 'position:fixed;top:10px;right:18px;z-index:99999;background:#0284c7;color:#ffffff;padding:7px 14px;border-radius:6px;font-weight:700;font-size:12px;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,0.25);border:1px solid #38bdf8;';
-      document.body.appendChild(backBtn);
-    }
-  } catch (e) {}
-});
-</script>`;
-      return instrumentProxiedHtml(html, `https://u1.oliveboard.in/exams/solution/index3.php?c=${meta.courseCode}&testid=${meta.testId}`, solInteractiveScript);
-    }
+async function fetchLiveWebPage(targetUrl, redirectCount = 0, forceCleanSession = false) {
+  if (redirectCount > 5) {
+    throw new Error(`Too many redirects encountered while fetching ${targetUrl}`);
   }
-
-  // 2. Active Live Mock Test / Instructions (u1.oliveboard.in/exams/tests/part.php)
-  if (u.includes('part.php') || u.includes('testid=')) {
-    const isInstr = u.includes('instructions=1');
-    let testFilename = 'live_capture_oliveboard_active_live_mock_test_engine_1793005236527.html';
-    if (isInstr) {
-      testFilename = 'live_capture_oliveboard_1792765849204.html';
-    } else if (meta.isIbpsSo) {
-      testFilename = 'live_capture_oliveboard_1792765801902.html';
-    }
-
-    const testFile = path.join(SCRAPED_DIR, testFilename);
-    if (fs.existsSync(testFile)) {
-      let html = fs.readFileSync(testFile, 'utf8');
-
-      // Dynamically sync exam title, testQpid, and course code so SBI PO Prelims NEVER shows IBPS SO IT!
-      html = html
-        .replace(/<title>[^<]*<\/title>/i, `<title>Oliveboard - ${meta.examTitle}</title>`)
-        .replace(/testQpid\s*=\s*'[^']*'/g, `testQpid = ${JSON.stringify(meta.examTitle)}`)
-        .replace(/<div class="main-title-container">\s*<h2>[^<]*<\/h2>\s*<\/div>/gi, `<div class="main-title-container"><h2>${meta.examTitle}</h2></div>`)
-        .replace(/<h3>\s*IBPS SO Prelims \[IT\] - 1\s*<\/h3>/gi, `<h3>${meta.examTitle}</h3>`);
-
-      if (isInstr) {
-        html = html
-          .replace(/c=ibpssopreit/gi, `c=${meta.courseCode}`)
-          .replace(/testid=1/gi, `testid=${meta.testId}`);
-      }
-
-      const inlineCss = readScrapedCssInline('bootstrap.min.css') + readScrapedCssInline('style_pallet.css');
-      const courseDataset = loadDecryptedDataset(meta.courseCode);
-      const solRedirectUrl = `https://u1.oliveboard.in/exams/solution/index3.php?c=${encodeURIComponent(meta.courseCode)}&testid=${encodeURIComponent(meta.testId)}&from=test`;
-
-      const liveTestInteractiveScript = `
-${inlineCss}
-<script>
-window.__OB_COURSE_META__ = ${JSON.stringify(meta)};
-window.__OB_FULL_DATASET__ = ${JSON.stringify(courseDataset)};
-
-// Prevent browser "Leave site?" confirmation & prevent pauseTest on unload from logging out
-window.onbeforeunload = null;
-try {
-  Object.defineProperty(window, 'onbeforeunload', {
-    configurable: true,
-    get: function() { return null; },
-    set: function() {}
-  });
-} catch (e) {}
-
-// Override window.close() so clicking "OK" in Pause Test dialog returns to the logged-in Mock Test Dashboard
-window.close = function() {
-  var dashUrl = (window.__OB_COURSE_META__ && window.__OB_COURSE_META__.dashboardUrl) || 'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking';
-  window.location.href = window.location.origin + '/api/ob-browser/proxy?url=' + encodeURIComponent(dashUrl);
-};
-
-window.addEventListener('DOMContentLoaded', function() {
-  try {
-    var meta = window.__OB_COURSE_META__ || {};
-    var dashProxyHref = window.location.origin + '/api/ob-browser/proxy?url=' + encodeURIComponent(meta.dashboardUrl || 'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking');
-    var solProxyHref = window.location.origin + '/api/ob-browser/proxy?url=' + encodeURIComponent(${JSON.stringify(solRedirectUrl)});
-
-    // Ensure exam title header displays the exact test name (e.g., SBI PO 2026 Prelims - 1)
-    var titleEl = document.querySelector('.main-title-container h2');
-    if (titleEl && meta.examTitle) {
-      titleEl.textContent = meta.examTitle;
-    }
-
-    var dummy = document.getElementById('dummy-black');
-    if (dummy) dummy.style.display = 'none';
-    var calert = document.getElementById('calert');
-    if (calert) calert.style.display = 'none';
-    var submitPane = document.getElementById('submit-pane');
-    if (submitPane && !window.location.href.includes('submit')) {
-      var leftCont = document.getElementById('left-container');
-      if (leftCont) leftCont.style.display = 'none';
-      var leftPost = document.getElementById('left-container-post');
-      if (leftPost) leftPost.style.display = 'block';
-      var rightPost = document.getElementById('right-container-post');
-      if (rightPost) rightPost.style.display = 'block';
-    }
-
-    // Wire #pauseok ("OK" inside Pause Test dialog) to return cleanly to the logged-in test dashboard
-    var pauseOk = document.getElementById('pauseok');
-    if (pauseOk) {
-      pauseOk.setAttribute('href', dashProxyHref);
-      pauseOk.addEventListener('click', function(ev) {
-        ev.preventDefault();
-        window.location.href = dashProxyHref;
-      });
-    }
-
-    // Override sendData() so final test submission goes straight to the interactive Solution Window for this course
-    window.sendData = function() {
-      window.location.href = solProxyHref;
-    };
-
-    // Add a clean "← Back to Tests" button in the top test bar so the user can return to the dashboard anytime without logging out
-    var topBar = document.querySelector('.main-title-container') || document.body;
-    if (topBar && !document.getElementById('ob-test-back-to-dash-btn')) {
-      var backBtn = document.createElement('a');
-      backBtn.id = 'ob-test-back-to-dash-btn';
-      backBtn.href = dashProxyHref;
-      backBtn.innerHTML = '← Go Back to Tests';
-      backBtn.style.cssText = 'position:fixed;top:8px;right:16px;z-index:99999;background:#0284c7;color:#ffffff;padding:6px 13px;border-radius:6px;font-weight:700;font-size:12px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:1px solid #38bdf8;';
-      document.body.appendChild(backBtn);
-    }
-
-    // Decode any .eqt Base64 elements
-    var decodeB64 = function(str) {
-      try {
-        var clean = (str || '').trim().replace(/\\s+/g, '');
-        if (!clean || clean.length < 4 || clean.includes('<') || clean.includes(' ')) return str;
-        var bin = atob(clean);
-        var bytes = new Uint8Array(bin.length);
-        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-        return new TextDecoder('utf-8').decode(bytes);
-      } catch (e) { return str; }
-    };
-    document.querySelectorAll('.eqt').forEach(function(el) {
-      var raw = el.innerHTML.trim();
-      if (raw && !raw.includes('<') && raw.length > 8) {
-        el.setAttribute('data-raw-eqt', raw);
-        el.innerHTML = decodeB64(raw);
-      }
-    });
-  } catch (e) {}
-});
-</script>`;
-      return instrumentProxiedHtml(html, `https://u1.oliveboard.in/exams/tests/part.php?c=${meta.courseCode}&testid=${meta.testId}`, liveTestInteractiveScript);
-    }
-  }
-
-  // 3. Authenticated Mock Test Dashboard (u1.oliveboard.in/tests/ or u1.oliveboard.in/exams/)
-  if (u.includes('u1.oliveboard.in')) {
-    const dashFile = path.join(
-      SCRAPED_DIR,
-      meta.isIbpsSo
-        ? 'live_capture_oliveboard_banking_amp_insurance_tests_1792765765723.html'
-        : 'live_capture_oliveboard_banking_amp_insurance_sbi_po_2026_prelims_1792765731570.html'
-    );
-    if (fs.existsSync(dashFile)) {
-      let html = fs.readFileSync(dashFile, 'utf8');
-      // CRITICAL FIX: Strip course.js so it NEVER fires $.get("content.php") (which overwrote the pre-rendered DOM or redirected to login!)
-      html = html.replace(/<script[^>]*src=["'][^"']*course\.js[^"']*["'][^>]*>\s*<\/script>/gi, '');
-
-      const inlineCss = readScrapedCssInline('bootstrap.min.css') + readScrapedCssInline('style.css');
-      const dashInteractiveScript = `
-${inlineCss}
-<script>
-window.__OB_COURSE_META__ = ${JSON.stringify(meta)};
-window.onbeforeunload = null;
-window.addEventListener('DOMContentLoaded', function() {
-  try {
-    var meta = window.__OB_COURSE_META__ || { courseCode: 'sbipopre19', categoryCode: 'banking' };
-    var activeCourse = meta.courseCode || 'sbipopre19';
-
-    // Make sure Mock Tests section (#mtestdata) is visible and scrolled into view when user lands on dashboard
-    var mtest = document.getElementById('mtestdata');
-    if (mtest) {
-      mtest.style.display = 'block';
-    }
-
-    // Wire filter tabs (SBI PO Courses / SBI PO Resources / SBI PO 2026 Prelims Mock Tests)
-    var tabLinks = document.querySelectorAll('.fltr-tab-link[data-tabcode]');
-    tabLinks.forEach(function(link) {
-      link.style.cursor = 'pointer';
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        tabLinks.forEach(function(l) { l.classList.remove('active'); });
-        link.classList.add('active');
-        var code = link.getAttribute('data-tabcode');
-        if (code === 'tab-4' && mtest) {
-          mtest.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-
-    // Wire all Start Test cards & Solutions buttons to pass the exact courseCode (c=sbipopre19 or c=ibpssopreit)
-    document.querySelectorAll('.tpc-card.start_test_card').forEach(function(card, idx) {
-      var testNum = idx + 1;
-      var actions = card.querySelector('.tpc-col-actions');
-
-      // Ensure clicking "Start Test" on any card launches the exact course's mock test (never IBPS SO IT when on SBI PO!)
-      var startBtn = card.querySelector('.tpc-btn-main:not(.ob-direct-sol-btn)');
-      if (startBtn) {
-        startBtn.removeAttribute('onclick');
-        startBtn.addEventListener('click', function(ev) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          window.openwin('/exams/tests/part.php?c=' + encodeURIComponent(activeCourse) + '&testid=' + testNum);
-        });
-      }
-
-      if (actions && !actions.querySelector('.ob-direct-sol-btn')) {
-        var solBtn = document.createElement('button');
-        solBtn.type = 'button';
-        solBtn.className = 'tpc-btn-main ob-direct-sol-btn';
-        solBtn.style.marginLeft = '8px';
-        solBtn.style.background = '#059669';
-        solBtn.style.color = '#ffffff';
-        solBtn.style.border = 'none';
-        solBtn.innerHTML = '📘 Solutions';
-        solBtn.addEventListener('click', function(ev) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          window.openwin('/exams/solution/index3.php?c=' + encodeURIComponent(activeCourse) + '&testid=' + testNum + '&from=test');
-        });
-        actions.appendChild(solBtn);
-      }
-
-      // Allow locked cards to launch the live test in REA MCP inspection mode
-      if (card.classList.contains('locked')) {
-        var unlockBtn = card.querySelector('.btn_unlock');
-        if (unlockBtn) {
-          unlockBtn.innerHTML = '▶ Start Test (REA Unlocked)';
-          unlockBtn.style.background = '#0284c7';
-          unlockBtn.style.color = '#fff';
-          unlockBtn.removeAttribute('onclick');
-          card.addEventListener('click', function(ev) {
-            if (ev.target && ev.target.closest && ev.target.closest('.ob-direct-sol-btn')) return;
-            ev.preventDefault();
-            ev.stopPropagation();
-            window.openwin('/exams/tests/part.php?c=' + encodeURIComponent(activeCourse) + '&testid=' + testNum);
-          });
-        }
-      }
-    });
-  } catch (e) {}
-});
-</script>`;
-      return instrumentProxiedHtml(html, meta.dashboardUrl, dashInteractiveScript);
-    }
-  }
-
-  return null;
-}
-
-/**
- * Fetch a live webpage over HTTP/HTTPS with redirect handling and Cookie Jar
- */
-async function fetchLiveWebPage(targetUrl) {
   const cleanUrl = normalizeOliveboardUrl(targetUrl);
-  const parsed = new URL(cleanUrl);
+  const isExplicitHome = cleanUrl === 'https://www.oliveboard.in/' || cleanUrl.startsWith('https://www.oliveboard.in/?login') || cleanUrl.startsWith('https://www.oliveboard.in/?logout');
 
-  // If user is already logged in and a request hits the logged-out homepage (www.oliveboard.in), redirect straight to the active dashboard!
-  if (liveProxySession.isLoggedIn && (parsed.hostname === 'www.oliveboard.in' || parsed.hostname === 'oliveboard.in') && (parsed.pathname === '/' || parsed.pathname === '')) {
-    const dashUrl = `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse || 'sbipopre19')}&i=${encodeURIComponent(liveProxySession.currentCategory || 'banking')}`;
-    const captured = getAuthenticOliveboardCapturedHtml(dashUrl);
-    if (captured) {
-      return { html: captured, finalUrl: dashUrl, status: 200 };
-    }
-  }
-
-  // If user is navigating to u1.oliveboard.in (Dashboard / Live Test / Solutions), serve the authentic captured u1 page
-  const isU1Protected = parsed.hostname === 'u1.oliveboard.in';
-  if (isU1Protected) {
-    const captured = getAuthenticOliveboardCapturedHtml(cleanUrl);
-    if (captured) {
-      return { html: captured, finalUrl: cleanUrl, status: 200 };
-    }
-  }
-
-  const cookieHeader = Array.from(proxyCookieJar.entries())
-    .map(([k, v]) => `${k}=${v}`)
-    .join('; ');
+  // If forceCleanSession, or if navigating explicitly to oliveboard.in home without an active user session, do NOT send cookies.
+  // This ensures the authentic Oliveboard login modal & homepage render cleanly instead of auto-redirecting to dashboard!
+  const shouldSendCookies = !forceCleanSession && (!isExplicitHome || liveProxySession.isLoggedIn);
+  const cookieHeader = shouldSendCookies
+    ? Array.from(proxyCookieJar.entries()).map(([k, v]) => `${k}=${v}`).join('; ')
+    : '';
 
   try {
     const res = await fetch(cleanUrl, {
       method: 'GET',
-      redirect: isU1Protected ? 'manual' : 'follow',
+      redirect: 'manual',
+      signal: AbortSignal.timeout(10000),
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -1171,47 +578,42 @@ async function fetchLiveWebPage(targetUrl) {
       }
     });
 
-    // Save any Set-Cookie headers
-    const setCookies = typeof res.headers.getSetCookie === 'function' ? res.headers.getSetCookie() : [];
-    setCookies.forEach(sc => {
-      const firstPart = String(sc).split(';')[0];
-      const eqIdx = firstPart.indexOf('=');
-      if (eqIdx > 0) {
-        proxyCookieJar.set(firstPart.slice(0, eqIdx).trim(), firstPart.slice(eqIdx + 1).trim());
-      }
-    });
+    // Save Set-Cookie headers only when using an authenticated session
+    if (shouldSendCookies) {
+      saveResponseCookies(res);
+    }
 
-    if (res.status >= 300 && res.status < 400 && isU1Protected) {
-      const captured = getAuthenticOliveboardCapturedHtml(cleanUrl);
-      if (captured) {
-        return { html: captured, finalUrl: cleanUrl, status: 200 };
+    // Follow HTTP redirects naturally
+    if (res.status >= 300 && res.status < 400) {
+      const loc = res.headers.get('location');
+      if (loc) {
+        const nextUrl = new URL(loc, cleanUrl).toString();
+        // If visiting homepage to log in, do NOT follow stale 302 into dashboard
+        if (isExplicitHome && !liveProxySession.isLoggedIn && nextUrl.includes('c=dashboard')) {
+          return {
+            html: instrumentProxiedHtml(await res.text(), cleanUrl),
+            finalUrl: cleanUrl,
+            status: 200
+          };
+        }
+        if (nextUrl !== cleanUrl) {
+          return fetchLiveWebPage(nextUrl, redirectCount + 1, forceCleanSession);
+        }
       }
     }
 
     const html = await res.text();
-    if (isU1Protected && (!html || html.length < 500 || html.includes('window.location.href="https://www.oliveboard.in'))) {
-      const captured = getAuthenticOliveboardCapturedHtml(cleanUrl);
-      if (captured) {
-        return { html: captured, finalUrl: cleanUrl, status: 200 };
-      }
-    }
-
     return {
       html: instrumentProxiedHtml(html, res.url || cleanUrl),
       finalUrl: res.url || cleanUrl,
       status: res.status
     };
   } catch (err) {
-    const captured = getAuthenticOliveboardCapturedHtml(cleanUrl);
-    if (captured) {
-      return { html: captured, finalUrl: cleanUrl, status: 200 };
-    }
-    const homeFallback = path.join(SCRAPED_DIR, 'live_capture_oliveboard_india_s_top_exam_preparation_platform_1792739214414.html');
-    if (fs.existsSync(homeFallback)) {
-      const raw = fs.readFileSync(homeFallback, 'utf8');
-      return { html: instrumentProxiedHtml(raw, 'https://www.oliveboard.in/'), finalUrl: cleanUrl, status: 200 };
-    }
-    throw err;
+    return {
+      html: `<!DOCTYPE html><html><head><title>Oliveboard Connection Notice</title><style>body{font-family:sans-serif;padding:32px;background:#0f172a;color:#f8fafc;}h2{color:#ef4444;}p{color:#94a3b8;line-height:1.6;}.url{background:#1e293b;padding:8px 12px;border-radius:6px;font-family:monospace;color:#38bdf8;}button{background:#0284c7;color:#fff;border:none;padding:10px 18px;border-radius:6px;font-weight:700;cursor:pointer;margin-top:16px;}</style></head><body><h2>⚠️ Live Connection Notice</h2><p>Unable to fetch live page from Oliveboard server directly:</p><div class="url">${cleanUrl}</div><p><strong>Reason:</strong> ${err.message}</p><button onclick="window.location.reload()">Retry Connection</button></body></html>`,
+      finalUrl: cleanUrl,
+      status: 502
+    };
   }
 }
 
@@ -1269,14 +671,12 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '') || 'mock_test';
 
-  const fallbackQuestions = loadDecryptedDataset(meta.courseCode);
-
-  // Validate and sanitize client-extracted questions (decrypting any salted Base64 and merging with full 100-Q dataset if partial)
+  // Validate and sanitize client-extracted questions from the authentic live DOM
   let rawClientQuestions = (clientDomPayload && Array.isArray(clientDomPayload.decryptedQuestions))
     ? clientDomPayload.decryptedQuestions
     : [];
 
-  rawClientQuestions = rawClientQuestions
+  const decryptedQuestions = rawClientQuestions
     .map((q, idx) => {
       const qHTML = decryptOliveboardString(q.questionHTML || q.text || '');
       const pHTML = decryptOliveboardString(q.passageHTML || '');
@@ -1302,41 +702,16 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
     })
     .filter(q => q.questionHTML && q.options && q.options.length >= 2);
 
-  // If client DOM only had Section 1 (e.g. 40 English questions in part.php) or 0 questions (e.g. on dashboard),
-  // merge/complete with the full 100-question dataset for this course!
-  let decryptedQuestions = rawClientQuestions;
-  if (decryptedQuestions.length < fallbackQuestions.length && fallbackQuestions.length > 0) {
-    const clientByNum = new Map();
-    decryptedQuestions.forEach((q, idx) => {
-      clientByNum.set(q.questionNumber || (idx + 1), q);
-    });
-    decryptedQuestions = fallbackQuestions.map((fbQ, idx) => {
-      const qNum = fbQ.questionNumber || (idx + 1);
-      const cQ = clientByNum.get(qNum);
-      if (cQ && cQ.questionHTML && cQ.options && cQ.options.length >= 4) {
-        return {
-          ...fbQ,
-          ...cQ,
-          correctAnswer: cQ.correctAnswer || fbQ.correctAnswer || 'B',
-          correctIndex: cQ.correctIndex !== undefined ? cQ.correctIndex : fbQ.correctIndex,
-          explanationHTML: decryptOliveboardString(cQ.explanationHTML || '') || fbQ.explanationHTML || ''
-        };
-      }
-      return fbQ;
-    });
-  }
-
   const extractedSolutions = {};
   const rawClientSols = (clientDomPayload && clientDomPayload.extractedSolutions) || {};
   decryptedQuestions.forEach((q, idx) => {
     const qid = q.qid || (1001 + idx);
     const cSol = rawClientSols[qid] || rawClientSols[idx + 1] || null;
-    const fbQ = fallbackQuestions[idx] || {};
-    const ans = (cSol && cSol.ans) || q.correctAnswer || fbQ.correctAnswer || 'B';
-    const solHtml = decryptOliveboardString((cSol && (cSol.solutionDecoded || cSol.sol)) || q.explanationHTML || fbQ.explanationHTML || '');
+    const ans = (cSol && cSol.ans) || q.correctAnswer || 'A';
+    const solHtml = decryptOliveboardString((cSol && (cSol.solutionDecoded || cSol.sol)) || q.explanationHTML || '');
     extractedSolutions[qid] = {
       ans,
-      solutionDecoded: solHtml || 'Step-by-step official Oliveboard explanation.'
+      solutionDecoded: solHtml || 'Official Oliveboard step-by-step explanation.'
     };
   });
 
@@ -1424,29 +799,23 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
   fs.writeFileSync(path.join(SCRAPED_DIR, `live_spec_${safeSlug}_${timestamp}.json`), JSON.stringify(rigorousReport, null, 2), 'utf8');
 
   let ingestedTest = null;
-  if (decryptedQuestions.length >= 20) {
+  if (decryptedQuestions.length >= 1) {
     const paperPayload = {
-      id: `live-ob-${safeSlug}`,
-      examId: meta.isIbpsSo ? 'ibps-so' : 'sbi-po',
-      testTitle: meta.examTitle,
+      id: `scraped-${safeSlug}-${timestamp}`,
+      url: currentUrl,
+      title: currentTitle,
       totalQuestions: decryptedQuestions.length,
       questions: decryptedQuestions.map((q, idx) => {
         const qid = q.qid || (1001 + idx);
         const sol = extractedSolutions[qid] || extractedSolutions[idx + 1] || null;
         return {
           ...q,
-          correctAnswer: (sol && sol.ans) ? sol.ans : (q.correctAnswer || 'B'),
+          correctAnswer: (sol && sol.ans) ? sol.ans : (q.correctAnswer || 'A'),
           explanationHTML: (sol && sol.solutionDecoded) ? sol.solutionDecoded : (typeof sol === 'string' ? sol : (q.explanationHTML || ''))
         };
       })
     };
-    const paperPath = path.join(PAPERS_DIR, `live_scraped_${safeSlug}.json`);
-    fs.writeFileSync(paperPath, JSON.stringify(paperPayload, null, 2), 'utf8');
-    if (typeof ingestCallback === 'function') {
-      try {
-        ingestedTest = ingestCallback(paperPath);
-      } catch (e) {}
-    }
+    fs.writeFileSync(path.join(SCRAPED_DIR, `scraped_paper_${safeSlug}_${timestamp}.json`), JSON.stringify(paperPayload, null, 2), 'utf8');
   }
 
   const artifactRecord = {
@@ -1491,24 +860,25 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
         rawUrl = `https://u1.oliveboard.in/tests/?${qs}`;
       }
       if (!rawUrl) {
-        rawUrl = liveProxySession.isLoggedIn
-          ? `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse || 'sbipopre19')}&i=banking`
-          : 'https://www.oliveboard.in/?next=https%3A%2F%2Fu1.oliveboard.in%2Fexams%2F%3Fc%3Dsbipopre19%26i%3Dbanking';
+        rawUrl = (liveProxySession.isLoggedIn && liveProxySession.currentCourse)
+          ? `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse)}&i=banking`
+          : 'https://www.oliveboard.in/';
       }
       let targetUrl = normalizeOliveboardUrl(rawUrl);
 
-      // If user is already logged in and navigates/goes back to www.oliveboard.in (without explicit logout), keep them on the logged-in dashboard!
-      try {
-        const parsed = new URL(targetUrl);
-        if (req.query.logout) {
-          liveProxySession.isLoggedIn = false;
-        } else if (parsed.hostname === 'u1.oliveboard.in') {
-          liveProxySession.isLoggedIn = true;
+      let forceCleanSession = false;
+      if (req.query.logout || targetUrl.includes('action=logout') || targetUrl.includes('/logout')) {
+        liveProxySession.isLoggedIn = false;
+        liveProxySession.email = '';
+        proxyCookieJar.clear();
+        try { if (fs.existsSync(COOKIE_JAR_PATH)) fs.unlinkSync(COOKIE_JAR_PATH); } catch (e) {}
+        targetUrl = 'https://www.oliveboard.in/';
+        forceCleanSession = true;
+      } else {
+        try {
           resolveCourseMeta(targetUrl, true);
-        } else if (liveProxySession.isLoggedIn && (parsed.hostname === 'www.oliveboard.in' || parsed.hostname === 'oliveboard.in') && (parsed.pathname === '/' || parsed.pathname === '')) {
-          targetUrl = `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse || 'sbipopre19')}&i=${encodeURIComponent(liveProxySession.currentCategory || 'banking')}`;
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
 
       // Update active tab URL
       const activeTab = ensureProxySessionInitialized(targetUrl);
@@ -1518,11 +888,16 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
       if (activeTab.history[activeTab.history.length - 1] !== targetUrl) {
         activeTab.history.push(targetUrl);
       }
-      if (liveProxySession.isLoggedIn) {
-        sanitizeTabHistoryAfterLogin(activeTab);
-      }
 
-      const { html } = await fetchLiveWebPage(targetUrl);
+      const { html, finalUrl } = await fetchLiveWebPage(targetUrl, 0, forceCleanSession);
+      if (finalUrl && finalUrl !== targetUrl) {
+        activeTab.url = finalUrl;
+        activeTab.stageObj = classifyUrlStage(finalUrl);
+        activeTab.title = activeTab.stageObj.title;
+        if (activeTab.history[activeTab.history.length - 1] !== finalUrl) {
+          activeTab.history.push(finalUrl);
+        }
+      }
 
       // Strip frame-blocking headers so the real site renders cleanly in our iframe
       res.removeHeader('X-Frame-Options');
@@ -1535,22 +910,59 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
     }
   });
 
-  // 0b. POST FORM SUBMISSION PROXY (Handles #snf1 and login form POSTs without hanging)
+  // 0b. POST FORM SUBMISSION PROXY (Authentically forwards form submissions with cookie jar)
   app.post('/api/ob-browser/proxy', async (req, res) => {
     try {
-      liveProxySession.isLoggedIn = true;
-      if (req.body && req.body.email) {
-        liveProxySession.email = req.body.email;
+      let rawUrl = req.query.url;
+      if (!rawUrl) {
+        return res.redirect(302, '/api/ob-browser/proxy?url=' + encodeURIComponent('https://www.oliveboard.in/'));
       }
-      const destUrl = `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse || 'sbipopre19')}&i=banking`;
-      const activeTab = ensureProxySessionInitialized(destUrl);
-      activeTab.url = destUrl;
-      activeTab.stageObj = classifyUrlStage(destUrl);
-      activeTab.title = activeTab.stageObj.title;
-      sanitizeTabHistoryAfterLogin(activeTab);
-      res.redirect(302, `/api/ob-browser/proxy?url=${encodeURIComponent(destUrl)}`);
+      const targetUrl = normalizeOliveboardUrl(rawUrl);
+      const cookieHeader = Array.from(proxyCookieJar.entries())
+        .map(([k, v]) => `${k}=${v}`)
+        .join('; ');
+
+      const postHeaders = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Origin': 'https://www.oliveboard.in',
+        'Referer': targetUrl,
+        ...(cookieHeader ? { 'Cookie': cookieHeader } : {})
+      };
+
+      let bodyData = null;
+      if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
+        postHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
+        bodyData = new URLSearchParams(req.body).toString();
+      } else if (typeof req.body === 'string') {
+        bodyData = req.body;
+      }
+
+      const upRes = await fetch(targetUrl, {
+        method: 'POST',
+        headers: postHeaders,
+        body: bodyData,
+        redirect: 'manual'
+      });
+
+      // Save any Set-Cookie headers into proxyCookieJar & disk
+      saveResponseCookies(upRes);
+
+      if (upRes.status >= 300 && upRes.status < 400) {
+        const loc = upRes.headers.get('location');
+        if (loc) {
+          const redirectUrl = new URL(loc, targetUrl).toString();
+          return res.redirect(302, `/api/ob-browser/proxy?url=${encodeURIComponent(redirectUrl)}`);
+        }
+      }
+
+      const html = await upRes.text();
+      res.removeHeader('X-Frame-Options');
+      res.removeHeader('Content-Security-Policy');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(instrumentProxiedHtml(html, targetUrl));
     } catch (err) {
-      res.redirect(302, `/api/ob-browser/proxy?url=${encodeURIComponent('https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking')}`);
+      res.status(500).send(`<!DOCTYPE html><html><body><h3>POST Error: ${err.message}</h3></body></html>`);
     }
   });
 
@@ -1564,11 +976,7 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
     }
     const rawTarget = String(req.query.url || '');
     if (!rawTarget) {
-      return res.json({ status: 1, success: true, next: 'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking' });
-    }
-    // Prevent course.js content.php or test save/pause CGI calls from hitting unauthenticated upstream and returning a login redirect!
-    if (rawTarget.includes('content.php') || rawTarget.includes('.cgi')) {
-      return res.status(204).end();
+      return res.json({ status: 1, success: true });
     }
     try {
       const cleanUrl = normalizeOliveboardUrl(rawTarget);
@@ -1582,6 +990,7 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
           'Accept': '*/*',
           'Origin': 'https://www.oliveboard.in',
           'Referer': 'https://www.oliveboard.in/',
+          'X-Requested-With': 'XMLHttpRequest',
           ...(cookieHeader ? { 'Cookie': cookieHeader } : {})
         }
       };
@@ -1594,18 +1003,61 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
         }
       }
       const upRes = await fetch(cleanUrl, fetchOpts);
+      saveResponseCookies(upRes);
       const setCookies = typeof upRes.headers.getSetCookie === 'function' ? upRes.headers.getSetCookie() : [];
-      setCookies.forEach(sc => {
-        const firstPart = String(sc).split(';')[0];
-        const eqIdx = firstPart.indexOf('=');
-        if (eqIdx > 0) {
-          proxyCookieJar.set(firstPart.slice(0, eqIdx).trim(), firstPart.slice(eqIdx + 1).trim());
-        }
-      });
-      const text = await upRes.text();
+      if (setCookies.length === 0 && upRes.headers.get && upRes.headers.get('set-cookie')) {
+        setCookies.push(...upRes.headers.get('set-cookie').split(', '));
+      }
+      if (setCookies.length > 0) {
+        try { res.setHeader('Set-Cookie', setCookies); } catch (e) {}
+      }
+      let text = await upRes.text();
+      // Ensure tabdata is never undefined on content.php to prevent course.js crash
+      if (cleanUrl.includes('content.php') && text.trim().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(text.trim());
+          if (!parsed.tabdata) {
+            parsed.tabdata = [];
+            text = JSON.stringify(parsed);
+          }
+        } catch (e) {}
+      }
+      // If user successfully logs in via loginnext.php, mark session active
+      if (cleanUrl.includes('loginnext.php') && text.trim() && text.trim() !== '0') {
+        liveProxySession.isLoggedIn = true;
+      }
       res.status(200).send(text || JSON.stringify({ status: 1, success: true }));
     } catch (err) {
-      res.status(200).json({ status: 1, success: true, next: 'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking' });
+      res.status(200).json({ status: 1, success: true });
+    }
+  });
+
+  // 0d. SCRIPT PROXY TO INTERCEPT HARDCODED WINDOW.LOCATION IN OLIVEBOARD EXTERNAL SCRIPTS
+  app.get('/api/ob-browser/script-proxy', async (req, res) => {
+    try {
+      const rawUrl = req.query.url;
+      if (!rawUrl) return res.status(400).send('/* missing script url */');
+      const cleanUrl = normalizeOliveboardUrl(rawUrl);
+      const sRes = await fetch(cleanUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+          'Referer': 'https://www.oliveboard.in/'
+        }
+      });
+      let scriptCode = await sRes.text();
+      scriptCode = scriptCode
+        .replace(/window\.location\s*=\s*courseurl\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(courseurl) : courseurl);')
+        .replace(/window\.location\s*=\s*next\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(next) : next);')
+        .replace(/window\.location\s*=\s*nexturl\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(nexturl) : nexturl);')
+        .replace(/window\.location\s*=\s*boxurl\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(boxurl) : boxurl);')
+        .replace(/window\.location\s*=\s*url\s*;/g, 'window.location = (window.toProxyUrl ? window.toProxyUrl(url) : url);')
+        .replace(/window\.location\.href\s*=\s*url\s*;/g, 'window.location.href = (window.toProxyUrl ? window.toProxyUrl(url) : url);');
+
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store');
+      res.send(scriptCode);
+    } catch (err) {
+      res.status(500).send(`/* script proxy error: ${err.message} */`);
     }
   });
 
@@ -1614,8 +1066,8 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
     try {
       const { url } = req.body || {};
       let cleanUrl = normalizeOliveboardUrl(url);
-      if (liveProxySession.isLoggedIn && cleanUrl.includes('www.oliveboard.in')) {
-        cleanUrl = `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse || 'sbipopre19')}&i=banking`;
+      if (cleanUrl) {
+        resolveCourseMeta(cleanUrl, true);
       }
       const activeTab = ensureProxySessionInitialized(cleanUrl);
       if (url) {
@@ -1657,9 +1109,6 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
         if (activeTab.history[activeTab.history.length - 1] !== cleanUrl) {
           activeTab.history.push(cleanUrl);
         }
-        if (liveProxySession.isLoggedIn) {
-          sanitizeTabHistoryAfterLogin(activeTab);
-        }
       } else if (act === 'syncUrl' && url) {
         const cleanUrl = normalizeOliveboardUrl(url);
         if (cleanUrl.includes('u1.oliveboard.in')) {
@@ -1672,28 +1121,13 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
         if (activeTab.history[activeTab.history.length - 1] !== cleanUrl) {
           activeTab.history.push(cleanUrl);
         }
-        if (liveProxySession.isLoggedIn) {
-          sanitizeTabHistoryAfterLogin(activeTab);
-        }
       } else if (act === 'goBack') {
-        const fallbackDash = `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse || 'sbipopre19')}&i=${encodeURIComponent(liveProxySession.currentCategory || 'banking')}`;
-        if (liveProxySession.isLoggedIn) {
-          sanitizeTabHistoryAfterLogin(activeTab);
-        }
         if (activeTab.history.length > 1) {
           activeTab.history.pop();
-          let prev = activeTab.history[activeTab.history.length - 1];
-          if (liveProxySession.isLoggedIn && prev.includes('www.oliveboard.in')) {
-            prev = fallbackDash;
-          }
+          const prev = activeTab.history[activeTab.history.length - 1];
           activeTab.url = prev;
           activeTab.stageObj = classifyUrlStage(prev);
           activeTab.title = activeTab.stageObj.title;
-        } else if (liveProxySession.isLoggedIn) {
-          activeTab.url = fallbackDash;
-          activeTab.stageObj = classifyUrlStage(fallbackDash);
-          activeTab.title = activeTab.stageObj.title;
-          activeTab.history = [fallbackDash];
         }
       } else if (act === 'reload') {
         activeTab.stageObj = classifyUrlStage(activeTab.url);
@@ -1711,15 +1145,21 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
       } else if (act === 'fillLogin') {
         if (email) liveProxySession.email = email;
         liveProxySession.isLoggedIn = true;
-        const nextDest = normalizeOliveboardUrl(url || `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse || 'sbipopre19')}&i=banking`);
+        const nextDest = normalizeOliveboardUrl(url || (liveProxySession.currentCourse ? `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse)}&i=banking` : 'https://www.oliveboard.in/'));
         resolveCourseMeta(nextDest, true);
         activeTab.url = nextDest;
         activeTab.stageObj = classifyUrlStage(nextDest);
         activeTab.title = activeTab.stageObj.title;
-        if (activeTab.history[activeTab.history.length - 1] !== nextDest) {
-          activeTab.history.push(nextDest);
-        }
-        sanitizeTabHistoryAfterLogin(activeTab);
+      } else if (act === 'logout' || act === 'clearAuth') {
+        liveProxySession.isLoggedIn = false;
+        liveProxySession.email = '';
+        proxyCookieJar.clear();
+        try { if (fs.existsSync(COOKIE_JAR_PATH)) fs.unlinkSync(COOKIE_JAR_PATH); } catch (e) {}
+        const homeUrl = 'https://www.oliveboard.in/';
+        activeTab.url = homeUrl;
+        activeTab.stageObj = classifyUrlStage(homeUrl);
+        activeTab.title = 'Oliveboard - Real Website';
+        activeTab.history = [homeUrl];
       }
 
       res.json(buildSessionState());

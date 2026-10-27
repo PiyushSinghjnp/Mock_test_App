@@ -27,4 +27,6 @@ npm-debug.log*
 /*.png
 /*.webp
 scraped/snapshots/
+scraped/.cookie_jar.json
+scratch/
 

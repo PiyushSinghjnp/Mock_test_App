@@ -1,0 +1,36 @@
+<html lang="en"><head><base href="https://u1.oliveboard.in/tests/">
+<style data-ob-proxy-login-fix="1">
+  /* Ensure password input group inside Oliveboard #modal-login is visible so user can enter email & password smoothly */
+  #modal-login #loginnext-group {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    height: auto !important;
+  }
+  #modal-login .disable-loginemail {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+  }
+  #modal-login #coursein {
+    display: none !important;
+  }
+  #modal-login #coursein1 {
+    display: block !important;
+    width: 100% !important;
+    cursor: pointer !important;
+  }
+</style>
+<script data-ob-proxy-bridge="1">
+(function() {
+  window.__OB_PROXIED_URL__ = "https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking";
+
+  function getProxyOrigin() {
+    try {
+      return window.location.origin || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function toProxyUrl(rawHref) {
+    if (!rawHref

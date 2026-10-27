@@ -735,9 +735,14 @@ class OliveboardAppController {
     const banner = document.getElementById('exam-hero-banner');
     if (!banner) return;
 
-    const isIbps = exam.id === 'ibps-so';
-    const mainTestId = isIbps ? 'ibps-so-it-mains-1' : 'sbi-po-pre-01';
-    const mainBtnText = isIbps ? 'Attempt 150-Q Full Mains Mock 🚀' : 'Attempt Free Live Mock 🚀';
+    let mainTestId = 'sbi-po-pre-01';
+    if (this.currentMockTests && this.currentMockTests.length > 0) {
+      const freeTest = this.currentMockTests.find(t => t.is_free || t.isFree) || this.currentMockTests[0];
+      if (freeTest && freeTest.id) mainTestId = freeTest.id;
+    } else if (exam.id === 'ibps-so') {
+      mainTestId = 'ibps-so-it-mains-1';
+    }
+    const mainBtnText = exam.id === 'ibps-so' ? 'Attempt 150-Q Full Mains Mock 🚀' : `Attempt Free ${exam.name || 'Live'} Mock 🚀`;
 
     banner.innerHTML = `
       <div class="exam-summary-info">
@@ -2144,25 +2149,22 @@ class OliveboardAppController {
 
     if (btnFillLogin) {
       const executeFill = async () => {
-        const email = credEmail && credEmail.value.trim() ? credEmail.value.trim() : 'candidate@oliveboard.in';
-        const password = credPass && credPass.value ? credPass.value : 'Oliveboard@2026';
+        const email = credEmail && credEmail.value.trim() ? credEmail.value.trim() : '';
+        const password = credPass && credPass.value ? credPass.value : '';
+        if (!email) {
+          this.showToast('Please enter your Oliveboard email or mobile number in the Login Assistant', 'error');
+          if (credEmail) credEmail.focus();
+          return;
+        }
         const iframe = document.getElementById('ob-live-iframe');
         if (iframe && iframe.contentWindow) {
           iframe.contentWindow.postMessage({
             type: 'OB_CMD_FILL_LOGIN',
             email,
-            password,
-            submit: true
+            password
           }, '*');
         }
-        await this.sendObBrowserInput({
-          action: 'fillLogin',
-          email,
-          password,
-          url: 'https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking',
-          submit: true
-        }, true);
-        this.showToast(`Logged in as ${email} — Loading Oliveboard Mock Test Dashboard...`, 'success');
+        this.showToast(`Switched to Oliveboard Login form & filled ${email}. Enter CAPTCHA and submit!`, 'success');
       };
       btnFillLogin.addEventListener('click', executeFill);
       if (credPass) {
@@ -2186,6 +2188,12 @@ class OliveboardAppController {
     if (btnSwitchLogin) {
       btnSwitchLogin.addEventListener('click', () => {
         const iframe = document.getElementById('ob-live-iframe');
+        const urlInput = document.getElementById('ob-live-url-input');
+        const cur = (urlInput && urlInput.value) || '';
+        if (!cur.includes('oliveboard.in') || cur.includes('/tests/') || cur.includes('/exams/')) {
+          this.navigateLiveOliveboard('https://www.oliveboard.in/?login=1');
+          return;
+        }
         if (iframe && iframe.contentWindow) {
           iframe.contentWindow.postMessage({ type: 'OB_CMD_SWITCH_AUTH_TAB', tab: 'login' }, '*');
         }
@@ -2196,10 +2204,39 @@ class OliveboardAppController {
     if (btnSwitchSignup) {
       btnSwitchSignup.addEventListener('click', () => {
         const iframe = document.getElementById('ob-live-iframe');
+        const urlInput = document.getElementById('ob-live-url-input');
+        const cur = (urlInput && urlInput.value) || '';
+        if (!cur.includes('oliveboard.in') || cur.includes('/tests/') || cur.includes('/exams/')) {
+          this.navigateLiveOliveboard('https://www.oliveboard.in/?signup=1');
+          return;
+        }
         if (iframe && iframe.contentWindow) {
           iframe.contentWindow.postMessage({ type: 'OB_CMD_SWITCH_AUTH_TAB', tab: 'signup' }, '*');
         }
         this.showToast('Switched to Sign Up Form on Oliveboard page', 'info');
+      });
+    }
+
+    const btnLogoutSession = document.getElementById('btn-ob-logout-session');
+    if (btnLogoutSession) {
+      btnLogoutSession.addEventListener('click', async () => {
+        try {
+          await fetch('/api/ob-browser/input', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'logout' })
+          });
+          const iframe = document.getElementById('ob-live-iframe');
+          const urlInput = document.getElementById('ob-live-url-input');
+          const homeLoginUrl = 'https://www.oliveboard.in/?login=1';
+          if (urlInput) urlInput.value = homeLoginUrl;
+          if (iframe) {
+            iframe.src = `/api/ob-browser/proxy?url=${encodeURIComponent(homeLoginUrl)}&logout=1&_t=${Date.now()}`;
+          }
+          this.showToast('Logged out of Oliveboard. Clean Login Form loaded!', 'info');
+        } catch (err) {
+          this.showToast('Logout error: ' + err.message, 'error');
+        }
       });
     }
 
@@ -2215,11 +2252,7 @@ class OliveboardAppController {
           const stageBadge = document.getElementById('ob-live-stage-badge');
           if (stageBadge) stageBadge.textContent = 'Loading ' + msg.url.slice(0, 40) + '...';
           if (msg.loggedIn) {
-            const iframe = document.getElementById('ob-live-iframe');
-            if (iframe) {
-              iframe.src = `/api/ob-browser/proxy?url=${encodeURIComponent(msg.url)}&_t=${Date.now()}`;
-            }
-            this.showToast(`Signed in to Oliveboard — Loading Mock Test Dashboard...`, 'success');
+            this.showToast('Signed in to Oliveboard — Loading Mock Test Dashboard...', 'success');
           }
         } else if (msg.type === 'OB_PROXY_LOADED' && msg.url) {
           const urlInput = document.getElementById('ob-live-url-input');
@@ -2406,7 +2439,11 @@ class OliveboardAppController {
     }
 
     try {
-      const initialUrl = (urlInput && urlInput.value.trim()) || 'https://www.oliveboard.in/?next=https%3A%2F%2Fu1.oliveboard.in%2Fexams%2F%3Fc%3Dsbipopre19%26i%3Dbanking';
+      let initialUrl = (urlInput && urlInput.value.trim()) || '';
+      if (!initialUrl || initialUrl.includes('sbipopre19')) {
+        initialUrl = 'https://www.oliveboard.in/';
+        if (urlInput) urlInput.value = initialUrl;
+      }
       const res = await fetch('/api/ob-browser/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2683,24 +2720,6 @@ class OliveboardAppController {
         }
       }
 
-      // Strategy 3: Enrich or complete from window.__OB_FULL_DATASET__ (full 100-question dataset for the active course)
-      if (win && Array.isArray(win.__OB_FULL_DATASET__) && win.__OB_FULL_DATASET__.length > decryptedQuestions.length) {
-        const domMap = new Map();
-        decryptedQuestions.forEach(q => domMap.set(q.questionNumber, q));
-        decryptedQuestions.length = 0;
-        win.__OB_FULL_DATASET__.forEach((fbQ, idx) => {
-          const qNum = fbQ.questionNumber || (idx + 1);
-          const qid = fbQ.qid || (1000 + qNum);
-          const dQ = domMap.get(qNum);
-          const merged = dQ ? { ...fbQ, ...dQ, correctAnswer: fbQ.correctAnswer, correctIndex: fbQ.correctIndex, explanationHTML: fbQ.explanationHTML } : fbQ;
-          decryptedQuestions.push(merged);
-          extractedSolutions[qid] = {
-            ans: merged.correctAnswer || 'B',
-            solutionDecoded: merged.explanationHTML || 'Official Oliveboard step-by-step explanation.'
-          };
-        });
-      }
-
       if (win && win.quesAnswer && typeof win.quesAnswer === 'object') {
         Object.keys(win.quesAnswer).forEach(k => {
           const rawAns = win.quesAnswer[k];
@@ -2863,6 +2882,12 @@ class OliveboardAppController {
   // ==========================================
 
   async startMockTest(testId, forceFresh = false, pushHistory = true) {
+    // If live browser modal was open, close it cleanly so it never obstructs the mock test engine
+    const liveModal = document.getElementById('ob-live-browser-modal');
+    if (liveModal && (liveModal.style.display === 'flex' || liveModal.style.display === 'block')) {
+      this.closeOliveboardLiveBrowser(false);
+    }
+
     this.lastActiveTestId = testId;
     this.savedTestsScrollY = window.scrollY;
 
@@ -2891,6 +2916,12 @@ class OliveboardAppController {
   }
 
   async resumeMockTest(testId, pushHistory = true) {
+    // If live browser modal was open, close it cleanly so it never obstructs the mock test engine
+    const liveModal = document.getElementById('ob-live-browser-modal');
+    if (liveModal && (liveModal.style.display === 'flex' || liveModal.style.display === 'block')) {
+      this.closeOliveboardLiveBrowser(false);
+    }
+
     this.lastActiveTestId = testId;
     this.savedTestsScrollY = window.scrollY;
 

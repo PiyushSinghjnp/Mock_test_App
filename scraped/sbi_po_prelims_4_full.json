@@ -1,0 +1,4307 @@
+{
+  "id": "sbi-po-pre-04",
+  "testTitle": "SBI PO 2026 Prelims - 4",
+  "totalQuestions": 100,
+  "questions": [
+    {
+      "id": "sbi-pre4-q1",
+      "globalIndex": 1,
+      "localIndex": 1,
+      "questionNumber": 1,
+      "section": "English Language",
+      "questionHTML": "According to the passage on Global Supply Chain Resilience, what factor predominantly disrupted the traditional \"just-in-time\" inventory model?",
+      "passageHTML": "<div class=\"rc-passage\">\n    <h4>Global Supply Chain Resilience and the \"China+1\" Paradigm</h4>\n    <p>The geopolitical frictions and catastrophic logistical bottlenecks of recent years have precipitated a fundamental restructuring of multinational production networks. For decades, multinational corporations operated under hyper-optimized \"just-in-time\" inventory models concentrated overwhelmingly in single geographic regions to minimize unit manufacturing costs. However, systemic supply disruptions underscored the catastrophic vulnerability of such concentrated supply chains, catalyzing a strategic pivot toward \"just-in-case\" resilience and geographic diversification.</p>\n    <p>India’s flagship Production Linked Incentive (PLI) schemes across key sectors—including telecommunications, electronics, high-efficiency solar photovoltaic modules, and advanced chemistry cell batteries—are calibrated directly to capture this structural redistribution of manufacturing capacity. By providing substantial fiscal incentives on incremental sales, the PLI scheme has successfully attracted global contract manufacturers and stimulated domestic capital expenditure. Yet, to achieve enduring global competitiveness, India must concurrently address foundational structural bottlenecks: reducing elevated logistics costs (which currently hover near 13-14% of GDP compared to 8% in developed economies), accelerating port turnaround timelines, and harmonizing state-level labor regulations.</p>\n  </div>",
+      "hasPassage": true,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Sudden worldwide deflation in raw material prices.",
+          "html": "Sudden worldwide deflation in raw material prices."
+        },
+        {
+          "letter": "B",
+          "text": "Geopolitical frictions and logistical bottlenecks highlighting single-region vulnerabilities.",
+          "html": "Geopolitical frictions and logistical bottlenecks highlighting single-region vulnerabilities."
+        },
+        {
+          "letter": "C",
+          "text": "Universal ban on maritime container shipping lines.",
+          "html": "Universal ban on maritime container shipping lines."
+        },
+        {
+          "letter": "D",
+          "text": "Complete cessation of foreign direct investment worldwide.",
+          "html": "Complete cessation of foreign direct investment worldwide."
+        },
+        {
+          "letter": "E",
+          "text": "Lack of consumer demand in emerging Asian markets.",
+          "html": "Lack of consumer demand in emerging Asian markets."
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>The opening paragraph notes that geopolitical frictions and systemic logistics bottlenecks exposed the fragility of concentrating production in a single region, forcing a shift away from pure just-in-time models.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q2",
+      "globalIndex": 2,
+      "localIndex": 2,
+      "questionNumber": 2,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 2:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q3",
+      "globalIndex": 3,
+      "localIndex": 3,
+      "questionNumber": 3,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 3:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q4",
+      "globalIndex": 4,
+      "localIndex": 4,
+      "questionNumber": 4,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 4:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q5",
+      "globalIndex": 5,
+      "localIndex": 5,
+      "questionNumber": 5,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 5:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q6",
+      "globalIndex": 6,
+      "localIndex": 6,
+      "questionNumber": 6,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 6:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q7",
+      "globalIndex": 7,
+      "localIndex": 7,
+      "questionNumber": 7,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 7:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q8",
+      "globalIndex": 8,
+      "localIndex": 8,
+      "questionNumber": 8,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 8:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q9",
+      "globalIndex": 9,
+      "localIndex": 9,
+      "questionNumber": 9,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 9:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q10",
+      "globalIndex": 10,
+      "localIndex": 10,
+      "questionNumber": 10,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 10:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q11",
+      "globalIndex": 11,
+      "localIndex": 11,
+      "questionNumber": 11,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 11:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q12",
+      "globalIndex": 12,
+      "localIndex": 12,
+      "questionNumber": 12,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 12:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q13",
+      "globalIndex": 13,
+      "localIndex": 13,
+      "questionNumber": 13,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 13:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q14",
+      "globalIndex": 14,
+      "localIndex": 14,
+      "questionNumber": 14,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 14:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q15",
+      "globalIndex": 15,
+      "localIndex": 15,
+      "questionNumber": 15,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 15:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q16",
+      "globalIndex": 16,
+      "localIndex": 16,
+      "questionNumber": 16,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 16:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q17",
+      "globalIndex": 17,
+      "localIndex": 17,
+      "questionNumber": 17,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 17:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q18",
+      "globalIndex": 18,
+      "localIndex": 18,
+      "questionNumber": 18,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 18:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q19",
+      "globalIndex": 19,
+      "localIndex": 19,
+      "questionNumber": 19,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 19:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q20",
+      "globalIndex": 20,
+      "localIndex": 20,
+      "questionNumber": 20,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 20:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q21",
+      "globalIndex": 21,
+      "localIndex": 21,
+      "questionNumber": 21,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 21:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q22",
+      "globalIndex": 22,
+      "localIndex": 22,
+      "questionNumber": 22,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 22:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q23",
+      "globalIndex": 23,
+      "localIndex": 23,
+      "questionNumber": 23,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 23:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q24",
+      "globalIndex": 24,
+      "localIndex": 24,
+      "questionNumber": 24,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 24:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q25",
+      "globalIndex": 25,
+      "localIndex": 25,
+      "questionNumber": 25,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 25:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q26",
+      "globalIndex": 26,
+      "localIndex": 26,
+      "questionNumber": 26,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 26:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q27",
+      "globalIndex": 27,
+      "localIndex": 27,
+      "questionNumber": 27,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 27:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q28",
+      "globalIndex": 28,
+      "localIndex": 28,
+      "questionNumber": 28,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 28:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q29",
+      "globalIndex": 29,
+      "localIndex": 29,
+      "questionNumber": 29,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 29:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q30",
+      "globalIndex": 30,
+      "localIndex": 30,
+      "questionNumber": 30,
+      "section": "English Language",
+      "questionHTML": "<p><b>Question 30:</b> Choose the most appropriate synonym for <b>VULNERABILITY</b>:</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "Invincibility",
+          "html": "Invincibility"
+        },
+        {
+          "letter": "B",
+          "text": "Susceptibility",
+          "html": "Susceptibility"
+        },
+        {
+          "letter": "C",
+          "text": "Robustness",
+          "html": "Robustness"
+        },
+        {
+          "letter": "D",
+          "text": "Diligence",
+          "html": "Diligence"
+        },
+        {
+          "letter": "E",
+          "text": "Fortitude",
+          "html": "Fortitude"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>\"Susceptibility\" or openness to attack/harm is the precise synonym for vulnerability.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q31",
+      "globalIndex": 31,
+      "localIndex": 1,
+      "questionNumber": 31,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 31:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q32",
+      "globalIndex": 32,
+      "localIndex": 2,
+      "questionNumber": 32,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 32:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q33",
+      "globalIndex": 33,
+      "localIndex": 3,
+      "questionNumber": 33,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 33:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q34",
+      "globalIndex": 34,
+      "localIndex": 4,
+      "questionNumber": 34,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 34:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q35",
+      "globalIndex": 35,
+      "localIndex": 5,
+      "questionNumber": 35,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 35:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q36",
+      "globalIndex": 36,
+      "localIndex": 6,
+      "questionNumber": 36,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 36:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q37",
+      "globalIndex": 37,
+      "localIndex": 7,
+      "questionNumber": 37,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 37:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q38",
+      "globalIndex": 38,
+      "localIndex": 8,
+      "questionNumber": 38,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 38:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q39",
+      "globalIndex": 39,
+      "localIndex": 9,
+      "questionNumber": 39,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 39:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q40",
+      "globalIndex": 40,
+      "localIndex": 10,
+      "questionNumber": 40,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 40:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q41",
+      "globalIndex": 41,
+      "localIndex": 11,
+      "questionNumber": 41,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 41:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q42",
+      "globalIndex": 42,
+      "localIndex": 12,
+      "questionNumber": 42,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 42:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q43",
+      "globalIndex": 43,
+      "localIndex": 13,
+      "questionNumber": 43,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 43:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q44",
+      "globalIndex": 44,
+      "localIndex": 14,
+      "questionNumber": 44,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 44:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q45",
+      "globalIndex": 45,
+      "localIndex": 15,
+      "questionNumber": 45,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 45:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q46",
+      "globalIndex": 46,
+      "localIndex": 16,
+      "questionNumber": 46,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 46:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q47",
+      "globalIndex": 47,
+      "localIndex": 17,
+      "questionNumber": 47,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 47:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q48",
+      "globalIndex": 48,
+      "localIndex": 18,
+      "questionNumber": 48,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 48:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q49",
+      "globalIndex": 49,
+      "localIndex": 19,
+      "questionNumber": 49,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 49:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q50",
+      "globalIndex": 50,
+      "localIndex": 20,
+      "questionNumber": 50,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 50:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q51",
+      "globalIndex": 51,
+      "localIndex": 21,
+      "questionNumber": 51,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 51:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q52",
+      "globalIndex": 52,
+      "localIndex": 22,
+      "questionNumber": 52,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 52:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q53",
+      "globalIndex": 53,
+      "localIndex": 23,
+      "questionNumber": 53,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 53:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q54",
+      "globalIndex": 54,
+      "localIndex": 24,
+      "questionNumber": 54,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 54:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q55",
+      "globalIndex": 55,
+      "localIndex": 25,
+      "questionNumber": 55,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 55:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q56",
+      "globalIndex": 56,
+      "localIndex": 26,
+      "questionNumber": 56,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 56:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q57",
+      "globalIndex": 57,
+      "localIndex": 27,
+      "questionNumber": 57,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 57:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q58",
+      "globalIndex": 58,
+      "localIndex": 28,
+      "questionNumber": 58,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 58:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q59",
+      "globalIndex": 59,
+      "localIndex": 29,
+      "questionNumber": 59,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 59:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q60",
+      "globalIndex": 60,
+      "localIndex": 30,
+      "questionNumber": 60,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 60:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q61",
+      "globalIndex": 61,
+      "localIndex": 31,
+      "questionNumber": 61,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 61:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q62",
+      "globalIndex": 62,
+      "localIndex": 32,
+      "questionNumber": 62,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 62:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q63",
+      "globalIndex": 63,
+      "localIndex": 33,
+      "questionNumber": 63,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 63:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q64",
+      "globalIndex": 64,
+      "localIndex": 34,
+      "questionNumber": 64,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 64:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q65",
+      "globalIndex": 65,
+      "localIndex": 35,
+      "questionNumber": 65,
+      "section": "Quantitative Aptitude",
+      "questionHTML": "<p><b>Question 65:</b> A train 240 meters long crosses a platform of equal length in 24 seconds. Find the speed of the train in km/h.</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "60 km/h",
+          "html": "60 km/h"
+        },
+        {
+          "letter": "B",
+          "text": "72 km/h",
+          "html": "72 km/h"
+        },
+        {
+          "letter": "C",
+          "text": "80 km/h",
+          "html": "80 km/h"
+        },
+        {
+          "letter": "D",
+          "text": "90 km/h",
+          "html": "90 km/h"
+        },
+        {
+          "letter": "E",
+          "text": "75 km/h",
+          "html": "75 km/h"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Total distance = 240 + 240 = 480 meters. Speed = 480 / 24 = 20 m/s.<br>In km/h = 20 * (18 / 5) = 72 km/h.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q66",
+      "globalIndex": 66,
+      "localIndex": 1,
+      "questionNumber": 66,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 66:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q67",
+      "globalIndex": 67,
+      "localIndex": 2,
+      "questionNumber": 67,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 67:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q68",
+      "globalIndex": 68,
+      "localIndex": 3,
+      "questionNumber": 68,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 68:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q69",
+      "globalIndex": 69,
+      "localIndex": 4,
+      "questionNumber": 69,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 69:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q70",
+      "globalIndex": 70,
+      "localIndex": 5,
+      "questionNumber": 70,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 70:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q71",
+      "globalIndex": 71,
+      "localIndex": 6,
+      "questionNumber": 71,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 71:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q72",
+      "globalIndex": 72,
+      "localIndex": 7,
+      "questionNumber": 72,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 72:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q73",
+      "globalIndex": 73,
+      "localIndex": 8,
+      "questionNumber": 73,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 73:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q74",
+      "globalIndex": 74,
+      "localIndex": 9,
+      "questionNumber": 74,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 74:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q75",
+      "globalIndex": 75,
+      "localIndex": 10,
+      "questionNumber": 75,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 75:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q76",
+      "globalIndex": 76,
+      "localIndex": 11,
+      "questionNumber": 76,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 76:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q77",
+      "globalIndex": 77,
+      "localIndex": 12,
+      "questionNumber": 77,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 77:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q78",
+      "globalIndex": 78,
+      "localIndex": 13,
+      "questionNumber": 78,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 78:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q79",
+      "globalIndex": 79,
+      "localIndex": 14,
+      "questionNumber": 79,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 79:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q80",
+      "globalIndex": 80,
+      "localIndex": 15,
+      "questionNumber": 80,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 80:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q81",
+      "globalIndex": 81,
+      "localIndex": 16,
+      "questionNumber": 81,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 81:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q82",
+      "globalIndex": 82,
+      "localIndex": 17,
+      "questionNumber": 82,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 82:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q83",
+      "globalIndex": 83,
+      "localIndex": 18,
+      "questionNumber": 83,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 83:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q84",
+      "globalIndex": 84,
+      "localIndex": 19,
+      "questionNumber": 84,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 84:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q85",
+      "globalIndex": 85,
+      "localIndex": 20,
+      "questionNumber": 85,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 85:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q86",
+      "globalIndex": 86,
+      "localIndex": 21,
+      "questionNumber": 86,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 86:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q87",
+      "globalIndex": 87,
+      "localIndex": 22,
+      "questionNumber": 87,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 87:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q88",
+      "globalIndex": 88,
+      "localIndex": 23,
+      "questionNumber": 88,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 88:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q89",
+      "globalIndex": 89,
+      "localIndex": 24,
+      "questionNumber": 89,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 89:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q90",
+      "globalIndex": 90,
+      "localIndex": 25,
+      "questionNumber": 90,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 90:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q91",
+      "globalIndex": 91,
+      "localIndex": 26,
+      "questionNumber": 91,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 91:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q92",
+      "globalIndex": 92,
+      "localIndex": 27,
+      "questionNumber": 92,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 92:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q93",
+      "globalIndex": 93,
+      "localIndex": 28,
+      "questionNumber": 93,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 93:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q94",
+      "globalIndex": 94,
+      "localIndex": 29,
+      "questionNumber": 94,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 94:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q95",
+      "globalIndex": 95,
+      "localIndex": 30,
+      "questionNumber": 95,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 95:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q96",
+      "globalIndex": 96,
+      "localIndex": 31,
+      "questionNumber": 96,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 96:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q97",
+      "globalIndex": 97,
+      "localIndex": 32,
+      "questionNumber": 97,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 97:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q98",
+      "globalIndex": 98,
+      "localIndex": 33,
+      "questionNumber": 98,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 98:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q99",
+      "globalIndex": 99,
+      "localIndex": 34,
+      "questionNumber": 99,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 99:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    },
+    {
+      "id": "sbi-pre4-q100",
+      "globalIndex": 100,
+      "localIndex": 35,
+      "questionNumber": 100,
+      "section": "Reasoning Ability",
+      "questionHTML": "<p><b>Question 100:</b> If South-East becomes North, North-East becomes West, and so on, what will West become?</p>",
+      "passageHTML": "",
+      "hasPassage": false,
+      "imageUrls": [],
+      "options": [
+        {
+          "letter": "A",
+          "text": "North-East",
+          "html": "North-East"
+        },
+        {
+          "letter": "B",
+          "text": "South-East",
+          "html": "South-East"
+        },
+        {
+          "letter": "C",
+          "text": "North-West",
+          "html": "North-West"
+        },
+        {
+          "letter": "D",
+          "text": "South-West",
+          "html": "South-West"
+        },
+        {
+          "letter": "E",
+          "text": "South",
+          "html": "South"
+        }
+      ],
+      "correctAnswer": "B",
+      "correctIndex": 1,
+      "explanationHTML": "<p>Each direction shifts 135° clockwise. West shifted 135° clockwise becomes South-East.</p>",
+      "marksForCorrect": 1,
+      "negativeMarks": 0.25
+    }
+  ]
+}

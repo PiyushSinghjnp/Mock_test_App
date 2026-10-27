@@ -1,0 +1,109 @@
+{
+  "capturedAt": "2026-10-26T21:44:34.728Z",
+  "url": "https://u1.oliveboard.in/tests/?c=sbipopre19&i=banking",
+  "title": "SBI PO 2026 Prelims - 1",
+  "stage": {
+    "stage": "dashboard",
+    "label": "1. Oliveboard Mock Test Dashboard (SBI PO 2026 Prelims)",
+    "title": "Oliveboard | SBI PO 2026 Prelims Mock Tests"
+  },
+  "visualSnapshots": {
+    "main": "scraped/snapshots/screenshot_sbipopre19_1_1793051074712.svg",
+    "mainUrl": "/scraped/snapshots/screenshot_sbipopre19_1_1793051074712.svg",
+    "mainByteSize": 1529,
+    "otherTabsCount": 3,
+    "otherTabs": []
+  },
+  "domHtmlFile": "scraped/snapshots/dom_sbipopre19_1_1793051074712.html",
+  "reaEvidenceFile": "scraped/snapshots/rea_evidence_sbipopre19_1_1793051074712.json",
+  "reaEvidenceId": "ev_rea_1a17a2c2098",
+  "reaProvider": "REA Live DOM & Proxy Observation Provider",
+  "viewport": {
+    "innerWidth": 1536,
+    "innerHeight": 552,
+    "devicePixelRatio": 1.25
+  },
+  "modalsCount": 7,
+  "visibleModals": [
+    {
+      "selector": "#modal-offerimg",
+      "id": "modal-offerimg",
+      "className": "modal fade offerimg-modal in",
+      "isVisible": true,
+      "heading": "",
+      "buttonsCount": 2
+    }
+  ],
+  "detectedModals": [
+    {
+      "selector": "#buyModal",
+      "id": "buyModal",
+      "className": "modal fade buyModal",
+      "isVisible": false,
+      "heading": "Please make a purchase to access the remaining classes",
+      "buttonsCount": 2
+    },
+    {
+      "selector": "#callreqmodal",
+      "id": "callreqmodal",
+      "className": "modal",
+      "isVisible": false,
+      "heading": "",
+      "buttonsCount": 1
+    },
+    {
+      "selector": "#videoModal",
+      "id": "videoModal",
+      "className": "modal",
+      "isVisible": false,
+      "heading": "Course Overview",
+      "buttonsCount": 1
+    },
+    {
+      "selector": "#modal-reporterror",
+      "id": "modal-reporterror",
+      "className": "modal",
+      "isVisible": false,
+      "heading": "",
+      "buttonsCount": 3
+    },
+    {
+      "selector": "#summaryModal",
+      "id": "summaryModal",
+      "className": "modal fade summaryModal bd-example-modal-lg",
+      "isVisible": false,
+      "heading": "",
+      "buttonsCount": 1
+    },
+    {
+      "selector": "#modal-offerimg",
+      "id": "modal-offerimg",
+      "className": "modal fade offerimg-modal in",
+      "isVisible": true,
+      "heading": "",
+      "buttonsCount": 2
+    },
+    {
+      "selector": "#selcategoryModal",
+      "id": "selcategoryModal",
+      "className": "modal fade in",
+      "isVisible": false,
+      "heading": "Choose the Category you want to view today.",
+      "buttonsCount": 21
+    }
+  ],
+  "tablesCount": 0,
+  "allTables": [],
+  "decryptedQuestionsCount": 100,
+  "extractedSolutionsCount": 100,
+  "dashboardCardsCount": 25,
+  "verificationChecklist": {
+    "visualSnapshotCaptured": true,
+    "fullDomCaptured": true,
+    "reaEvidenceCaptured": true,
+    "modalsInspectedCount": 7,
+    "tablesInspectedCount": 0,
+    "questionsDecryptedCount": 100,
+    "solutionsExtractedCount": 100
+  }
+}

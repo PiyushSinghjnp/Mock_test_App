@@ -316,6 +316,14 @@ function seedTests() {
   } catch (err) {
     console.error('Failed to run IBPS SO seed script:', err);
   }
+
+  // 3.2c Seed comprehensive distinct question papers for all exams and mock tests
+  try {
+    const { runUniqueExamSeeder } = require('./scripts/seed_unique_exam_papers');
+    runUniqueExamSeeder();
+  } catch (err) {
+    console.error('Failed to run unique exam seeder:', err);
+  }
 }
 
 // ==========================================
@@ -700,11 +708,21 @@ app.get('/api/tests/:id', (req, res) => {
     const reqId = String(req.params.id || '');
     let test = db.prepare('SELECT * FROM tests WHERE id = ?').get(reqId);
     if (!test) {
+      test = db.prepare('SELECT * FROM tests WHERE LOWER(id) = LOWER(?)').get(reqId);
+    }
+    if (!test) {
       const lowerId = reqId.toLowerCase();
-      const fallbackId = lowerId.includes('ibps-so')
-        ? (lowerId.includes('mains') ? 'ibps-so-it-mains-1' : 'ibps-so-it-prelims-1')
-        : 'sbi-po-pre-01';
-      test = db.prepare('SELECT * FROM tests WHERE id = ?').get(fallbackId);
+      let matchedId = null;
+      if (lowerId.includes('ssc-cgl')) matchedId = 'ssc-cgl-pre-01';
+      else if (lowerId.includes('rbi')) matchedId = 'rbi-phase1-01';
+      else if (lowerId.includes('rrb')) matchedId = 'rrb-ntpc-cbt1-01';
+      else if (lowerId.includes('ibps-po')) matchedId = 'ibps-po-pre-01';
+      else if (lowerId.includes('ibps-so')) matchedId = lowerId.includes('mains') ? 'ibps-so-it-mains-1' : 'ibps-so-it-prelims-1';
+      else if (lowerId.includes('sbi-clerk')) matchedId = 'sbi-po-pre-02';
+      else if (lowerId.includes('ibps-clerk')) matchedId = 'sbi-po-pre-03';
+      else matchedId = 'sbi-po-pre-01';
+
+      test = db.prepare('SELECT * FROM tests WHERE id = ?').get(matchedId);
       if (test) {
         const cloned = JSON.parse(test.test_data_json);
         cloned.id = reqId;
