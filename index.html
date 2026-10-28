@@ -67,7 +67,7 @@
     <!-- ACTION AREA -->
     <div class="hdr-action-area">
       <!-- Live REA MCP Scrape Helper -->
-      <button id="btn-open-ob-live-browser" title="Live Oliveboard Web App to Manually Log In & Scrape via REA MCP Tool" class="btn-rea-scrape">
+      <button id="btn-open-ob-live-browser" title="Capture the original Oliveboard browser and apply validated tests" class="btn-rea-scrape">
         <span>🌐</span>
         <span>Live REA Scrape</span>
       </button>
@@ -1249,86 +1249,48 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       MODAL 4: LIVE OLIVEBOARD WEB APP BROWSER & REVERSE ENGINEER
-       Streams real Chromium connected to oliveboard.in via CDP (Port 9222)
-       ======================================================== -->
-  <div id="ob-live-browser-modal" style="display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(15, 23, 42, 0.85); flex-direction: column; font-family: Inter, sans-serif;">
-    <!-- Top Control Bar -->
-    <div style="background: #0f172a; color: #ffffff !important; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #334155;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-weight: 800; font-size: 13px; color: #38bdf8 !important; letter-spacing: 0.2px;">🌐 Oliveboard Live Browser &amp; REA MCP Engine</span>
-        <span id="ob-live-stage-badge" style="font-size: 11px; background: #0284c7; color: #ffffff !important; padding: 3px 8px; border-radius: 4px; border: 1px solid #38bdf8; font-weight: 700;">Ready — Oliveboard Live Session</span>
+  <!-- Real isolated browser preview; remote executable content never runs in this app. -->
+  <div id="ob-live-browser-modal" role="dialog" aria-modal="true" aria-labelledby="ob-live-title" style="display:none;position:fixed;inset:0;z-index:10000;background:#0f172a;flex-direction:column;font-family:Inter,sans-serif;color:#e2e8f0;">
+    <div style="padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #334155;">
+      <strong id="ob-live-title" style="color:#38bdf8;">Oliveboard Live Capture</strong>
+      <span id="ob-live-stage-badge" style="font-size:12px;">Not connected</span>
+      <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:260px;">
+        <button id="btn-ob-nav-back" title="Back" style="padding:6px 9px;">Back</button>
+        <button id="btn-ob-nav-reload" title="Reload" style="padding:6px 9px;">Reload</button>
+        <input id="ob-live-url-input" type="url" aria-label="Oliveboard URL" value="https://www.oliveboard.in/" style="flex:1;min-width:120px;padding:7px 10px;background:#1e293b;color:#fff;border:1px solid #475569;border-radius:4px;">
+        <button id="btn-ob-nav-go" style="padding:7px 12px;">Go</button>
       </div>
-
-      <!-- URL & Navigation Controls -->
-      <div style="display: flex; align-items: center; gap: 6px; flex: 1; max-width: 540px;">
-        <button id="btn-ob-nav-back" title="Back" style="padding: 4px 8px; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px; cursor: pointer; font-size: 12px;">◀</button>
-        <button id="btn-ob-nav-reload" title="Reload" style="padding: 4px 8px; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px; cursor: pointer; font-size: 12px;">↻</button>
-        <input type="text" id="ob-live-url-input" value="https://www.oliveboard.in/" style="flex: 1; padding: 5px 10px; background: #1e293b; color: #e2e8f0; border: 1px solid #475569; border-radius: 4px; font-size: 12px;">
-        <button id="btn-ob-nav-go" style="padding: 5px 12px; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer;">Go</button>
-      </div>
-
-      <!-- Quick Text Input & Deep Reverse-Engineer Action -->
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <button id="btn-ob-bring-front" title="Focus interactive Oliveboard viewport" style="padding: 5px 9px; background: #4f46e5; color: #fff; border: 1px solid #818cf8; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">🪟 Live Viewport</button>
-        <input type="text" id="ob-live-type-input" placeholder="Type text (email/pwd/OTP) & Enter..." style="width: 180px; padding: 5px 8px; background: #1e293b; color: #fff; border: 1px solid #64748b; border-radius: 4px; font-size: 11px;">
-        <button id="btn-ob-send-text" style="padding: 5px 9px; background: #0284c7; color: #fff; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">Send</button>
-        <button id="btn-ob-scrape-now" style="padding: 6px 12px; background: #16a34a; color: #fff; border: 1px solid #86efac; border-radius: 4px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px;">📸 Snapshot &amp; Scrape (REA MCP)</button>
-        <button id="btn-close-ob-live-browser" style="padding: 5px 9px; background: #dc2626; color: #fff; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;">✕</button>
-      </div>
+      <button id="btn-ob-bring-front" style="padding:7px 12px;">Open browser window</button>
+      <button id="btn-ob-scrape-now" style="padding:8px 12px;background:#16a34a;color:#fff;border:1px solid #86efac;border-radius:4px;font-weight:700;">Capture &amp; apply complete tests</button>
+      <button id="btn-close-ob-live-browser" aria-label="Close capture panel" style="padding:7px 12px;">Close</button>
     </div>
-
-    <!-- Open Browser Tabs Strip (Handles Popup Windows for Take Test & Solutions) -->
-    <div id="ob-live-tabs-bar" style="background: #1e293b; padding: 4px 14px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #334155; font-size: 11px; color: #cbd5e1; overflow-x: auto;">
-      <span style="color: #94a3b8; font-weight: 700;">Open Tabs:</span>
+    <div id="ob-live-tabs-bar" style="padding:6px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #334155;font-size:12px;overflow-x:auto;flex-shrink:0;">Open Oliveboard tabs:</div>
+    <div style="padding:8px 14px;background:#1e293b;font-size:12px;line-height:1.5;">
+      Sign in directly in the original browser window, then open the dashboard, tests, and solutions you want to capture. Capture collects all open Oliveboard tabs; only complete, validated tests are added to your app. Keep source tabs open until capture finishes.
     </div>
-
-    <!-- Quick Login & Credentials Assistant Bar -->
-    <div id="ob-live-credentials-bar" style="background: #111827; padding: 6px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #374151; font-size: 11px; color: #cbd5e1; flex-wrap: wrap;">
-      <span style="font-weight: 800; color: #38bdf8 !important; display: flex; align-items: center; gap: 4px;">🔑 Login Assistant:</span>
-      <input type="text" id="ob-cred-email" placeholder="Email / Mobile" style="padding: 4px 8px; background: #1f2937; color: #fff; border: 1px solid #4b5563; border-radius: 4px; font-size: 11px; width: 180px;">
-      <input type="password" id="ob-cred-pass" placeholder="Password" style="padding: 4px 8px; background: #1f2937; color: #fff; border: 1px solid #4b5563; border-radius: 4px; font-size: 11px; width: 140px;">
-      <button id="btn-ob-fill-login" style="padding: 4px 10px; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;">⚡ Fill &amp; Login</button>
-      <button id="btn-ob-switch-login-tab" style="padding: 4px 10px; background: #374151; color: #e2e8f0; border: 1px solid #6b7280; border-radius: 4px; font-size: 11px; cursor: pointer;">🔄 Switch to Login Form</button>
-      <button id="btn-ob-switch-signup-tab" style="padding: 4px 10px; background: #374151; color: #e2e8f0; border: 1px solid #6b7280; border-radius: 4px; font-size: 11px; cursor: pointer;">📝 Switch to Sign Up</button>
-      <button id="btn-ob-logout-session" style="padding: 4px 10px; background: #dc2626; color: #fff; border: none; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;" title="Wipe cookies and return to clean Oliveboard login screen">🚪 Logout / Clear Session</button>
-      <span style="color: #94a3b8 !important; font-size: 11px; margin-left: auto;">💡 Tip: Click any stage tab or button in the live screen below to navigate!</span>
+    <div style="padding:6px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;">
+      <label for="ob-live-type-input">Selected field:</label>
+      <input id="ob-live-type-input" type="text" autocomplete="off" placeholder="Type text into the selected field" style="width:230px;padding:5px 8px;">
+      <button id="btn-ob-send-text">Send text</button>
+      <button id="btn-ob-press-enter">Enter</button>
+      <button id="btn-ob-press-tab">Tab</button>
+      <button id="btn-ob-press-backspace">Backspace</button>
+      <span style="color:#94a3b8;">Use the original browser for passwords, CAPTCHA, and OTP.</span>
     </div>
-
-    <!-- Interactive Remote Viewport Canvas (Full-bleed Real Website Iframe) -->
-    <div style="flex: 1; display: flex; align-items: stretch; justify-content: stretch; overflow: hidden; position: relative; background: #0f172a; padding: 0;">
-      <div id="ob-live-viewport-wrapper" style="position: relative; width: 100%; height: 100%; flex: 1; background: #ffffff; overflow: hidden; outline: none;" tabindex="0">
-        <iframe id="ob-live-iframe" title="Oliveboard Live Website" style="width: 100%; height: 100%; border: none; display: block; background: #ffffff;"></iframe>
-        <div id="ob-live-click-dot" style="display:none; position:absolute; width:18px; height:18px; border-radius:50%; background:rgba(56, 189, 248, 0.6); border:2px solid #38bdf8; transform:translate(-50%, -50%); pointer-events:none; z-index:99; transition:opacity 0.2s ease;"></div>
-        <img id="ob-live-screen-img" alt="Oliveboard Live Browser Stream" style="width: 100%; height: 100%; object-fit: fill; display: none; cursor: pointer; user-select: none;" draggable="false">
-      </div>
+    <div id="ob-live-viewport-wrapper" tabindex="0" aria-label="Live browser preview. Click and scroll to interact." style="position:relative;flex:1;min-height:120px;overflow:hidden;outline:none;background:#020617;">
+      <p id="ob-live-empty-state" style="position:absolute;inset:35% 10%;text-align:center;color:#94a3b8;">The real browser preview will appear here after connecting.</p>
+      <img id="ob-live-screen-img" alt="Current Oliveboard browser viewport" draggable="false" style="width:100%;height:100%;object-fit:contain;display:none;cursor:pointer;user-select:none;">
     </div>
-
-    <!-- Visual Snapshot & Rigorous Inspection Bar (Shows when snapshot captured) -->
-    <div id="ob-live-snapshot-bar" style="background: #0f172a; color: #e2e8f0; padding: 8px 14px; font-size: 11px; display: none; align-items: center; justify-content: space-between; border-top: 1px solid #334155; gap: 12px;">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <a id="ob-snapshot-link" href="#" target="_blank" title="Click to view full-resolution screenshot">
-          <img id="ob-snapshot-thumb" src="" alt="Snapshot Thumbnail" style="width: 64px; height: 40px; object-fit: cover; border: 1px solid #38bdf8; border-radius: 4px; background: #000;">
-        </a>
-        <div>
-          <div style="font-weight: 700; color: #38bdf8; font-size: 12px;">📸 Window Visual Snapshot Captured!</div>
-          <div id="ob-snapshot-info" style="color: #94a3b8; font-size: 11px;">Saved to scraped/snapshots/</div>
-        </div>
-      </div>
-      <div id="ob-snapshot-badges" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <!-- Filled dynamically: Modals, Tables, Questions, REA Evidence -->
-      </div>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <a id="btn-view-snapshot-full" href="#" target="_blank" style="padding: 4px 10px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 4px; font-weight: 600; font-size: 11px;">🔍 View Full Snapshot</a>
-        <a id="btn-view-report-json" href="#" target="_blank" style="padding: 4px 10px; background: #334155; color: #e2e8f0; text-decoration: none; border-radius: 4px; font-weight: 600; font-size: 11px;">📄 JSON Report</a>
-      </div>
+    <div id="ob-live-snapshot-bar" style="display:none;padding:8px 14px;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid #334155;font-size:12px;">
+      <a id="ob-snapshot-link" target="_blank" rel="noopener noreferrer" hidden><img id="ob-snapshot-thumb" alt="Captured page screenshot" style="width:64px;height:40px;object-fit:contain;" hidden></a>
+      <span id="ob-snapshot-info">No capture yet</span>
+      <div id="ob-snapshot-badges" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      <a id="btn-view-snapshot-full" target="_blank" rel="noopener noreferrer" style="color:#38bdf8;" hidden>View screenshot</a>
+      <a id="btn-view-report-json" target="_blank" rel="noopener noreferrer" style="color:#38bdf8;" hidden>Capture report</a>
     </div>
-
-    <!-- Status Footer -->
-    <div id="ob-live-status-footer" style="background: #0f172a; color: #94a3b8; padding: 5px 14px; font-size: 11px; display: flex; justify-content: space-between; border-top: 1px solid #334155;">
-      <span id="ob-live-status-msg" style="color: #cbd5e1 !important;">Click anywhere on the real Oliveboard page above to interact, or type any URL and click Go.</span>
-      <span id="ob-live-scrape-summary" style="color: #38bdf8 !important;">Ready for Step 1 (Dashboard) → Step 2 (Live Mock) → Step 3 (Solution Window)</span>
+    <div id="ob-live-status-footer" aria-live="polite" style="padding:8px 14px;border-top:1px solid #334155;font-size:12px;line-height:1.5;max-height:120px;overflow:auto;">
+      <div id="ob-live-status-msg">Open the browser to start.</div>
+      <div id="ob-live-scrape-summary" style="color:#38bdf8;">No capture or import has run.</div>
     </div>
   </div>
 

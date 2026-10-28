@@ -418,9 +418,7 @@ class OliveboardAppController {
   closeAllModalsAndOverlays() {
     const obLiveModal = document.getElementById('ob-live-browser-modal');
     if (obLiveModal) {
-      obLiveModal.style.display = 'none';
-      this._obBrowserActive = false;
-      if (this._obFrameTimer) clearTimeout(this._obFrameTimer);
+      this.closeOliveboardLiveBrowser(false);
     }
 
     const userModal = document.getElementById('user-profile-modal');
@@ -2123,725 +2121,295 @@ class OliveboardAppController {
   // ==========================================
 
   bindOliveboardLiveBrowserEvents() {
-    const btnOpen = document.getElementById('btn-open-ob-live-browser');
-    const btnClose = document.getElementById('btn-close-ob-live-browser');
-    const modal = document.getElementById('ob-live-browser-modal');
-    const screenImg = document.getElementById('ob-live-screen-img');
-    const viewportWrapper = document.getElementById('ob-live-viewport-wrapper');
-    const urlInput = document.getElementById('ob-live-url-input');
-    const btnNavGo = document.getElementById('btn-ob-nav-go');
-    const btnNavBack = document.getElementById('btn-ob-nav-back');
-    const btnNavReload = document.getElementById('btn-ob-nav-reload');
-    const textInput = document.getElementById('ob-live-type-input') || document.getElementById('ob-live-text-input');
-    const btnSendText = document.getElementById('btn-ob-send-text');
-    const btnPressEnter = document.getElementById('btn-ob-press-enter');
-    const btnPressBackspace = document.getElementById('btn-ob-press-backspace');
-    const btnPressTab = document.getElementById('btn-ob-press-tab');
-    const btnBringFront = document.getElementById('btn-ob-bring-front');
-    const btnScrapeNow = document.getElementById('btn-ob-scrape-now');
-
-    // Login Assistant Form Controls
-    const credEmail = document.getElementById('ob-cred-email');
-    const credPass = document.getElementById('ob-cred-pass');
-    const btnFillLogin = document.getElementById('btn-ob-fill-login');
-    const btnSwitchLogin = document.getElementById('btn-ob-switch-login-tab');
-    const btnSwitchSignup = document.getElementById('btn-ob-switch-signup-tab');
-
-    if (btnFillLogin) {
-      const executeFill = async () => {
-        const email = credEmail && credEmail.value.trim() ? credEmail.value.trim() : '';
-        const password = credPass && credPass.value ? credPass.value : '';
-        if (!email) {
-          this.showToast('Please enter your Oliveboard email or mobile number in the Login Assistant', 'error');
-          if (credEmail) credEmail.focus();
-          return;
-        }
-        const iframe = document.getElementById('ob-live-iframe');
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage({
-            type: 'OB_CMD_FILL_LOGIN',
-            email,
-            password
-          }, '*');
-        }
-        this.showToast(`Switched to Oliveboard Login form & filled ${email}. Enter CAPTCHA and submit!`, 'success');
-      };
-      btnFillLogin.addEventListener('click', executeFill);
-      if (credPass) {
-        credPass.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            executeFill();
-          }
-        });
-      }
-      if (credEmail) {
-        credEmail.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            executeFill();
-          }
-        });
-      }
-    }
-
-    if (btnSwitchLogin) {
-      btnSwitchLogin.addEventListener('click', () => {
-        const iframe = document.getElementById('ob-live-iframe');
-        const urlInput = document.getElementById('ob-live-url-input');
-        const cur = (urlInput && urlInput.value) || '';
-        if (!cur.includes('oliveboard.in') || cur.includes('/tests/') || cur.includes('/exams/')) {
-          this.navigateLiveOliveboard('https://www.oliveboard.in/?login=1');
-          return;
-        }
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage({ type: 'OB_CMD_SWITCH_AUTH_TAB', tab: 'login' }, '*');
-        }
-        this.showToast('Switched to Login Form on Oliveboard page', 'info');
-      });
-    }
-
-    if (btnSwitchSignup) {
-      btnSwitchSignup.addEventListener('click', () => {
-        const iframe = document.getElementById('ob-live-iframe');
-        const urlInput = document.getElementById('ob-live-url-input');
-        const cur = (urlInput && urlInput.value) || '';
-        if (!cur.includes('oliveboard.in') || cur.includes('/tests/') || cur.includes('/exams/')) {
-          this.navigateLiveOliveboard('https://www.oliveboard.in/?signup=1');
-          return;
-        }
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage({ type: 'OB_CMD_SWITCH_AUTH_TAB', tab: 'signup' }, '*');
-        }
-        this.showToast('Switched to Sign Up Form on Oliveboard page', 'info');
-      });
-    }
-
-    const btnLogoutSession = document.getElementById('btn-ob-logout-session');
-    if (btnLogoutSession) {
-      btnLogoutSession.addEventListener('click', async () => {
-        try {
-          await fetch('/api/ob-browser/input', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'logout' })
-          });
-          const iframe = document.getElementById('ob-live-iframe');
-          const urlInput = document.getElementById('ob-live-url-input');
-          const homeLoginUrl = 'https://www.oliveboard.in/?login=1';
-          if (urlInput) urlInput.value = homeLoginUrl;
-          if (iframe) {
-            iframe.src = `/api/ob-browser/proxy?url=${encodeURIComponent(homeLoginUrl)}&logout=1&_t=${Date.now()}`;
-          }
-          this.showToast('Logged out of Oliveboard. Clean Login Form loaded!', 'info');
-        } catch (err) {
-          this.showToast('Logout error: ' + err.message, 'error');
-        }
-      });
-    }
-
-    // Listen for navigation events from inside the real proxied website iframe
-    if (!this._obProxyMessageBound) {
-      this._obProxyMessageBound = true;
-      window.addEventListener('message', (ev) => {
-        const msg = ev.data || {};
-        if (msg.type === 'OB_PROXY_NAVIGATING' && msg.url) {
-          const urlInput = document.getElementById('ob-live-url-input');
-          if (urlInput) urlInput.value = msg.url;
-          this._lastLoadedProxyUrl = msg.url;
-          const stageBadge = document.getElementById('ob-live-stage-badge');
-          if (stageBadge) stageBadge.textContent = 'Loading ' + msg.url.slice(0, 40) + '...';
-          if (msg.loggedIn) {
-            this.showToast('Signed in to Oliveboard — Loading Mock Test Dashboard...', 'success');
-          }
-        } else if (msg.type === 'OB_PROXY_LOADED' && msg.url) {
-          const urlInput = document.getElementById('ob-live-url-input');
-          if (urlInput && document.activeElement !== urlInput) {
-            urlInput.value = msg.url;
-          }
-          this._lastLoadedProxyUrl = msg.url;
-          fetch('/api/ob-browser/input', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'syncUrl', url: msg.url, title: msg.title || '' })
-          })
-            .then(r => r.json())
-            .then(data => {
-              if (data && data.success) {
-                this._applyObBrowserFrameData(data, false, false);
-              }
-            })
-            .catch(() => {});
-        }
-      });
-    }
-
-    if (btnOpen && modal) {
-      btnOpen.addEventListener('click', () => this.openOliveboardLiveBrowser());
-    }
-
-    if (btnClose && modal) {
-      btnClose.addEventListener('click', () => this.closeOliveboardLiveBrowser());
-    }
-
-    if (btnBringFront) {
-      btnBringFront.addEventListener('click', async () => {
-        const iframe = document.getElementById('ob-live-iframe');
-        if (iframe) iframe.focus();
-        this.showToast('Live Oliveboard Website Viewport focused!', 'info');
-      });
-    }
-
-    const sanitizeLiveUrl = (raw) => {
-      let u = String(raw || '').trim();
-      if (!u) return 'https://www.oliveboard.in/?next=https%3A%2F%2Fu1.oliveboard.in%2Fexams%2F%3Fc%3Dsbipopre19%26i%3Dbanking';
-      if (!/^https?:\/\//i.test(u)) {
-        u = 'https://' + u.replace(/^\/+/, '');
-      }
-      u = u.replace(/^(https?:\/\/)\.+([a-zA-Z0-9])/i, '$1www.$2');
-      try {
-        const parsed = new URL(u);
-        if (parsed.hostname.startsWith('.')) {
-          parsed.hostname = 'www.' + parsed.hostname.replace(/^\.+/, '');
-        }
-        if (parsed.hostname === 'oliveboard.in') {
-          parsed.hostname = 'www.oliveboard.in';
-        }
-        return parsed.toString();
-      } catch (e) {
-        return 'https://www.oliveboard.in/';
-      }
+    if (this._obEventsBound) return;
+    this._obEventsBound = true;
+    const on = (id, event, handler) => document.getElementById(id)?.addEventListener(event, handler);
+    on('btn-open-ob-live-browser', 'click', () => this.openOliveboardLiveBrowser());
+    on('btn-close-ob-live-browser', 'click', () => this.closeOliveboardLiveBrowser());
+    on('btn-ob-nav-go', 'click', () => this.navigateLiveOliveboard(document.getElementById('ob-live-url-input').value));
+    on('ob-live-url-input', 'keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); this.navigateLiveOliveboard(e.target.value); }
+    });
+    on('btn-ob-nav-back', 'click', () => this.sendObBrowserInput({ action: 'goBack' }));
+    on('btn-ob-nav-reload', 'click', () => this.sendObBrowserInput({ action: 'reload' }));
+    on('btn-ob-bring-front', 'click', () => this.sendObBrowserInput({ action: 'bringToFront' }));
+    on('btn-ob-scrape-now', 'click', () => this.scrapeOliveboardLivePage());
+    const sendText = () => {
+      const input = document.getElementById('ob-live-type-input');
+      if (!input?.value) return;
+      const text = input.value;
+      input.value = '';
+      this.sendObBrowserInput({ action: 'typeText', text });
     };
-
-    if (btnNavGo && urlInput) {
-      const triggerNavGo = async () => {
-        const cleanUrl = sanitizeLiveUrl(urlInput.value);
-        urlInput.value = cleanUrl;
-        urlInput.blur();
-        const stageBadge = document.getElementById('ob-live-stage-badge');
-        if (stageBadge) {
-          stageBadge.textContent = 'Loading ' + cleanUrl.slice(0, 38) + '...';
-        }
-        await this.sendObBrowserInput({ type: 'navigate', url: cleanUrl }, true);
-      };
-      btnNavGo.addEventListener('click', triggerNavGo);
-      urlInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          triggerNavGo();
-        }
-      });
+    on('btn-ob-send-text', 'click', sendText);
+    on('ob-live-type-input', 'keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); sendText(); }
+    });
+    for (const [id, key] of [['btn-ob-press-enter', 'Enter'], ['btn-ob-press-backspace', 'Backspace'], ['btn-ob-press-tab', 'Tab']]) {
+      on(id, 'click', () => this.sendObBrowserInput({ action: 'key', key }));
     }
-
-    if (btnNavBack) {
-      btnNavBack.addEventListener('click', () => this.sendObBrowserInput({ type: 'goBack' }, true));
-    }
-
-    if (btnNavReload) {
-      btnNavReload.addEventListener('click', () => {
-        const iframe = document.getElementById('ob-live-iframe');
-        if (iframe && iframe.contentWindow) {
-          try {
-            iframe.contentWindow.location.reload();
-          } catch (e) {
-            iframe.src = iframe.src;
-          }
-        }
-        this.sendObBrowserInput({ type: 'reload' }, true);
-      });
-    }
-
-    if (btnSendText && textInput) {
-      const sendTyped = async () => {
-        const val = textInput.value;
-        if (!val) return;
-        textInput.value = '';
-        const iframe = document.getElementById('ob-live-iframe');
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage({ type: 'OB_CMD_TYPE_TEXT', text: val }, '*');
-        }
-      };
-      btnSendText.addEventListener('click', sendTyped);
-      textInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          sendTyped();
-        }
-      });
-    }
-
-    if (btnScrapeNow) {
-      btnScrapeNow.addEventListener('click', () => this.scrapeOliveboardLivePage());
-    }
+    const screen = document.getElementById('ob-live-screen-img');
+    screen?.addEventListener('click', e => {
+      const point = this._obPointFromEvent(e, screen);
+      if (point) {
+        document.getElementById('ob-live-viewport-wrapper')?.focus();
+        this.sendObBrowserInput({ action: 'click', ...point });
+      }
+    });
+    screen?.addEventListener('wheel', e => {
+      const point = this._obPointFromEvent(e, screen);
+      if (!point) return;
+      e.preventDefault();
+      const multiplier = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? this._obViewport?.height || 720 : 1);
+      this._obScrollDelta = (this._obScrollDelta || 0) + e.deltaY * multiplier;
+      clearTimeout(this._obScrollTimer);
+      this._obScrollTimer = setTimeout(() => {
+        const deltaY = Math.max(-2000, Math.min(2000, this._obScrollDelta || 0));
+        this._obScrollDelta = 0;
+        if (this._obBrowserActive) this.sendObBrowserInput({ action: 'scroll', ...point, deltaY });
+      }, 100);
+    }, { passive: false });
+    on('ob-live-viewport-wrapper', 'keydown', e => {
+      if (e.ctrlKey || e.altKey || e.metaKey || e.key === 'Escape') return;
+      if (['Enter', 'Backspace', 'Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {
+        e.preventDefault();
+        this.sendObBrowserInput({ action: 'key', key: e.key });
+      }
+    });
   }
 
-  _applyObBrowserFrameData(data, forceUpdateUrl = false, reloadIframeIfChanged = true) {
-    if (!data || !data.success) return;
+  _obPointFromEvent(event, image) {
+    if (!image?.naturalWidth || !image.naturalHeight) return null;
+    const rect = image.getBoundingClientRect();
+    const scale = Math.min(rect.width / image.naturalWidth, rect.height / image.naturalHeight);
+    if (!Number.isFinite(scale) || scale <= 0) return null;
+    const width = image.naturalWidth * scale;
+    const height = image.naturalHeight * scale;
+    const x = event.clientX - rect.left - (rect.width - width) / 2;
+    const y = event.clientY - rect.top - (rect.height - height) / 2;
+    if (x < 0 || y < 0 || x >= width || y >= height) return null;
+    return {
+      x: Math.floor(x / width * (this._obViewport?.width || image.naturalWidth)),
+      y: Math.floor(y / height * (this._obViewport?.height || image.naturalHeight))
+    };
+  }
 
-    const iframe = document.getElementById('ob-live-iframe');
-    const screenImg = document.getElementById('ob-live-screen-img');
+  async _obRequest(endpoint, payload, timeout = 20000) {
+    const response = await fetch('/api/ob-browser/' + endpoint, {
+      method: payload === undefined ? 'GET' : 'POST',
+      credentials: 'same-origin',
+      ...(payload === undefined ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }),
+      signal: AbortSignal.timeout(timeout)
+    });
+    let data;
+    try { data = await response.json(); } catch (_) { throw new Error('The live browser returned an invalid response.'); }
+    if (!response.ok || !data.success) throw new Error(data.error || `Live browser request failed (${response.status}).`);
+    return data;
+  }
 
-    if (data.mode === 'live-proxy' || data.proxyUrl) {
-      if (iframe) {
-        iframe.style.display = 'block';
-        const targetUrl = data.url || '';
-        if (reloadIframeIfChanged && targetUrl && (forceUpdateUrl || this._lastLoadedProxyUrl !== targetUrl)) {
-          this._lastLoadedProxyUrl = targetUrl;
-          iframe.src = `/api/ob-browser/proxy?url=${encodeURIComponent(targetUrl)}&_t=${Date.now()}`;
-        }
-      }
-      if (screenImg) screenImg.style.display = 'none';
-    } else if (data.imageBase64) {
-      if (screenImg) {
-        screenImg.style.display = 'block';
-        screenImg.src = data.imageBase64;
-      }
-      if (iframe) iframe.style.display = 'none';
+  _setObStatus(message) {
+    const status = document.getElementById('ob-live-status-msg');
+    if (status) status.textContent = message;
+  }
+
+  _applyObBrowserFrameData(data) {
+    if (!data?.success) return;
+    this._obActiveTargetId = data.activeTargetId || null;
+    this._obViewport = data.viewport || this._obViewport;
+    const image = document.getElementById('ob-live-screen-img');
+    if (image && typeof data.imageBase64 === 'string' && data.imageBase64) {
+      image.src = data.imageBase64.startsWith('data:image/') ? data.imageBase64 : 'data:image/png;base64,' + data.imageBase64;
+      image.style.display = 'block';
+      document.getElementById('ob-live-empty-state')?.setAttribute('hidden', '');
     }
-
-    const urlInput = document.getElementById('ob-live-url-input');
-    if (urlInput && data.url && (forceUpdateUrl || document.activeElement !== urlInput)) {
-      urlInput.value = data.url;
-    }
-
-    const stageBadge = document.getElementById('ob-live-stage-badge');
-    if (stageBadge && data.stage) {
-      const stKey = typeof data.stage === 'object' ? data.stage.stage : data.stage;
-      const stLabel = typeof data.stage === 'object' ? data.stage.label : data.stage;
-      stageBadge.textContent = stLabel || `STAGE: ${String(stKey).toUpperCase()}`;
-      stageBadge.style.background = stKey === 'live_test' ? '#dc2626' : (stKey === 'solutions' ? '#16a34a' : '#0284c7');
-      stageBadge.style.color = '#ffffff';
-    }
-
-    const statusMsg = document.getElementById('ob-live-status-msg');
-    if (statusMsg && data.stage) {
-      const stLabel = typeof data.stage === 'object' ? data.stage.label : data.stage;
-      statusMsg.textContent = `Live Website Active: ${stLabel} — Interact directly with the real page above or click "Snapshot & Scrape (REA MCP)".`;
-    }
-
-    this._renderObBrowserTabs(data.tabs || [], data.activeTabIndex || 0);
+    const input = document.getElementById('ob-live-url-input');
+    if (input && data.url && document.activeElement !== input) input.value = data.url;
+    const badge = document.getElementById('ob-live-stage-badge');
+    if (badge) badge.textContent = data.stage?.label || data.title || 'Browser connected';
+    this._renderObBrowserTabs(data.tabs || [], data.activeTargetId);
   }
 
   async openOliveboardLiveBrowser(pushHistory = true) {
     const modal = document.getElementById('ob-live-browser-modal');
-    const stageBadge = document.getElementById('ob-live-stage-badge');
-    const statusMsg = document.getElementById('ob-live-status-msg');
-    const urlInput = document.getElementById('ob-live-url-input');
-    if (!modal) return;
+    if (!modal || this._obOpening) return;
+    this._obOpening = true;
     modal.style.display = 'flex';
     this._obBrowserActive = true;
-    if (pushHistory) {
-      this.pushNavState({ modal: 'live-browser', view: this.currentViewTab }, '#live-browser');
-    }
-
-    if (stageBadge) {
-      stageBadge.textContent = 'Connecting to oliveboard.in...';
-    }
-
+    const epoch = this._obEpoch = (this._obEpoch || 0) + 1;
+    if (pushHistory) this.pushNavState({ modal: 'live-browser', view: this.currentViewTab }, '#live-browser');
+    this._setObStatus('Opening the original Oliveboard browser?');
     try {
-      let initialUrl = (urlInput && urlInput.value.trim()) || '';
-      if (!initialUrl || initialUrl.includes('sbipopre19')) {
-        initialUrl = 'https://www.oliveboard.in/';
-        if (urlInput) urlInput.value = initialUrl;
-      }
-      const res = await fetch('/api/ob-browser/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: initialUrl })
-      });
-      const data = await res.json();
-      if (data.success) {
-        this._applyObBrowserFrameData(data, true, true);
-      } else if (stageBadge) {
-        stageBadge.textContent = 'Connection Error: ' + (data.error || 'Unknown error');
-      }
-    } catch (e) {
-      if (statusMsg) statusMsg.textContent = 'Error starting browser: ' + e.message;
-    }
+      const data = await this._obRequest('start', {}, 60000);
+      if (epoch !== this._obEpoch || !this._obBrowserActive) return;
+      this._applyObBrowserFrameData(data);
+      this._setObStatus('Sign in and open the tests or solutions in the real browser. Capture saves all open Oliveboard tabs.');
+      this._scheduleObFrame();
+    } catch (error) {
+      if (epoch === this._obEpoch) this._setObStatus(error.message);
+      this.showToast(error.message, 'error');
+    } finally { this._obOpening = false; }
   }
 
   closeOliveboardLiveBrowser(popHistory = true) {
     const modal = document.getElementById('ob-live-browser-modal');
     if (modal) modal.style.display = 'none';
     this._obBrowserActive = false;
-    if (this._obFrameTimer) clearTimeout(this._obFrameTimer);
+    this._obEpoch = (this._obEpoch || 0) + 1;
+    clearTimeout(this._obFrameTimer);
+    clearTimeout(this._obScrollTimer);
+    this._obScrollDelta = 0;
+    if (popHistory) this.goBack();
+  }
 
-    if (popHistory) {
-      this.goBack();
-    }
+  _scheduleObFrame() {
+    clearTimeout(this._obFrameTimer);
+    if (this._obBrowserActive) this._obFrameTimer = setTimeout(() => this._pollObBrowserFrame(), 1500);
   }
 
   async _pollObBrowserFrame() {
     if (!this._obBrowserActive) return;
+    if (this._obPolling || this._obInputPending || this._obScraping || document.hidden) {
+      this._scheduleObFrame();
+      return;
+    }
+    this._obPolling = true;
+    const epoch = this._obEpoch;
+    const revision = this._obInputRevision || 0;
     try {
-      const res = await fetch('/api/ob-browser/frame');
-      const data = await res.json();
-      if (data && data.success) {
-        this._applyObBrowserFrameData(data, false, false);
-      }
-    } catch (e) {}
+      const data = await this._obRequest('frame');
+      if (epoch === this._obEpoch && this._obBrowserActive && revision === (this._obInputRevision || 0)) this._applyObBrowserFrameData(data);
+    } catch (error) {
+      if (epoch === this._obEpoch && this._obBrowserActive) this._setObStatus('Preview unavailable: ' + error.message);
+    } finally {
+      this._obPolling = false;
+      this._scheduleObFrame();
+    }
   }
 
-  _renderObBrowserTabs(tabs, activeTabIndex = 0) {
+  _renderObBrowserTabs(tabs, activeTargetId) {
     const bar = document.getElementById('ob-live-tabs-bar');
     if (!bar) return;
-    const key = JSON.stringify(tabs.map(t => `${t.index}:${t.index === activeTabIndex}:${t.title}`));
+    const key = JSON.stringify([activeTargetId, tabs.map(t => [t.id, t.title, t.url, t.active])]);
     if (this._lastTabsKey === key) return;
     this._lastTabsKey = key;
-
-    const tabsHtml = tabs.map(t => {
-      const isAct = t.active !== undefined ? t.active : (t.index === activeTabIndex);
-      return `
-        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; background: ${isAct ? '#0284c7' : '#1e293b'}; color: ${isAct ? '#ffffff' : '#cbd5e1'}; border: 1px solid ${isAct ? '#38bdf8' : '#334155'};"
-             onclick="window.appController.sendObBrowserInput({ action: 'switchTab', tabIndex: ${t.index} }, true)">
-          <span style="color: ${isAct ? '#ffffff' : '#cbd5e1'};">${isAct ? '● ' : ''}${(t.title || t.url || 'Tab ' + (t.index + 1)).slice(0, 34)}</span>
-          ${tabs.length > 1 ? `<span onclick="event.stopPropagation(); window.appController.sendObBrowserInput({ action: 'closeTab', tabIndex: ${t.index} }, true)" style="margin-left: 4px; color: #fca5a5; font-weight: 900;">×</span>` : ''}
-        </div>
-      `;
-    }).join('');
-
-    bar.innerHTML = `<span style="color: #94a3b8; font-weight: 700; margin-right: 4px;">Open Tabs:</span>${tabsHtml}`;
-  }
-
-  async sendObBrowserInput(payload, forceUpdateUrl = false) {
-    try {
-      const act = payload.action || payload.type;
-      const normalizedPayload = {
-        ...payload,
-        action: act,
-        tabIndex: payload.tabIndex !== undefined ? payload.tabIndex : payload.index
-      };
-      const res = await fetch('/api/ob-browser/input', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(normalizedPayload)
-      });
-      const data = await res.json();
-      if (data && data.success) {
-        const shouldReloadIframe = act === 'navigate' || act === 'goBack' || act === 'switchTab' || act === 'closeTab';
-        this._applyObBrowserFrameData(data, forceUpdateUrl || shouldReloadIframe, shouldReloadIframe);
-        if (act === 'navigate' && data.url) {
-          this.showToast(`Loaded ${data.url}`, 'success');
-        }
+    bar.replaceChildren();
+    const label = document.createElement('span');
+    label.textContent = 'Open Oliveboard tabs:';
+    bar.append(label);
+    for (const tab of tabs) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = (tab.title || tab.url || 'Untitled').slice(0, 60);
+      button.title = tab.url || '';
+      button.style.cssText = `padding:5px 9px;border:1px solid #475569;border-radius:4px;color:#fff;cursor:pointer;background:${tab.id === activeTargetId || tab.active ? '#0284c7' : '#1e293b'}`;
+      button.addEventListener('click', () => this.sendObBrowserInput({ action: 'switchTab', targetId: tab.id }));
+      bar.append(button);
+      if (tabs.length > 1) {
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.textContent = '?';
+        close.title = 'Close ' + (tab.title || 'tab');
+        close.setAttribute('aria-label', close.title);
+        close.style.cssText = 'border:0;background:transparent;color:#fca5a5;cursor:pointer';
+        close.addEventListener('click', () => this.sendObBrowserInput({ action: 'closeTab', targetId: tab.id }));
+        bar.append(close);
       }
-    } catch (e) {
-      console.error('OB browser input error:', e);
     }
   }
 
-  _extractLiveIframeDomPayload() {
+  async navigateLiveOliveboard(rawUrl) {
     try {
-      const iframe = document.getElementById('ob-live-iframe');
-      if (!iframe || !iframe.contentDocument) return null;
-      const doc = iframe.contentDocument;
-      const win = iframe.contentWindow;
-      const urlInput = document.getElementById('ob-live-url-input');
-
-      // Universal Oliveboard Decrypter: handles n.js 32-char salted Base64, standard UTF-8 Base64, and plain HTML
-      const decryptOb = (rawStr) => {
-        if (!rawStr || typeof rawStr !== 'string') return '';
-        const trimmed = rawStr.trim();
-        if (!trimmed || trimmed.includes('<') || trimmed.includes(' ')) return trimmed;
-        const clean = trimmed.replace(/\s+/g, '');
-
-        // 1. n.js 32-char salted Base64 (32 random chars + btoa(escape(html)) + 32 random chars)
-        if (clean.length > 64) {
-          try {
-            const sub = clean.substring(32, clean.length - 32);
-            const dec = unescape(atob(sub));
-            if (dec && (dec.includes('<') || dec.includes(' ') || /[a-zA-Z0-9]/.test(dec))) {
-              return dec;
-            }
-          } catch (e) {}
-        }
-
-        // 2. Standard UTF-8 Base64 (.eqt)
-        if (clean.length >= 4) {
-          try {
-            const binStr = atob(clean);
-            const bytes = new Uint8Array(binStr.length);
-            for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
-            return new TextDecoder('utf-8').decode(bytes);
-          } catch (e) {}
-        }
-        return trimmed;
-      };
-
-      const detectedModals = Array.from(doc.querySelectorAll('#submit-pane, #sure, #calert, #login-modal, #modal-login, #modal-signup, .modal, [role="dialog"]')).map(el => {
-        const cs = win.getComputedStyle(el);
-        return {
-          selector: el.id ? '#' + el.id : '.modal',
-          id: el.id || '',
-          className: el.className || '',
-          isVisible: cs.display !== 'none' && cs.visibility !== 'hidden',
-          heading: (el.querySelector('h1,h2,h3,h4,b,.modal-title') || {}).innerText || '',
-          buttonsCount: el.querySelectorAll('button, a, input[type="submit"]').length
-        };
-      });
-
-      const allTables = Array.from(doc.querySelectorAll('table')).map((tbl, idx) => ({
-        tableIndex: idx,
-        id: tbl.id || '',
-        className: tbl.className || '',
-        headers: Array.from(tbl.querySelectorAll('th')).map(th => th.innerText.trim()),
-        rowCount: tbl.querySelectorAll('tr').length
-      }));
-
-      const decryptedQuestions = [];
-      const extractedSolutions = {};
-      const letters = ['A', 'B', 'C', 'D', 'E'];
-
-      // Strategy 1: Solution App (solution/index3.php) — div.qosblock[id^="q-"]
-      const qosBlocks = Array.from(doc.querySelectorAll('div.qosblock[id^="q-"]'));
-      if (qosBlocks.length > 0) {
-        const dsNames = (win && Array.isArray(win.dsnames)) ? win.dsnames : ['English Language', 'Quantitative Aptitude', 'Reasoning Ability'];
-        const seCounts = (win && Array.isArray(win.secount)) ? win.secount.map(Number) : [0, 40, 70, 100];
-
-        qosBlocks.forEach((block, idx) => {
-          const qNum = idx + 1;
-          const idParts = (block.id || '').split('-');
-          const qid = Number(idParts[2]) || (1000 + qNum);
-
-          const paneEl = block.querySelector('.panetxt');
-          const qEl = block.querySelector('.qblock');
-          const solEl = block.querySelector('.sblock .solutiontxt');
-          const optEls = Array.from(block.querySelectorAll('.opt .rightopt'));
-
-          const passageHTML = paneEl ? decryptOb(paneEl.innerHTML) : '';
-          const questionHTML = qEl ? decryptOb(qEl.innerHTML) : '';
-          const explanationHTML = solEl ? decryptOb(solEl.innerHTML) : '';
-          const options = optEls.slice(0, 5).map((oEl, oIdx) => {
-            const html = decryptOb(oEl.innerHTML);
-            return {
-              letter: letters[oIdx] || 'A',
-              html,
-              text: html.replace(/<[^>]+>/g, '').trim()
-            };
-          });
-
-          // Extract correct option index from viewsolution(idx, coropt) or .opt.correct
-          let correctIdx = 1;
-          const viewBtn = block.querySelector('.btn-viewsol[onclick]');
-          if (viewBtn) {
-            const m = (viewBtn.getAttribute('onclick') || '').match(/viewsolution\(\s*\d+\s*,\s*(\d+)\s*\)/i);
-            if (m && m[1] !== undefined) correctIdx = Number(m[1]);
-          } else {
-            const corrRowIdx = Array.from(block.querySelectorAll('.opt')).findIndex(r => r.classList.contains('correct'));
-            if (corrRowIdx >= 0) correctIdx = corrRowIdx;
-          }
-          const correctAnswer = letters[correctIdx] || 'B';
-
-          // Resolve section name from secount boundaries
-          let sectionName = dsNames[0] || 'English Language';
-          for (let s = 0; s < dsNames.length; s++) {
-            const start = seCounts[s] || 0;
-            const end = seCounts[s + 1] || 999;
-            if (qNum > start && qNum <= end) {
-              sectionName = dsNames[s];
-              break;
-            }
-          }
-
-          if (questionHTML && options.length >= 2) {
-            decryptedQuestions.push({
-              qid,
-              questionNumber: qNum,
-              section: sectionName,
-              passageHTML,
-              hasPassage: Boolean(passageHTML && passageHTML.trim().length > 10),
-              questionHTML,
-              options,
-              correctAnswer,
-              correctIndex: correctIdx,
-              explanationHTML
-            });
-            extractedSolutions[qid] = {
-              ans: correctAnswer,
-              solutionDecoded: explanationHTML || 'Official Oliveboard step-by-step explanation.'
-            };
-          }
-        });
+      const url = new URL(/^https?:\/\//i.test(rawUrl) ? rawUrl : 'https://' + rawUrl);
+      if (url.protocol !== 'https:' || !(url.hostname === 'oliveboard.in' || url.hostname.endsWith('.oliveboard.in'))) {
+        throw new Error('Enter an HTTPS Oliveboard address.');
       }
+      await this.sendObBrowserInput({ action: 'navigate', url: url.href });
+    } catch (error) { this.showToast(error.message, 'error'); }
+  }
 
-      // Strategy 2: Active Live Mock Test (part.php) — #myquestion{qid} / #leftpane{qid} / #rightpane{qid} / .opn{qid}
-      if (decryptedQuestions.length === 0) {
-        const innerPane = doc.getElementById('question-inner-pane');
-        if (innerPane) {
-          const qidSet = new Set();
-          Array.from(innerPane.querySelectorAll('[id^="myquestion"], [id^="rightpane"]')).forEach(el => {
-            const m = (el.id || '').match(/(\d+)$/);
-            if (m) qidSet.add(Number(m[1]));
-          });
-          const sortedQids = Array.from(qidSet).sort((a, b) => a - b);
-          sortedQids.forEach((qid, idx) => {
-            const qNum = idx + 1;
-            const leftPane = doc.getElementById('leftpane' + qid);
-            const rightPane = doc.getElementById('rightpane' + qid);
-            const myQ = doc.getElementById('myquestion' + qid);
-
-            let passageHTML = '';
-            if (leftPane) {
-              const dirBox = leftPane.querySelector('#pane-direction-box') || leftPane;
-              passageHTML = decryptOb(dirBox.innerHTML);
-            }
-
-            let questionHTML = '';
-            if (rightPane) {
-              const pBox = rightPane.querySelector('#pane-question-box') || rightPane;
-              questionHTML = decryptOb(pBox.innerHTML);
-            } else if (myQ) {
-              const qBox = myQ.querySelector('#question-box') || myQ;
-              questionHTML = decryptOb(qBox.innerHTML);
-            }
-
-            const optSpans = Array.from(doc.querySelectorAll('.opn' + qid));
-            const options = optSpans.slice(0, 5).map((sp, oIdx) => {
-              const rawAttr = sp.getAttribute('data-raw-eqt');
-              const html = rawAttr ? decryptOb(rawAttr) : decryptOb(sp.innerHTML);
-              return {
-                letter: letters[oIdx] || 'A',
-                html,
-                text: html.replace(/<[^>]+>/g, '').trim()
-              };
-            });
-
-            if (questionHTML && options.length >= 2) {
-              decryptedQuestions.push({
-                qid,
-                questionNumber: qNum,
-                section: qNum <= 40 ? 'English Language' : (qNum <= 70 ? 'Quantitative Aptitude' : 'Reasoning Ability'),
-                passageHTML,
-                hasPassage: Boolean(passageHTML && passageHTML.trim().length > 10),
-                questionHTML,
-                options
-              });
-            }
-          });
+  sendObBrowserInput(payload) {
+    const epoch = this._obEpoch;
+    const request = { ...payload, targetId: payload.targetId || this._obActiveTargetId };
+    this._obInputPending = (this._obInputPending || 0) + 1;
+    this._obInputRevision = (this._obInputRevision || 0) + 1;
+    this._obInputQueue = (this._obInputQueue || Promise.resolve()).then(async () => {
+      if (epoch !== this._obEpoch || !this._obBrowserActive) return;
+      try {
+        const data = await this._obRequest('input', request);
+        if (epoch === this._obEpoch && this._obBrowserActive) this._applyObBrowserFrameData(data);
+      } catch (error) {
+        if (epoch === this._obEpoch) {
+          this._setObStatus(error.message);
+          this.showToast(error.message, 'error');
         }
       }
+    }).finally(() => {
+      this._obInputPending--;
+      this._scheduleObFrame();
+    });
+    return this._obInputQueue;
+  }
 
-      if (win && win.quesAnswer && typeof win.quesAnswer === 'object') {
-        Object.keys(win.quesAnswer).forEach(k => {
-          const rawAns = win.quesAnswer[k];
-          if (rawAns && typeof rawAns === 'object') {
-            extractedSolutions[k] = {
-              ...rawAns,
-              solutionDecoded: rawAns.sol ? decryptOb(rawAns.sol) : ''
-            };
-          }
-        });
-      }
-
-      return {
-        url: (win && win.__OB_PROXIED_URL__) || (urlInput && urlInput.value) || '',
-        title: (win && win.__OB_COURSE_META__ && win.__OB_COURSE_META__.examTitle) || doc.title || 'Oliveboard Live Page',
-        html: doc.documentElement ? doc.documentElement.outerHTML : '',
-        viewport: { innerWidth: win.innerWidth, innerHeight: win.innerHeight, devicePixelRatio: win.devicePixelRatio || 1 },
-        detectedModals,
-        allTables,
-        decryptedQuestions,
-        extractedSolutions,
-        dashboardCardsCount: doc.querySelectorAll('.tpc-card, .test-card, .mock-card, .exam-card, .panel, .card-box').length
-      };
-    } catch (e) {
-      return null;
-    }
+  _obArtifactUrl(value) {
+    if (!value || typeof value !== 'string') return null;
+    try {
+      const url = new URL(value, window.location.origin);
+      return url.origin === window.location.origin && url.pathname.startsWith('/api/ob-browser/artifacts/') ? url.href : null;
+    } catch (_) { return null; }
   }
 
   async scrapeOliveboardLivePage() {
-    const statusBanner = document.getElementById('ob-live-status-banner');
-    const statusFooter = document.getElementById('ob-live-status-msg');
-    const scrapeSummary = document.getElementById('ob-live-scrape-summary');
-    const btnScrape = document.getElementById('btn-ob-scrape-now');
-
-    const loadingText = '📸 Capturing visual snapshot of active window & deep inspecting all DOM, modals, tables, and questions with REA MCP...';
-    if (statusBanner) statusBanner.textContent = loadingText;
-    if (statusFooter) statusFooter.textContent = loadingText;
-    if (scrapeSummary) scrapeSummary.textContent = '⏳ Processing live DOM snapshot & REA extraction...';
-    if (btnScrape) {
-      btnScrape.disabled = true;
-      btnScrape.textContent = '⏳ Capturing Snapshot...';
-    }
-
+    if (this._obScraping || !this._obBrowserActive) return;
+    this._obScraping = true;
+    const button = document.getElementById('btn-ob-scrape-now');
+    const summary = document.getElementById('ob-live-scrape-summary');
+    if (button) { button.disabled = true; button.textContent = 'Capturing?'; }
+    if (summary) summary.textContent = 'Capturing open Oliveboard tabs and checking completeness?';
+    this._setObStatus('Collecting page content and actual REA screenshot evidence. Keep the source tabs open.');
     try {
-      const domPayload = this._extractLiveIframeDomPayload();
-      const res = await fetch('/api/ob-browser/scrape', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domPayload })
-      });
-      const data = await res.json();
-      if (data.success) {
-        const r = data.result || data;
-        const qCount = r.decryptedQuestionsCount ?? data.questionsExtracted ?? 0;
-        const sCount = r.extractedSolutionsCount ?? data.solutionsExtracted ?? 0;
-        const mCount = r.modalsDetectedCount ?? 0;
-        const tCount = r.tablesDetectedCount ?? 0;
-        const saved = r.specFile || data.savedFile || 'scraped/snapshots/';
-        const reaEv = r.reaEvidenceId ? ` [REA Evidence: ${r.reaEvidenceId.slice(0, 16)}...]` : '';
-        const stageLabel = r.stage ? (r.stage.label || r.stage) : 'Active Screen';
-
-        // Update Snapshot Inspection Bar
-        const snapshotBar = document.getElementById('ob-live-snapshot-bar');
-        const snapshotThumb = document.getElementById('ob-snapshot-thumb');
-        const snapshotLink = document.getElementById('ob-snapshot-link');
-        const btnViewSnapshotFull = document.getElementById('btn-view-snapshot-full');
-        const btnViewReportJson = document.getElementById('btn-view-report-json');
-        const snapshotInfo = document.getElementById('ob-snapshot-info');
-        const snapshotBadges = document.getElementById('ob-snapshot-badges');
-
-        if (snapshotBar) {
-          snapshotBar.style.display = 'flex';
-        }
-        if (snapshotThumb && (r.screenshotThumbnail || r.screenshotUrl)) {
-          snapshotThumb.src = r.screenshotThumbnail || r.screenshotUrl;
-        }
-        if (snapshotLink && r.screenshotUrl) {
-          snapshotLink.href = r.screenshotUrl;
-        }
-        if (btnViewSnapshotFull && r.screenshotUrl) {
-          btnViewSnapshotFull.href = r.screenshotUrl;
-        }
-        if (btnViewReportJson && r.specFile) {
-          btnViewReportJson.href = '/' + r.specFile;
-        }
-        if (snapshotInfo) {
-          snapshotInfo.innerHTML = `<strong>${stageLabel}</strong> • Snapshot: <a href="${r.screenshotUrl}" target="_blank" style="color: #38bdf8; text-decoration: underline;">${r.screenshotUrl ? r.screenshotUrl.split('/').pop() : 'screenshot.png'}</a>`;
-        }
-        if (snapshotBadges) {
-          const tabsCount = (r.otherTabs ? r.otherTabs.length : 0);
-          snapshotBadges.innerHTML = `
-            <span style="background: #0284c7; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 10px;">📸 Snapshot Saved</span>
-            ${tabsCount > 0 ? `<span style="background: #7c3aed; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 10px;">🗂️ +${tabsCount} Tabs Captured</span>` : ''}
-            <span style="background: #1e293b; color: #38bdf8; border: 1px solid #0284c7; padding: 2px 7px; border-radius: 4px; font-size: 10px;">📑 ${mCount} Modals/Dialogs</span>
-            <span style="background: #1e293b; color: #4ade80; border: 1px solid #16a34a; padding: 2px 7px; border-radius: 4px; font-size: 10px;">📊 ${tCount} Tables</span>
-            <span style="background: #1e293b; color: #fde047; border: 1px solid #ca8a04; padding: 2px 7px; border-radius: 4px; font-size: 10px;">❓ ${qCount} Questions</span>
-            <span style="background: #1e293b; color: #a78bfa; border: 1px solid #7c3aed; padding: 2px 7px; border-radius: 4px; font-size: 10px;">📝 ${sCount} Solutions</span>
-            ${r.reaEvidenceId ? `<span style="background: #059669; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: 700; font-size: 10px;" title="${r.reaEvidenceId}">🛡️ REA Verified</span>` : ''}
-          `;
-        }
-
-        const msg = `✅ Snapshot & Scrape Complete: "${r.title || 'Oliveboard'}" (${qCount} Qs, ${sCount} Solns, ${mCount} Modals, ${tCount} Tables)!${reaEv}`;
-        if (statusBanner) statusBanner.textContent = msg;
-        if (statusFooter) statusFooter.textContent = msg;
-        if (scrapeSummary) scrapeSummary.textContent = `Snapshot saved to ${r.screenshotUrl || 'scraped/snapshots/'}`;
-        this.showToast(msg, 'success');
-
-        if (r.ingestedTestId) {
-          await this.loadAndRenderMockCards();
-        }
-      } else {
-        throw new Error(data.error || 'Scrape failed');
+      await (this._obInputQueue || Promise.resolve());
+      const data = await this._obRequest('scrape', { targetId: this._obActiveTargetId, allTabs: true }, 180000);
+      const result = data.result;
+      if (!result || typeof result !== 'object') throw new Error('The capture returned no report.');
+      const imported = Array.isArray(result.importedTests) ? result.importedTests : (result.ingestedTestId ? [result.ingestedTestId] : []);
+      const warnings = Array.isArray(result.warnings) ? result.warnings : [];
+      const pages = Array.isArray(result.capturedPages) ? result.capturedPages.length : (Number(result.capturedPages) || 1);
+      const message = `Captured ${pages} page(s), ${Number(result.decryptedQuestionsCount) || 0} questions, ${Number(result.extractedSolutionsCount) || 0} answers. ${imported.length ? `Applied ${imported.length} validated test(s).` : 'No tests applied; capture saved for review.'}`;
+      if (summary) summary.textContent = message;
+      this._setObStatus(warnings.length ? warnings.map(w => typeof w === 'string' ? w : w.message || JSON.stringify(w)).join(' ? ') : message);
+      const bar = document.getElementById('ob-live-snapshot-bar');
+      if (bar) bar.style.display = 'flex';
+      const screenshot = this._obArtifactUrl(result.screenshotUrl);
+      const report = this._obArtifactUrl(result.specFile);
+      const thumb = document.getElementById('ob-snapshot-thumb');
+      if (thumb) { thumb.hidden = !screenshot; if (screenshot) thumb.src = screenshot; }
+      for (const [id, href] of [['ob-snapshot-link', screenshot], ['btn-view-snapshot-full', screenshot], ['btn-view-report-json', report]]) {
+        const link = document.getElementById(id);
+        if (link) { link.hidden = !href; if (href) link.href = href; else link.removeAttribute('href'); }
       }
-    } catch (e) {
-      if (statusBanner) statusBanner.textContent = '❌ REA Scrape error: ' + e.message;
-      if (statusFooter) statusFooter.textContent = '❌ REA Scrape error: ' + e.message;
-      this.showToast('REA Scrape error: ' + e.message, 'error');
+      const info = document.getElementById('ob-snapshot-info');
+      if (info) info.textContent = result.title || result.url || 'Capture saved';
+      const badges = document.getElementById('ob-snapshot-badges');
+      if (badges) {
+        badges.replaceChildren();
+        const values = [result.reaEvidenceId ? `REA evidence: ${result.reaEvidenceId}` : 'No REA evidence returned', result.complete ? 'Complete capture' : 'Partial capture', `${Number(result.modalsDetectedCount) || 0} dialogs`, `${Number(result.tablesDetectedCount) || 0} tables`];
+        for (const text of values) {
+          const badge = document.createElement('span');
+          badge.textContent = text;
+          badge.style.cssText = 'padding:3px 7px;border:1px solid #475569;border-radius:4px;color:#e2e8f0;overflow-wrap:anywhere';
+          badges.append(badge);
+        }
+      }
+      this.showToast(message, warnings.length || !imported.length ? 'info' : 'success');
+      if (imported.length) await this.loadAndRenderMockCards();
+    } catch (error) {
+      this._setObStatus('Capture failed: ' + error.message);
+      if (summary) summary.textContent = 'Capture failed. No successful import was confirmed.';
+      this.showToast('Capture failed: ' + error.message, 'error');
     } finally {
-      if (btnScrape) {
-        btnScrape.disabled = false;
-        btnScrape.textContent = '📸 Capture Window Snapshot & Rigorous Scrape (REA MCP)';
-      }
+      this._obScraping = false;
+      if (button) { button.disabled = false; button.textContent = 'Capture & apply complete tests'; }
+      this._scheduleObFrame();
     }
   }
 

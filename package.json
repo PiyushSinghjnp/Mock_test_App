@@ -8,7 +8,7 @@
     "start": "node server.js",
     "mcp": "node mcp-server.js",
     "build": "node --check server.js && node --check mcp-server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test tests/*.test.js && node --check server.js && node --check oliveboard-live-re.js && node --check js/app.js && node --check js/ob-proxy-bridge.js"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +18,7 @@
     "@modelcontextprotocol/sdk": "^1.32.1",
     "cors": "^2.8.6",
     "express": "^5.3.0",
+    "rea-agents": "6.4.0",
     "zod": "^4.6.7"
   }
 }

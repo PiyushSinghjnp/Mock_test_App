@@ -23,8 +23,15 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Static file serving
-app.use(express.static(__dirname));
+// Serve application assets only. Never expose SQLite, source captures, cookies,
+// browser profiles, scripts, or repository metadata through the project root.
+for (const directory of ['css', 'js', 'images', 'img', 'oliveimg', 'public']) {
+  app.use(`/${directory}`, express.static(path.join(__dirname, directory), {
+    dotfiles: 'deny',
+    index: false
+  }));
+}
+app.get(['/', '/index.html'], (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // ==========================================
 // 1. DATABASE INITIALIZATION & SCHEMA
@@ -335,7 +342,7 @@ if (!fs.existsSync(PAPERS_DIR)) {
   fs.mkdirSync(PAPERS_DIR, { recursive: true });
 }
 
-function ingestBackendPaperFile(filePath) {
+function ingestBackendPaperFile(filePath, options = {}) {
   try {
     if (!filePath.endsWith('.json')) return null;
     const filename = path.basename(filePath);
@@ -386,10 +393,12 @@ function ingestBackendPaperFile(filePath) {
       now
     );
 
-    console.log(`[Backend Auto-Ingest] Applied 2026 Official Pattern to "${normalizedTest.title}" (${normalizedTest.id}): ${normalizedTest.questionsCount} Qs, ${normalizedTest.durationMinutes} mins, +${normalizedTest.marksPerCorrect}/-${normalizedTest.negativeMarks}`);
+    const provenance = parsedPaper.source?.provider === 'oliveboard' ? 'Preserved captured source settings' : 'Applied configured exam pattern';
+    console.log(`[Backend Auto-Ingest] ${provenance} for "${normalizedTest.title}" (${normalizedTest.id}): ${normalizedTest.questionsCount} Qs, ${normalizedTest.durationMinutes} mins`);
     return normalizedTest;
   } catch (err) {
     console.error(`[Backend Auto-Ingest] Failed to ingest ${filePath}:`, err.message);
+    if (options.throwOnError) throw err;
     return null;
   }
 }
@@ -408,16 +417,17 @@ seedTests();
 autoIngestBackendPapers();
 
 try {
-  let watchDebounce = null;
+  const pendingPaperImports = new Map();
   fs.watch(PAPERS_DIR, (eventType, filename) => {
     if (filename && filename.toLowerCase().endsWith('.json')) {
-      clearTimeout(watchDebounce);
-      watchDebounce = setTimeout(() => {
+      clearTimeout(pendingPaperImports.get(filename));
+      pendingPaperImports.set(filename, setTimeout(() => {
+        pendingPaperImports.delete(filename);
         const fullPath = path.join(PAPERS_DIR, filename);
         if (fs.existsSync(fullPath)) {
           ingestBackendPaperFile(fullPath);
         }
-      }, 300);
+      }, 300));
     }
   });
 } catch (e) {
@@ -1291,6 +1301,9 @@ mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile);
 
 // Fallback to index.html for SPA routing
 app.use((req, res) => {
+  if (req.method !== 'GET' || req.path.startsWith('/api/') || req.path.startsWith('/scraped/') || path.extname(req.path)) {
+    return res.status(404).json({ success: false, error: 'Not found' });
+  }
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 

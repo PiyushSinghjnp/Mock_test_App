@@ -23,6 +23,7 @@ const PROFILE_DIR = path.join(__dirname, '.oliveboard-profile');
 const SCRAPED_DIR = path.join(__dirname, 'scraped');
 const SNAPSHOTS_DIR = path.join(SCRAPED_DIR, 'snapshots');
 const PAPERS_DIR = path.join(__dirname, 'papers');
+const { withRea } = require('./lib/rea-client');
 
 if (!fs.existsSync(SCRAPED_DIR)) fs.mkdirSync(SCRAPED_DIR, { recursive: true });
 if (!fs.existsSync(SNAPSHOTS_DIR)) fs.mkdirSync(SNAPSHOTS_DIR, { recursive: true });
@@ -518,33 +519,12 @@ ${extraScripts}
 function decryptOliveboardString(rawStr) {
   if (!rawStr || typeof rawStr !== 'string') return '';
   const trimmed = rawStr.trim();
-  if (!trimmed) return '';
-  if (trimmed.includes('<') || trimmed.includes(' ')) return trimmed;
-  const clean = trimmed.replace(/\s+/g, '');
-
-  // Case 1: n.js 32-char salted Base64 (length > 64)
-  if (clean.length > 64) {
-    try {
-      const inner = clean.slice(32, clean.length - 32);
-      const bin = Buffer.from(inner, 'base64').toString('binary');
-      const unescaped = unescape(bin);
-      if (unescaped && (unescaped.includes('<') || unescaped.includes(' ') || /[a-zA-Z0-9]/.test(unescaped))) {
-        return unescaped;
-      }
-    } catch (e) {}
-  }
-
-  // Case 2: Standard UTF-8 Base64
-  if (clean.length >= 4 && /^[A-Za-z0-9+/=]+$/.test(clean)) {
-    try {
-      const decoded = Buffer.from(clean, 'base64').toString('utf8');
-      if (decoded && !/[\x00-\x08\x0E-\x1F]/.test(decoded)) {
-        return decoded;
-      }
-    } catch (e) {}
-  }
-
-  return trimmed;
+  if (!trimmed || trimmed.includes('<') || /\s/.test(trimmed)) return trimmed;
+  if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(trimmed)) return trimmed;
+  try {
+    const decoded = Buffer.from(trimmed, 'base64').toString('utf8');
+    return decoded && !/[\x00-\x08\x0E-\x1F]/.test(decoded) ? decoded : trimmed;
+  } catch { return trimmed; }
 }
 
 /**
@@ -608,13 +588,7 @@ async function fetchLiveWebPage(targetUrl, redirectCount = 0, forceCleanSession 
       finalUrl: res.url || cleanUrl,
       status: res.status
     };
-  } catch (err) {
-    return {
-      html: `<!DOCTYPE html><html><head><title>Oliveboard Connection Notice</title><style>body{font-family:sans-serif;padding:32px;background:#0f172a;color:#f8fafc;}h2{color:#ef4444;}p{color:#94a3b8;line-height:1.6;}.url{background:#1e293b;padding:8px 12px;border-radius:6px;font-family:monospace;color:#38bdf8;}button{background:#0284c7;color:#fff;border:none;padding:10px 18px;border-radius:6px;font-weight:700;cursor:pointer;margin-top:16px;}</style></head><body><h2>⚠️ Live Connection Notice</h2><p>Unable to fetch live page from Oliveboard server directly:</p><div class="url">${cleanUrl}</div><p><strong>Reason:</strong> ${err.message}</p><button onclick="window.location.reload()">Retry Connection</button></body></html>`,
-      finalUrl: cleanUrl,
-      status: 502
-    };
-  }
+  } catch (err) { throw new Error(`Oliveboard upstream request failed: ${err.message}`); }
 }
 
 /**
@@ -665,6 +639,9 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
   const meta = resolveCourseMeta(currentUrl, false);
   const stageInfo = classifyUrlStage(currentUrl);
   const currentTitle = meta.examTitle || (clientDomPayload && clientDomPayload.title) || activeTab.title || 'Oliveboard Live Page';
+  if (!clientDomPayload || typeof clientDomPayload !== 'object' || !clientDomPayload.html) {
+    throw new Error('Capture rejected: the browser returned no DOM payload.');
+  }
 
   const safeSlug = `${meta.courseCode}_${meta.testId}`
     .toLowerCase()
@@ -707,11 +684,11 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
   decryptedQuestions.forEach((q, idx) => {
     const qid = q.qid || (1001 + idx);
     const cSol = rawClientSols[qid] || rawClientSols[idx + 1] || null;
-    const ans = (cSol && cSol.ans) || q.correctAnswer || 'A';
+    const ans = (cSol && cSol.ans) || q.correctAnswer || null;
     const solHtml = decryptOliveboardString((cSol && (cSol.solutionDecoded || cSol.sol)) || q.explanationHTML || '');
     extractedSolutions[qid] = {
       ans,
-      solutionDecoded: solHtml || 'Official Oliveboard step-by-step explanation.'
+      solutionDecoded: solHtml
     };
   });
 
@@ -741,14 +718,14 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
   fs.writeFileSync(path.join(SNAPSHOTS_DIR, domFilename), htmlToSave, 'utf8');
   fs.writeFileSync(path.join(SCRAPED_DIR, `live_capture_${safeSlug}_${timestamp}.html`), htmlToSave, 'utf8');
 
-  const reaEvidenceId = `ev_rea_${timestamp.toString(16)}`;
-  const reaPayload = {
-    evidence_id: reaEvidenceId,
-    provider: { id: 'rea-live-dom-inspector', name: 'REA Live DOM & Proxy Observation Provider' },
-    url: currentUrl,
-    title: currentTitle,
-    capturedAt: new Date().toISOString()
-  };
+  let reaPayload;
+  try {
+    const targets = await withRea(({ call }) => call('list_browser_targets', { cdp_endpoint: CDP_ENDPOINT, allowed_origins: ['https://www.oliveboard.in', 'https://u1.oliveboard.in'] }));
+    const target = targets.normalized_result?.targets?.find(t => t.url === currentUrl || t.url.startsWith(currentUrl.split('?')[0]));
+    if (target) reaPayload = await withRea(({ call }) => call('inspect_web_page', { cdp_endpoint: CDP_ENDPOINT, target_id: target.target_id, allowed_origins: ['https://www.oliveboard.in', 'https://u1.oliveboard.in'], include_accessibility_text: true }));
+  } catch (error) { throw new Error(`REA capture failed: ${error.message}`); }
+  const reaEvidenceId = reaPayload?.evidence_id;
+  if (!reaEvidenceId) throw new Error('Capture rejected: no REA evidence was returned for the selected Oliveboard page.');
   fs.writeFileSync(path.join(SNAPSHOTS_DIR, reaFilename), JSON.stringify(reaPayload, null, 2), 'utf8');
   fs.writeFileSync(path.join(SCRAPED_DIR, `rea_evidence_${safeSlug}_${timestamp}.json`), JSON.stringify(reaPayload, null, 2), 'utf8');
 
@@ -785,9 +762,9 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
     extractedSolutionsCount: Object.keys(extractedSolutions).length,
     dashboardCardsCount: (clientDomPayload && clientDomPayload.dashboardCardsCount) || 5,
     verificationChecklist: {
-      visualSnapshotCaptured: true,
+      visualSnapshotCaptured: false,
       fullDomCaptured: true,
-      reaEvidenceCaptured: true,
+      reaEvidenceCaptured: Boolean(reaEvidenceId),
       modalsInspectedCount: detectedModals.length,
       tablesInspectedCount: allTables.length,
       questionsDecryptedCount: decryptedQuestions.length,
@@ -799,9 +776,32 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
   fs.writeFileSync(path.join(SCRAPED_DIR, `live_spec_${safeSlug}_${timestamp}.json`), JSON.stringify(rigorousReport, null, 2), 'utf8');
 
   let ingestedTest = null;
-  if (decryptedQuestions.length >= 1) {
+  const sourceMeta = clientDomPayload.metadata || {};
+  const captureReady = decryptedQuestions.length >= 1 && decryptedQuestions.every(q => {
+    const sol = extractedSolutions[q.qid] || extractedSolutions[q.questionNumber];
+    return Boolean((sol && sol.ans) || q.correctAnswer);
+  }) && Array.isArray(sourceMeta.sections) && sourceMeta.sections.length > 0 && sourceMeta.sections.every(s => Number(s.durationSeconds) > 0 && Number(s.marksForCorrect) > 0 && Number(s.negativeMarks) >= 0);
+  if (captureReady) {
+    const grouped = new Map();
+    decryptedQuestions.forEach(q => { const title = q.section || 'Unclassified'; if (!grouped.has(title)) grouped.set(title, []); grouped.get(title).push(q); });
     const paperPayload = {
-      id: `scraped-${safeSlug}-${timestamp}`,
+      id: `scraped-${safeSlug}-${meta.testId || 'unknown'}`,
+      schemaVersion: 1,
+      source: { provider: 'oliveboard', url: currentUrl, evidenceId: reaEvidenceId },
+      examId: meta.courseCode || 'oliveboard-capture',
+      examName: currentTitle,
+      type: stageInfo.stage,
+      expectedQuestions: decryptedQuestions.length,
+      completeness: { complete: true },
+      hasSectionalTiming: sourceMeta.hasSectionalTiming === true,
+      totalDurationSeconds: Number(sourceMeta.totalDurationSeconds) || null,
+      sections: [...grouped.entries()].map(([title, questions], i) => ({
+        id: `section-${i + 1}`, title, expectedQuestions: questions.length,
+        durationSeconds: Number(sourceMeta.sections?.[i]?.durationSeconds) || Number(sourceMeta.totalDurationSeconds) || null,
+        marksForCorrect: Number(sourceMeta.sections?.[i]?.marksForCorrect) || null,
+        negativeMarks: Number(sourceMeta.sections?.[i]?.negativeMarks) || null,
+        questions
+      })),
       url: currentUrl,
       title: currentTitle,
       totalQuestions: decryptedQuestions.length,
@@ -810,18 +810,20 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
         const sol = extractedSolutions[qid] || extractedSolutions[idx + 1] || null;
         return {
           ...q,
-          correctAnswer: (sol && sol.ans) ? sol.ans : (q.correctAnswer || 'A'),
-          explanationHTML: (sol && sol.solutionDecoded) ? sol.solutionDecoded : (typeof sol === 'string' ? sol : (q.explanationHTML || ''))
+          correctAnswer: (sol && sol.ans) ? sol.ans : q.correctAnswer,
+          explanationHTML: (sol && sol.solutionDecoded) ? sol.solutionDecoded : q.explanationHTML
         };
       })
     };
-    fs.writeFileSync(path.join(SCRAPED_DIR, `scraped_paper_${safeSlug}_${timestamp}.json`), JSON.stringify(paperPayload, null, 2), 'utf8');
+    const paperPath = path.join(PAPERS_DIR, `${paperPayload.id}.json`);
+    fs.writeFileSync(paperPath, JSON.stringify(paperPayload, null, 2), 'utf8');
+    if (typeof ingestCallback === 'function') ingestedTest = ingestCallback(paperPath, { throwOnError: true });
   }
 
   const artifactRecord = {
     timestamp: new Date().toISOString(),
     reaEvidenceId,
-    reaProvider: 'REA Live DOM & Proxy Observation Provider',
+    reaProvider: reaPayload.provider?.name || 'REA',
     url: currentUrl,
     title: currentTitle,
     stage: stageInfo,
@@ -831,14 +833,14 @@ async function scrapeAndReverseEngineerActivePage(clientDomPayload, ingestCallba
     htmlFile: `scraped/snapshots/${domFilename}`,
     specFile: `scraped/snapshots/${reportFilename}`,
     reaFile: `scraped/snapshots/${reaFilename}`,
-    uiElementsMatched: 14,
+    uiElementsMatched: null,
     modalsDetectedCount: detectedModals.length,
     visibleModals: detectedModals.filter(m => m.isVisible),
     tablesDetectedCount: allTables.length,
     tables: allTables,
     decryptedQuestionsCount: decryptedQuestions.length,
     extractedSolutionsCount: Object.keys(extractedSolutions).length,
-    dashboardCardsCount: (clientDomPayload && clientDomPayload.dashboardCardsCount) || 5,
+    dashboardCardsCount: clientDomPayload?.dashboardCardsCount ?? 0,
     ingestedTestId: ingestedTest ? ingestedTest.id : null,
     verificationChecklist: rigorousReport.verificationChecklist
   };
@@ -1022,13 +1024,17 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
           }
         } catch (e) {}
       }
-      // If user successfully logs in via loginnext.php, mark session active
-      if (cleanUrl.includes('loginnext.php') && text.trim() && text.trim() !== '0') {
-        liveProxySession.isLoggedIn = true;
+      // Login is established only by an explicit success response, never by a
+      // non-empty body or by navigation to a dashboard URL.
+      if (cleanUrl.includes('loginnext.php')) {
+        try {
+          const parsed = JSON.parse(text);
+          liveProxySession.isLoggedIn = parsed.success === true || parsed.status === 1 && parsed.error === false;
+        } catch { liveProxySession.isLoggedIn = false; }
       }
-      res.status(200).send(text || JSON.stringify({ status: 1, success: true }));
+      res.status(upRes.status).set('Content-Type', upRes.headers.get('content-type') || 'text/plain; charset=utf-8').send(text);
     } catch (err) {
-      res.status(200).json({ status: 1, success: true });
+      res.status(502).json({ status: 0, success: false, error: err.message });
     }
   });
 
@@ -1099,10 +1105,7 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
 
       if (act === 'navigate' && url !== undefined) {
         let cleanUrl = normalizeOliveboardUrl(url);
-        if (cleanUrl.includes('u1.oliveboard.in')) {
-          liveProxySession.isLoggedIn = true;
-          resolveCourseMeta(cleanUrl, true);
-        }
+        if (cleanUrl.includes('u1.oliveboard.in')) resolveCourseMeta(cleanUrl, true);
         activeTab.url = cleanUrl;
         activeTab.stageObj = classifyUrlStage(cleanUrl);
         activeTab.title = activeTab.stageObj.title;
@@ -1111,10 +1114,7 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
         }
       } else if (act === 'syncUrl' && url) {
         const cleanUrl = normalizeOliveboardUrl(url);
-        if (cleanUrl.includes('u1.oliveboard.in')) {
-          liveProxySession.isLoggedIn = true;
-          resolveCourseMeta(cleanUrl, true);
-        }
+        if (cleanUrl.includes('u1.oliveboard.in')) resolveCourseMeta(cleanUrl, true);
         activeTab.url = cleanUrl;
         activeTab.stageObj = classifyUrlStage(cleanUrl);
         if (req.body.title) activeTab.title = req.body.title;
@@ -1144,7 +1144,7 @@ function mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile) {
         }
       } else if (act === 'fillLogin') {
         if (email) liveProxySession.email = email;
-        liveProxySession.isLoggedIn = true;
+        liveProxySession.isLoggedIn = false;
         const nextDest = normalizeOliveboardUrl(url || (liveProxySession.currentCourse ? `https://u1.oliveboard.in/tests/?c=${encodeURIComponent(liveProxySession.currentCourse)}&i=banking` : 'https://www.oliveboard.in/'));
         resolveCourseMeta(nextDest, true);
         activeTab.url = nextDest;

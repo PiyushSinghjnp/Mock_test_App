@@ -480,29 +480,156 @@
    * Normalize any correctIndex / correctAnswer representation into a 0-based integer (0..4)
    */
   function normalizeCorrectIndex(question, optionsArray) {
-    if (typeof question.correctIndex === 'number' && question.correctIndex >= 0 && question.correctIndex < 10) {
-      return question.correctIndex;
-    }
+    const validIndex = value => Number.isInteger(value) && value >= 0 && value < optionsArray.length;
+    const explicitIndex = validIndex(question.correctIndex) ? question.correctIndex : null;
+    let answerIndex = null;
     const rawAns = question.correct_answer ?? question.correctAnswer ?? question.answer ?? question.correct_option ?? question.correctOption;
     if (rawAns !== undefined && rawAns !== null) {
       const str = String(rawAns).trim().toUpperCase();
       const letterMap = { A: 0, B: 1, C: 2, D: 3, E: 4, '(A)': 0, '(B)': 1, '(C)': 2, '(D)': 3, '(E)': 4 };
       if (letterMap[str] !== undefined) {
-        return letterMap[str];
+        answerIndex = letterMap[str];
+      } else if (/^\d+$/.test(str)) {
+        const num = Number(str);
+        // Legacy numeric answer fields are one-based; correctIndex is zero-based.
+        answerIndex = num === 0 ? 0 : num - 1;
+      } else {
+        const byText = optionsArray.findIndex(o => (typeof o === 'string' ? o : (o.text || o.html || '')).trim().toLowerCase() === String(rawAns).trim().toLowerCase());
+        if (byText !== -1) answerIndex = byText;
       }
-      const num = parseInt(str, 10);
-      if (!isNaN(num)) {
-        // If 1..5, convert to 0..4; if 0, keep 0
-        if (num >= 1 && num <= Math.max(5, optionsArray.length)) {
-          return num - 1;
-        }
-        if (num === 0) return 0;
-      }
-      // Try matching option text
-      const byText = optionsArray.findIndex(o => (o.text || o.html || '').trim().toLowerCase() === String(rawAns).trim().toLowerCase());
-      if (byText !== -1) return byText;
+      if (!validIndex(answerIndex)) return null;
     }
-    return 0;
+    if (explicitIndex !== null && answerIndex !== null && explicitIndex !== answerIndex) return null;
+    return answerIndex ?? explicitIndex;
+  }
+
+  /**
+   * Normalize a verified source paper without substituting a registry pattern.
+   * Partial captures stay in the capture store and must never enter the scored catalog.
+   */
+  function normalizeSourceQuestionPaper(raw) {
+    const fail = message => { throw new Error(`Source paper is not ready to import: ${message}`); };
+    const nonempty = value => typeof value === 'string' && value.trim().length > 0;
+    const finite = value => typeof value === 'number' && Number.isFinite(value);
+    if (!raw || raw.schemaVersion !== 1 || raw.source?.provider !== 'oliveboard') fail('unsupported source schema');
+    if (raw.completeness?.complete !== true) fail('capture is incomplete');
+    for (const key of ['id', 'title', 'examId', 'examName', 'type']) {
+      if (!nonempty(raw[key])) fail(`missing ${key}`);
+    }
+    try {
+      const url = new URL(raw.source.url);
+      if (url.protocol !== 'https:' || !(url.hostname === 'oliveboard.in' || url.hostname.endsWith('.oliveboard.in'))) fail('invalid source URL');
+    } catch (error) { fail('invalid source URL'); }
+    if (!nonempty(raw.source.evidenceId)) fail('missing REA evidence reference');
+    if (typeof raw.hasSectionalTiming !== 'boolean') fail('timing mode is unknown');
+    if (!Number.isInteger(raw.expectedQuestions) || raw.expectedQuestions < 1) fail('expected question count is unknown');
+    if (!Array.isArray(raw.sections) || raw.sections.length < 1) fail('missing sections');
+    if (!raw.hasSectionalTiming && (!finite(raw.totalDurationSeconds) || raw.totalDurationSeconds <= 0)) fail('missing total duration');
+
+    const questionIds = new Set();
+    const sectionIds = new Set();
+    let globalIndex = 0;
+    let totalMarks = 0;
+    let sectionalSeconds = 0;
+    const sections = raw.sections.map((section, sectionIndex) => {
+      if (!nonempty(section.title)) fail(`section ${sectionIndex + 1} has no title`);
+      const id = String(section.id ?? section.title);
+      if (sectionIds.has(id)) fail(`duplicate section ${id}`);
+      sectionIds.add(id);
+      if (!Array.isArray(section.questions) || !section.questions.length) fail(`section ${section.title} has no questions`);
+      const seconds = raw.hasSectionalTiming ? section.durationSeconds : raw.totalDurationSeconds;
+      if (!finite(seconds) || seconds <= 0) fail(`missing duration for ${section.title}`);
+      const positive = section.marksForCorrect ?? section.positiveMarks;
+      const negative = section.negativeMarks;
+      if (!finite(positive) || positive <= 0 || !finite(negative) || negative < 0) fail(`missing marking scheme for ${section.title}`);
+      let sectionMarks = 0;
+      const questions = section.questions.map((q, localIndex) => {
+        if (q.qid === undefined || q.qid === null || String(q.qid).trim() === '') fail('question is missing its source qid');
+        const qid = String(q.qid);
+        if (questionIds.has(qid)) fail(`duplicate question ${qid}`);
+        questionIds.add(qid);
+        if (!nonempty(q.questionHTML)) fail(`question ${qid} has no content`);
+        if (!Array.isArray(q.options) || q.options.length < 2) fail(`question ${qid} has too few options`);
+        const options = q.options.map((option, i) => {
+          const html = typeof option === 'string' ? option : (option.html ?? option.text);
+          if (!nonempty(html)) fail(`question ${qid} has an empty option`);
+          return {
+            letter: String.fromCharCode(65 + i),
+            html,
+            text: typeof option === 'string' ? option : (option.text ?? html.replace(/<[^>]*>/g, ''))
+          };
+        });
+        const correctIndex = normalizeCorrectIndex(q, options);
+        if (correctIndex === null) fail(`question ${qid} has a missing, invalid, or conflicting answer`);
+        const marksForCorrect = q.marksForCorrect ?? positive;
+        const negativeMarks = q.negativeMarks ?? negative;
+        if (!finite(marksForCorrect) || marksForCorrect <= 0 || !finite(negativeMarks) || negativeMarks < 0) fail(`question ${qid} has invalid marks`);
+        globalIndex++;
+        sectionMarks += marksForCorrect;
+        return {
+          id: `${raw.id}-q-${encodeURIComponent(qid)}`,
+          qid: q.qid,
+          sourceQuestionId: qid,
+          globalIndex,
+          localIndex: localIndex + 1,
+          questionNumber: q.questionNumber ?? globalIndex,
+          section: section.title,
+          questionHTML: q.questionHTML,
+          passageHTML: q.passageHTML || '',
+          hasPassage: Boolean(q.passageHTML && q.passageHTML.trim()),
+          imageUrls: Array.isArray(q.imageUrls) ? q.imageUrls.slice() : [],
+          options,
+          correctIndex,
+          correctAnswer: options[correctIndex].letter,
+          explanationHTML: q.explanationHTML || '',
+          marksForCorrect,
+          negativeMarks
+        };
+      });
+      if (section.expectedQuestions !== undefined && section.expectedQuestions !== questions.length) fail(`question count mismatch in ${section.title}`);
+      totalMarks += sectionMarks;
+      sectionalSeconds += seconds;
+      return {
+        id,
+        title: section.title,
+        sectionIndex: sectionIndex + 1,
+        questionCount: questions.length,
+        durationSeconds: seconds,
+        durationMinutes: seconds / 60,
+        maxMarks: Math.round(sectionMarks * 100) / 100,
+        positiveMarks: positive,
+        marksForCorrect: positive,
+        negativeMarks: negative,
+        language: section.language || raw.language || '',
+        isSectionalLocked: section.isSectionalLocked ?? raw.isSectionalLocked ?? raw.hasSectionalTiming,
+        questions
+      };
+    });
+    if (globalIndex !== raw.expectedQuestions) fail(`captured ${globalIndex} of ${raw.expectedQuestions} questions`);
+    const totalDurationSeconds = raw.hasSectionalTiming ? sectionalSeconds : raw.totalDurationSeconds;
+    return {
+      id: raw.id,
+      schemaVersion: 1,
+      source: { ...raw.source },
+      completeness: { ...raw.completeness },
+      expectedQuestions: raw.expectedQuestions,
+      title: raw.title,
+      examId: raw.examId,
+      examName: raw.examName,
+      type: raw.type,
+      subtitle: raw.subtitle || 'Captured from Oliveboard',
+      marks: Math.round(totalMarks * 100) / 100,
+      questionsCount: globalIndex,
+      durationMinutes: totalDurationSeconds / 60,
+      totalDurationSeconds,
+      hasSectionalTiming: raw.hasSectionalTiming,
+      isSectionalLocked: raw.isSectionalLocked ?? raw.hasSectionalTiming,
+      markingScheme: { positive: sections[0].positiveMarks, negative: sections[0].negativeMarks },
+      marksPerCorrect: sections[0].positiveMarks,
+      negativeMarks: sections[0].negativeMarks,
+      sectionsSummary: sections.map(s => `${s.title} (${s.questionCount} Qs)`),
+      sections
+    };
   }
 
   /**
@@ -535,6 +662,7 @@
     if (!rawJson || typeof rawJson !== 'object') {
       throw new Error('Invalid JSON question paper object');
     }
+    if (rawJson.source?.provider === 'oliveboard') return normalizeSourceQuestionPaper(rawJson);
 
     const detected = detectExamAndStage(rawJson, options.title || options.filename || '');
     const examId = options.examId || detected.examId || 'sbi-po';
@@ -633,7 +761,7 @@
         }
 
         const correctIndex = normalizeCorrectIndex(q, optionsList);
-        const correctLetter = optionsList[correctIndex]?.letter || letters[correctIndex] || 'A';
+        const correctLetter = correctIndex === null ? null : (optionsList[correctIndex]?.letter || letters[correctIndex]);
 
         const qHtml = q.questionHTML || q.question_text || q.question || q.text || '';
         const pHtml = q.passageHTML || q.passage_text || q.passage || q.directions || '';
@@ -906,6 +1034,7 @@
     EXAM_PATTERNS_2026,
     detectExamAndStage,
     normalizeCorrectIndex,
+    normalizeSourceQuestionPaper,
     apply2026PatternToQuestionPaper,
     calculateTestRankAndPercentile
   };
