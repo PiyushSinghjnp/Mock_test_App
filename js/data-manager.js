@@ -19,13 +19,14 @@ class OBTestDataManager {
 
   async init() {
     await this.loadUsers();
-    // Retrieve saved user ID from localStorage or pick the first user
+    // Retrieve saved user ID from localStorage ONLY if authenticated with token
     const savedUserId = localStorage.getItem(this.STORAGE_KEY_ACTIVE_USER);
-    if (savedUserId && this.users.find(u => u.id === savedUserId)) {
+    const authToken = localStorage.getItem('ob_auth_token');
+
+    if (savedUserId && authToken && this.users.find(u => u.id === savedUserId)) {
       this.activeUser = this.users.find(u => u.id === savedUserId);
-    } else if (this.users.length > 0) {
-      this.activeUser = this.users[0];
-      localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, this.activeUser.id);
+    } else {
+      this.activeUser = null;
     }
     return this.activeUser;
   }
@@ -35,7 +36,7 @@ class OBTestDataManager {
   }
 
   getActiveUserId() {
-    return this.activeUser ? this.activeUser.id : 'user-rahul';
+    return this.activeUser ? this.activeUser.id : (this.users[0] ? this.users[0].id : 'user-rahul');
   }
 
   setActiveUser(userId) {
@@ -46,6 +47,53 @@ class OBTestDataManager {
       return user;
     }
     return null;
+  }
+
+  async login(username, password) {
+    const res = await fetch(`${this.API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Login failed');
+    }
+    this.activeUser = data.user;
+    localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, data.user.id);
+    localStorage.removeItem('ob_explicit_logout');
+    if (data.token) {
+      localStorage.setItem('ob_auth_token', data.token);
+    }
+    await this.loadUsers();
+    return data.user;
+  }
+
+  async register(username, password, name, target_exam) {
+    const res = await fetch(`${this.API_BASE}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, name, target_exam })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Registration failed');
+    }
+    this.activeUser = data.user;
+    localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, data.user.id);
+    localStorage.removeItem('ob_explicit_logout');
+    if (data.token) {
+      localStorage.setItem('ob_auth_token', data.token);
+    }
+    await this.loadUsers();
+    return data.user;
+  }
+
+  logout() {
+    this.activeUser = null;
+    localStorage.removeItem(this.STORAGE_KEY_ACTIVE_USER);
+    localStorage.removeItem('ob_auth_token');
+    localStorage.setItem('ob_explicit_logout', 'true');
   }
 
   // ===============================================

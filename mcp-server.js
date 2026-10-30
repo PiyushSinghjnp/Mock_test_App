@@ -514,72 +514,6 @@ function createToolHandlers(db) {
         sectionBreakdown: JSON.parse(row.section_breakdown_json || '[]'),
         completedAt: row.completed_at
       };
-    },
-
-    list_rea_scraped_specs: async () => {
-      const specsDir = path.join(__dirname, 'scraped_specs');
-      const scrapedDir = path.join(__dirname, 'scraped');
-      const specs = [];
-      if (fs.existsSync(specsDir)) {
-        const files = fs.readdirSync(specsDir).filter(f => f.endsWith('.json')).sort();
-        files.forEach(file => {
-          try {
-            const content = JSON.parse(fs.readFileSync(path.join(specsDir, file), 'utf8'));
-            specs.push({
-              specId: content.spec_id || file.replace('.json', ''),
-              file: `scraped_specs/${file}`,
-              title: content.title || '',
-              sourceUrl: content.source_url || content.scraped_from || 'https://u1.oliveboard.in/'
-            });
-          } catch (e) {
-            specs.push({ specId: file.replace('.json', ''), file: `scraped_specs/${file}` });
-          }
-        });
-      }
-      const artifacts = fs.existsSync(scrapedDir) ? fs.readdirSync(scrapedDir) : [];
-      return {
-        totalSpecs: specs.length,
-        specs,
-        scrapedArtifacts: artifacts.map(a => `scraped/${a}`)
-      };
-    },
-
-    get_rea_scraped_spec: async ({ specId = '3.6' } = {}) => {
-      const cleanId = String(specId).replace(/\.json$/i, '').trim();
-      const specPath = path.join(__dirname, 'scraped_specs', `${cleanId}.json`);
-      if (!fs.existsSync(specPath)) {
-        throw new Error(`Scraped spec '${cleanId}' not found in /scraped_specs`);
-      }
-      return JSON.parse(fs.readFileSync(specPath, 'utf8'));
-    },
-
-    inspect_oliveboard_live_dom: async ({ query = 'displayQuestions', file = 'oliveboard_live_player.html' } = {}) => {
-      const allowedFiles = ['oliveboard_live_player.html', 'style_pallet.css', 'course.js', 'wallet.js', 'facinfo.js'];
-      const targetFile = allowedFiles.includes(file) ? file : 'oliveboard_live_player.html';
-      const fullPath = path.join(__dirname, 'scraped', targetFile);
-      if (!fs.existsSync(fullPath)) {
-        throw new Error(`Scraped artifact '${targetFile}' not found`);
-      }
-      const lines = fs.readFileSync(fullPath, 'utf8').split('\n');
-      const qLower = String(query || '').toLowerCase();
-      const matches = [];
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].toLowerCase().includes(qLower)) {
-          const start = Math.max(0, i - 3);
-          const end = Math.min(lines.length - 1, i + 12);
-          matches.push({
-            lineNumber: i + 1,
-            snippet: lines.slice(start, end + 1).join('\n').slice(0, 1200)
-          });
-          if (matches.length >= 8) break;
-        }
-      }
-      return {
-        file: `scraped/${targetFile}`,
-        query,
-        matchCount: matches.length,
-        matches
-      };
     }
   };
 }
@@ -588,36 +522,6 @@ function createToolHandlers(db) {
  * Tool Definitions Metadata (used for MCP tools/list & UI Inspector)
  */
 const MCP_TOOLS_CATALOG = [
-  {
-    name: 'list_rea_scraped_specs',
-    description: 'List all 19 reverse-engineered Oliveboard UI/UX & state-machine specifications (scraped_specs/1.1.json through 5.4.json) and raw scraped DOM/CSS/JS artifacts.',
-    inputSchema: {
-      type: 'object',
-      properties: {}
-    }
-  },
-  {
-    name: 'get_rea_scraped_spec',
-    description: 'Fetch the exact reverse-engineered Oliveboard specification JSON (DOM selectors, CSS rules, state transitions, and JS functions) by specId (e.g. 1.1, 1.2, 1.3, 2.2, 2.3, 3.1, 3.3, 3.5, 3.6, 3.7, 4.1, 4.2, 5.1, 5.2, 5.3, 5.4).',
-    inputSchema: {
-      type: 'object',
-      required: ['specId'],
-      properties: {
-        specId: { type: 'string', description: 'Spec ID from 1.1 to 5.4 (e.g., 3.5, 3.6, 4.2, 5.4)' }
-      }
-    }
-  },
-  {
-    name: 'inspect_oliveboard_live_dom',
-    description: 'Search and extract exact DOM, CSS, or JavaScript functions from the scraped Oliveboard live player (oliveboard_live_player.html, style_pallet.css, course.js).',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        query: { type: 'string', description: 'Function name, selector, or keyword (e.g. displayQuestionsSave, finalSubmit, clearme, #hover-con, .sprite-butts)' },
-        file: { type: 'string', description: 'Artifact filename: oliveboard_live_player.html, style_pallet.css, or course.js' }
-      }
-    }
-  },
   {
     name: 'list_exams',
     description: 'List official Indian competitive exams (IBPS SO IT, SBI PO, IBPS PO, SSC CGL, RBI Grade B, RRB NTPC) with official stage patterns, sectional timings, marking schemes, and SQLite question counts.',
@@ -728,12 +632,6 @@ const MCP_TOOLS_CATALOG = [
 
 const MCP_RESOURCES_CATALOG = [
   {
-    uri: 'oliveboard://rea/specs-index',
-    name: 'Reverse-Engineered Oliveboard Specs Index (1.1 - 5.4)',
-    description: 'Complete index of all 19 reverse-engineered Oliveboard specifications and scraped DOM/CSS/JS files.',
-    mimeType: 'application/json'
-  },
-  {
     uri: 'oliveboard://exams/notifications',
     name: 'Official Exam Notifications & Timings',
     description: 'Complete official notification specifications for SBI PO, IBPS SO IT, IBPS PO, SSC CGL, RBI Grade B, and RRB NTPC.',
@@ -781,31 +679,6 @@ const MCP_PROMPTS_CATALOG = [
  * Read an MCP Resource by URI
  */
 function readMcpResource(db, uri) {
-  if (uri === 'oliveboard://rea/specs-index') {
-    const specsDir = path.join(__dirname, 'scraped_specs');
-    const specs = [];
-    if (fs.existsSync(specsDir)) {
-      const files = fs.readdirSync(specsDir).filter(f => f.endsWith('.json')).sort();
-      files.forEach(file => {
-        try {
-          const content = JSON.parse(fs.readFileSync(path.join(specsDir, file), 'utf8'));
-          specs.push({
-            specId: content.spec_id || file.replace('.json', ''),
-            title: content.title || '',
-            file: `scraped_specs/${file}`,
-            keys: Object.keys(content)
-          });
-        } catch (e) {
-          specs.push({ specId: file.replace('.json', ''), file: `scraped_specs/${file}` });
-        }
-      });
-    }
-    return {
-      source: 'Oliveboard Reverse Engineering Analysis (REA MCP)',
-      totalSpecs: specs.length,
-      specs
-    };
-  }
   if (uri === 'oliveboard://exams/notifications') {
     return getNotificationsData();
   }
@@ -894,34 +767,6 @@ function createOliveboardMcpServer(db) {
   });
 
   const handlers = createToolHandlers(db);
-
-  // Register REA Scraped Spec Tools
-  server.tool(
-    'list_rea_scraped_specs',
-    'List all 19 reverse-engineered Oliveboard UI/UX & state-machine specifications (1.1 through 5.4) and scraped DOM/CSS/JS artifacts.',
-    {},
-    async () => ({
-      content: [{ type: 'text', text: JSON.stringify(await handlers.list_rea_scraped_specs(), null, 2) }]
-    })
-  );
-
-  server.tool(
-    'get_rea_scraped_spec',
-    'Fetch the exact reverse-engineered Oliveboard specification JSON by specId (1.1 to 5.4).',
-    { specId: z.string() },
-    async (args) => ({
-      content: [{ type: 'text', text: JSON.stringify(await handlers.get_rea_scraped_spec(args), null, 2) }]
-    })
-  );
-
-  server.tool(
-    'inspect_oliveboard_live_dom',
-    'Search and extract exact DOM, CSS, or JavaScript functions from the scraped Oliveboard live player.',
-    { query: z.string().optional(), file: z.string().optional() },
-    async (args) => ({
-      content: [{ type: 'text', text: JSON.stringify(await handlers.inspect_oliveboard_live_dom(args), null, 2) }]
-    })
-  );
 
   // Register Tools
   server.tool(

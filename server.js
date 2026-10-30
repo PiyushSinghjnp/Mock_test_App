@@ -14,10 +14,27 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { DatabaseSync } = require('node:sqlite');
+const crypto = require('node:crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_PATH = path.join(__dirname, 'database.sqlite');
+const ADMIN_TOKEN = String(process.env.OLIVEBOARD_ADMIN_TOKEN || 'admin').trim();
+const UPLOADS_DIR = path.join(__dirname, 'images', 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+function requireAdmin(req, res, next) {
+  if (!ADMIN_TOKEN) {
+    return res.status(503).json({ success: false, error: 'Admin uploads are disabled until OLIVEBOARD_ADMIN_TOKEN is configured.' });
+  }
+  const supplied = String(req.get('x-admin-token') || req.query.admin_token || '').trim();
+  if (!supplied || supplied.length !== ADMIN_TOKEN.length || !require('node:crypto').timingSafeEqual(Buffer.from(supplied), Buffer.from(ADMIN_TOKEN))) {
+    return res.status(401).json({ success: false, error: 'Admin authorization required.' });
+  }
+  next();
+}
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -32,6 +49,9 @@ for (const directory of ['css', 'js', 'images', 'img', 'oliveimg', 'public']) {
   }));
 }
 app.get(['/', '/index.html'], (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
+const RUNTIME_ROOT = process.env.OB_RUNTIME_DIR || path.join(process.env.LOCALAPPDATA || path.dirname(__dirname), 'oliveboard-clone-runtime');
+app.use('/scraped', express.static(path.join(RUNTIME_ROOT, 'scraped'), { dotfiles: 'deny', index: false }));
 
 // ==========================================
 // 1. DATABASE INITIALIZATION & SCHEMA
@@ -53,6 +73,7 @@ db.exec(`
     avatar TEXT,
     roll_no TEXT,
     target_exam TEXT,
+    password_hash TEXT,
     created_at TEXT NOT NULL
   );
 
@@ -111,9 +132,50 @@ db.exec(`
     updated_at TEXT NOT NULL,
     PRIMARY KEY (user_id, test_id)
   );
+  CREATE TABLE IF NOT EXISTS admin_audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    action TEXT NOT NULL,
+    test_id TEXT,
+    details_json TEXT,
+    created_at TEXT NOT NULL
+  );
 `);
 
 console.log('SQLite database schema verified.');
+
+// Migration: Ensure password_hash column exists in users table
+try {
+  const userCols = db.prepare('PRAGMA table_info(users)').all().map(c => c.name);
+  if (!userCols.includes('password_hash')) {
+    db.exec('ALTER TABLE users ADD COLUMN password_hash TEXT;');
+    console.log('Added password_hash column to users table.');
+  }
+} catch (e) {
+  console.warn('Migration note:', e.message);
+}
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, stored) {
+  if (!stored) return false;
+  const parts = stored.split(':');
+  if (parts.length !== 2) return false;
+  const [salt, hash] = parts;
+  const testHash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(testHash, 'hex'));
+}
+
+// Seed default password for existing users without one
+try {
+  const defaultHash = hashPassword('password123');
+  db.prepare("UPDATE users SET password_hash = ? WHERE password_hash IS NULL OR password_hash = ''").run(defaultHash);
+} catch (e) {
+  console.warn('Default password migration note:', e.message);
+}
 
 // ==========================================
 // 2. SEED INITIAL USERS (ISOLATION DEMO)
@@ -124,9 +186,10 @@ function seedUsers() {
 
   if (userCount === 0) {
     console.log('Seeding demo candidates for multi-user isolation...');
+    const defaultHash = hashPassword('password123');
     const insertUser = db.prepare(`
-      INSERT INTO users (id, username, name, email, avatar, roll_no, target_exam, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, username, name, email, avatar, roll_no, target_exam, password_hash, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     insertUser.run(
@@ -137,6 +200,7 @@ function seedUsers() {
       'R',
       'OB-2026-9041',
       'ibps-so',
+      defaultHash,
       new Date().toISOString()
     );
 
@@ -148,6 +212,7 @@ function seedUsers() {
       'P',
       'OB-2026-8812',
       'sbi-po',
+      defaultHash,
       new Date().toISOString()
     );
 
@@ -157,11 +222,13 @@ function seedUsers() {
       'Vikram Malhotra',
       'vikram@oliveboard.test',
       'V',
-      'OB-2026-4421',
+      'OB-2026-7245',
       'ssc-cgl',
+      defaultHash,
       new Date().toISOString()
     );
-    console.log('Users seeded: Rahul (OB-2026-9041), Priya (OB-2026-8812), Vikram (OB-2026-4421).');
+
+    console.log('Seeded 3 demo candidate profiles with credentials.');
   }
 }
 
@@ -308,29 +375,6 @@ function seedTests() {
     }
   }
 
-  // 3.2 Seed or Upgrade SBI PO Prelims Free Mock 1 & Sectionals with full 100 Qs & verified solutions
-  try {
-    const { runSeed } = require('./scripts/seed_sbi_po');
-    runSeed();
-  } catch (err) {
-    console.error('Failed to run SBI PO seed script:', err);
-  }
-
-  // 3.2b Seed authentic 100-Question IBPS SO IT Prelims 1 test
-  try {
-    const { runSeedIbpsSo } = require('./scripts/seed_ibps_so_prelims');
-    runSeedIbpsSo();
-  } catch (err) {
-    console.error('Failed to run IBPS SO seed script:', err);
-  }
-
-  // 3.2c Seed comprehensive distinct question papers for all exams and mock tests
-  try {
-    const { runUniqueExamSeeder } = require('./scripts/seed_unique_exam_papers');
-    runUniqueExamSeeder();
-  } catch (err) {
-    console.error('Failed to run unique exam seeder:', err);
-  }
 }
 
 // ==========================================
@@ -503,6 +547,99 @@ app.patch('/api/users/:id', (req, res) => {
       WHERE u.id = ?
     `).get(userId);
     res.json({ success: true, user: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4.1b AUTHENTICATION API (LOGIN, REGISTER, SESSION)
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!username || !username.trim() || !password) {
+      return res.status(400).json({ success: false, error: 'Username and password are required.' });
+    }
+    const cleanUser = username.trim().toLowerCase();
+    const user = db.prepare('SELECT * FROM users WHERE LOWER(username) = ?').get(cleanUser);
+    if (!user) {
+      return res.status(401).json({ success: false, error: 'Invalid username or password.' });
+    }
+    if (!user.password_hash || !verifyPassword(password, user.password_hash)) {
+      return res.status(401).json({ success: false, error: 'Invalid username or password.' });
+    }
+    const token = crypto.randomBytes(32).toString('hex');
+    const safeUser = {
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      roll_no: user.roll_no,
+      target_exam: user.target_exam,
+      created_at: user.created_at
+    };
+    res.json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: safeUser
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/auth/register', (req, res) => {
+  try {
+    const { username, password, name, target_exam } = req.body || {};
+    if (!username || !username.trim() || !password || password.length < 4) {
+      return res.status(400).json({ success: false, error: 'Username and password (min 4 characters) are required.' });
+    }
+    const cleanUser = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (!cleanUser) {
+      return res.status(400).json({ success: false, error: 'Invalid username format. Use letters, numbers, hyphens.' });
+    }
+    const existing = db.prepare('SELECT id FROM users WHERE LOWER(username) = ?').get(cleanUser);
+    if (existing) {
+      return res.status(409).json({ success: false, error: 'Username already taken. Please choose another or sign in.' });
+    }
+    const id = `user-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const fullName = (name && name.trim()) ? name.trim() : (cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1));
+    const avatar = fullName.charAt(0).toUpperCase();
+    const rollNo = `OB-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const targetExam = target_exam || 'sbi-po';
+    const createdAt = new Date().toISOString();
+    const passwordHash = hashPassword(password);
+
+    db.prepare(`
+      INSERT INTO users (id, username, name, email, avatar, roll_no, target_exam, password_hash, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(id, cleanUser, fullName, `${cleanUser}@oliveboard.test`, avatar, rollNo, targetExam, passwordHash, createdAt);
+
+    const newUser = db.prepare('SELECT id, username, name, email, avatar, roll_no, target_exam, created_at FROM users WHERE id = ?').get(id);
+    const token = crypto.randomBytes(32).toString('hex');
+    res.json({
+      success: true,
+      message: 'Account created successfully',
+      token,
+      user: newUser
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/auth/me', (req, res) => {
+  try {
+    const userId = req.query.userId || req.headers['x-user-id'];
+    if (!userId) {
+      return res.json({ success: true, authenticated: false, user: null });
+    }
+    const user = db.prepare('SELECT id, username, name, email, avatar, roll_no, target_exam, created_at FROM users WHERE id = ?').get(userId);
+    if (!user) {
+      return res.json({ success: true, authenticated: false, user: null });
+    }
+    res.json({ success: true, authenticated: true, user });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -762,8 +899,13 @@ app.get('/api/exam-patterns-2026', (req, res) => {
   }
 });
 
-// 4.3c UPLOAD QUESTION PAPER JSON & AUTO-APPLY 2026 SECTIONAL TIMINGS & MARKING SCHEME
-app.post('/api/tests/upload-json', (req, res) => {
+// 4.3c ADMIN-ONLY QUESTION PAPER UPLOAD
+app.get('/api/admin/tests', requireAdmin, (req, res) => {
+  const tests = db.prepare('SELECT id, exam_id, exam_name, type, title, questions_count, duration_minutes, created_at FROM tests ORDER BY created_at DESC').all();
+  res.json({ success: true, tests });
+});
+
+app.post('/api/tests/upload-json', requireAdmin, (req, res) => {
   try {
     const { rawPaper, examId, stage, title, customTitle, subtitle, filename, testId, customTestId } = req.body;
     if (!rawPaper) {
@@ -820,6 +962,9 @@ app.post('/api/tests/upload-json', (req, res) => {
     );
 
     console.log(`[2026 Pattern Applied] Saved uploaded JSON test "${normalizedTest.title}" (${normalizedTest.id}) with ${normalizedTest.questionsCount} Qs, ${normalizedTest.durationMinutes} mins`);
+    db.prepare('INSERT INTO admin_audit_log (action, test_id, details_json, created_at) VALUES (?, ?, ?, ?)').run(
+      'upload_or_update_test', normalizedTest.id, JSON.stringify({ title: normalizedTest.title, examId: normalizedTest.examId, questions: normalizedTest.questionsCount }), now
+    );
     res.json({
       success: true,
       testId: normalizedTest.id,
@@ -828,6 +973,300 @@ app.post('/api/tests/upload-json', (req, res) => {
   } catch (err) {
     console.error('Failed to process uploaded JSON question paper:', err);
     res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// 4.3d ADMIN IMAGE ASSETS & INSERTER FOR MOCK MAKING
+app.post('/api/admin/upload-image', requireAdmin, (req, res) => {
+  try {
+    const { filename, imageData, dataUrl, caption } = req.body;
+    const rawData = dataUrl || imageData;
+    if (!rawData) {
+      return res.status(400).json({ success: false, error: 'Image data is required (base64 string or data URL).' });
+    }
+
+    let buffer;
+    let ext = '.png';
+    const matches = String(rawData).match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+    if (matches) {
+      const mimeSub = matches[1].toLowerCase();
+      ext = mimeSub === 'jpeg' ? '.jpg' : mimeSub === 'svg+xml' ? '.svg' : `.${mimeSub}`;
+      buffer = Buffer.from(matches[2], 'base64');
+    } else {
+      buffer = Buffer.from(rawData, 'base64');
+    }
+
+    if (filename && path.extname(filename)) {
+      ext = path.extname(filename).toLowerCase();
+    }
+
+    const allowedExts = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg']);
+    if (!allowedExts.has(ext)) {
+      return res.status(400).json({ success: false, error: `Unsupported image format: ${ext}. Supported: PNG, JPG, JPEG, GIF, WEBP, SVG.` });
+    }
+
+    if (buffer.length > 25 * 1024 * 1024) {
+      return res.status(400).json({ success: false, error: 'Image size exceeds maximum limit of 25MB.' });
+    }
+
+    const baseName = filename ? path.basename(filename, path.extname(filename)).replace(/[^a-zA-Z0-9_-]/g, '_') : 'figure';
+    const safeFilename = `mock_${Date.now()}_${baseName.slice(0, 40)}${ext}`;
+    const targetPath = path.join(UPLOADS_DIR, safeFilename);
+
+    fs.writeFileSync(targetPath, buffer);
+
+    const relativeUrl = `/images/uploads/${safeFilename}`;
+    const altText = caption && caption.trim() ? caption.trim() : (baseName || 'Question Diagram');
+    const imgTag = `<img src="${relativeUrl}" alt="${altText}" style="max-width:100%;height:auto;display:block;margin:8px 0;border:1px solid #cbd5e1;border-radius:6px;padding:4px;background:#fff;">`;
+
+    console.log(`[Admin Image Uploaded] Saved ${safeFilename} (${buffer.length} bytes) to ${relativeUrl}`);
+    res.json({
+      success: true,
+      url: relativeUrl,
+      filename: safeFilename,
+      size: buffer.length,
+      caption: altText,
+      tag: imgTag,
+      markdown: `![${altText}](${relativeUrl})`
+    });
+  } catch (err) {
+    console.error('Failed to upload image:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/admin/images', requireAdmin, (req, res) => {
+  try {
+    if (!fs.existsSync(UPLOADS_DIR)) {
+      return res.json({ success: true, images: [] });
+    }
+    const files = fs.readdirSync(UPLOADS_DIR);
+    const images = [];
+    for (const f of files) {
+      const ext = path.extname(f).toLowerCase();
+      if (!['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'].includes(ext)) continue;
+      const stat = fs.statSync(path.join(UPLOADS_DIR, f));
+      images.push({
+        filename: f,
+        url: `/images/uploads/${f}`,
+        size: stat.size,
+        createdAt: stat.birthtime || stat.mtime,
+        tag: `<img src="/images/uploads/${f}" alt="Mock Figure" style="max-width:100%;height:auto;display:block;margin:8px 0;">`
+      });
+    }
+    images.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json({ success: true, images });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/admin/images/:filename', requireAdmin, (req, res) => {
+  try {
+    const rawName = path.basename(req.params.filename);
+    const targetPath = path.join(UPLOADS_DIR, rawName);
+    if (!fs.existsSync(targetPath)) {
+      return res.status(404).json({ success: false, error: 'Image file not found.' });
+    }
+    fs.unlinkSync(targetPath);
+    res.json({ success: true, message: `Image ${rawName} deleted.` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4.3e ADMIN MOCK MAKER - FETCH AND SAVE QUESTIONS
+app.get('/api/admin/tests/:id', requireAdmin, (req, res) => {
+  try {
+    const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(req.params.id);
+    if (!test) {
+      return res.status(404).json({ success: false, error: 'Test not found' });
+    }
+    res.json({ success: true, test: JSON.parse(test.test_data_json) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/admin/save-mock-question', requireAdmin, (req, res) => {
+  try {
+    const {
+      testId,
+      examId,
+      examName,
+      testTitle,
+      testType,
+      sectionTitle,
+      question
+    } = req.body;
+
+    if (!testId || !testTitle || !question) {
+      return res.status(400).json({ success: false, error: 'testId, testTitle, and question object are required.' });
+    }
+
+    let existingRow = db.prepare('SELECT * FROM tests WHERE id = ?').get(testId);
+    let testData;
+
+    if (existingRow) {
+      testData = JSON.parse(existingRow.test_data_json);
+    } else {
+      testData = {
+        id: testId,
+        examId: examId || 'custom-exam',
+        examName: examName || 'Custom Exam',
+        title: testTitle,
+        subtitle: 'Created via Oliveboard Admin Mock Maker',
+        type: testType || 'prelims',
+        marks: 0,
+        questionsCount: 0,
+        durationMinutes: 60,
+        marksPerCorrect: 1.0,
+        negativeMarks: 0.25,
+        isFree: 1,
+        sections: [],
+        sectionsSummary: []
+      };
+    }
+
+    if (!Array.isArray(testData.sections)) {
+      testData.sections = [];
+    }
+
+    const secTitle = (sectionTitle || 'General').trim();
+    let targetSection = testData.sections.find(s => (s.title || '').toLowerCase() === secTitle.toLowerCase());
+    if (!targetSection) {
+      targetSection = {
+        id: `sec-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        title: secTitle,
+        durationMinutes: 20,
+        durationSeconds: 1200,
+        maxMarks: 0,
+        questions: []
+      };
+      testData.sections.push(targetSection);
+    }
+
+    if (!Array.isArray(targetSection.questions)) {
+      targetSection.questions = [];
+    }
+
+    const qid = question.qid || question.id || `q_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const marksForCorrect = Number(question.marksForCorrect) || 1.0;
+    const negativeMarks = Number(question.negativeMarks) >= 0 ? Number(question.negativeMarks) : 0.25;
+
+    const existingQIndex = targetSection.questions.findIndex(q => String(q.id) === String(qid) || String(q.qid) === String(qid));
+
+    const finalQuestion = {
+      id: String(qid),
+      qid: qid,
+      sourceQuestionId: String(qid),
+      section: secTitle,
+      questionHTML: question.questionHTML || '<p>Question statement</p>',
+      passageHTML: question.passageHTML || '',
+      hasPassage: Boolean(question.passageHTML && question.passageHTML.trim().length > 10),
+      imageUrls: Array.isArray(question.imageUrls) ? question.imageUrls : (question.imageUrls ? [question.imageUrls] : []),
+      options: Array.isArray(question.options) ? question.options : [
+        { letter: 'A', text: 'Option A', html: 'Option A' },
+        { letter: 'B', text: 'Option B', html: 'Option B' },
+        { letter: 'C', text: 'Option C', html: 'Option C' },
+        { letter: 'D', text: 'Option D', html: 'Option D' }
+      ],
+      correctAnswer: question.correctAnswer || 'A',
+      correctIndex: typeof question.correctIndex === 'number' ? question.correctIndex :
+        (question.correctAnswer ? Math.max(0, question.correctAnswer.toUpperCase().charCodeAt(0) - 65) : 0),
+      explanationHTML: question.explanationHTML || '',
+      marksForCorrect: marksForCorrect,
+      negativeMarks: negativeMarks
+    };
+
+    if (existingQIndex >= 0) {
+      targetSection.questions[existingQIndex] = { ...targetSection.questions[existingQIndex], ...finalQuestion };
+    } else {
+      targetSection.questions.push(finalQuestion);
+    }
+
+    let globalCounter = 0;
+    let totalMarks = 0;
+    testData.sections.forEach(sec => {
+      let secMarks = 0;
+      sec.questions.forEach((q, idx) => {
+        globalCounter++;
+        q.globalIndex = globalCounter;
+        q.localIndex = idx + 1;
+        q.questionNumber = globalCounter;
+        q.section = sec.title;
+        secMarks += (Number(q.marksForCorrect) || 1);
+      });
+      sec.maxMarks = secMarks;
+      sec.expectedQuestions = sec.questions.length;
+      totalMarks += secMarks;
+    });
+
+    testData.questionsCount = globalCounter;
+    testData.marks = totalMarks;
+    testData.sectionsSummary = testData.sections.map(s => ({
+      id: s.id,
+      title: s.title,
+      questionsCount: s.questions.length,
+      maxMarks: s.maxMarks,
+      durationMinutes: s.durationMinutes || 20
+    }));
+
+    const now = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO tests (
+        id, exam_id, exam_name, type, title, subtitle,
+        marks, questions_count, duration_minutes,
+        marks_per_correct, negative_marks, is_free,
+        sections_summary_json, test_data_json, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        exam_id = excluded.exam_id,
+        exam_name = excluded.exam_name,
+        type = excluded.type,
+        title = excluded.title,
+        subtitle = excluded.subtitle,
+        marks = excluded.marks,
+        questions_count = excluded.questions_count,
+        duration_minutes = excluded.duration_minutes,
+        marks_per_correct = excluded.marks_per_correct,
+        negative_marks = excluded.negative_marks,
+        sections_summary_json = excluded.sections_summary_json,
+        test_data_json = excluded.test_data_json
+    `).run(
+      testData.id,
+      testData.examId,
+      testData.examName,
+      testData.type,
+      testData.title,
+      testData.subtitle,
+      testData.marks,
+      testData.questionsCount,
+      testData.durationMinutes,
+      testData.marksPerCorrect || 1.0,
+      testData.negativeMarks || 0.25,
+      1,
+      JSON.stringify(testData.sectionsSummary),
+      JSON.stringify(testData),
+      now
+    );
+
+    db.prepare('INSERT INTO admin_audit_log (action, test_id, details_json, created_at) VALUES (?, ?, ?, ?)').run(
+      'save_mock_question', testData.id, JSON.stringify({ questionId: finalQuestion.id, totalQuestions: testData.questionsCount, section: secTitle }), now
+    );
+
+    res.json({
+      success: true,
+      testId: testData.id,
+      questionId: finalQuestion.id,
+      questionNumber: finalQuestion.questionNumber,
+      totalQuestions: testData.questionsCount,
+      totalMarks: testData.marks,
+      test: testData
+    });
+  } catch (err) {
+    console.error('Failed to save mock question:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -1291,13 +1730,10 @@ app.get('/api/leaderboard', (req, res) => {
 });
 
 // ==========================================
-// 5. MODEL CONTEXT PROTOCOL (MCP) & LIVE OLIVEBOARD BROWSER
+// 5. MODEL CONTEXT PROTOCOL (MCP) SERVER
 // ==========================================
 const { mountMcpRoutes } = require('./mcp-server');
 mountMcpRoutes(app, db);
-
-const { mountOliveboardLiveBrowserRoutes } = require('./oliveboard-live-re');
-mountOliveboardLiveBrowserRoutes(app, ingestBackendPaperFile);
 
 // Fallback to index.html for SPA routing
 app.use((req, res) => {

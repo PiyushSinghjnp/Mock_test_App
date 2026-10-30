@@ -1,0 +1,1475 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Oliveboard Admin & Mock Test Maker</title>
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-hover: #0d9488;
+      --primary-light: #ccfbf1;
+      --secondary: #475569;
+      --accent: #0284c7;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --danger: #ef4444;
+      --danger-bg: #fee2e2;
+      --success: #10b981;
+      --success-bg: #dcfce7;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+    }
+    /* Sticky Top Navigation Bar */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      background: transparent;
+      color: var(--secondary);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .nav-btn:hover {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+    .nav-btn.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: #99f6e4;
+    }
+    .auth-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: var(--secondary);
+    }
+    .auth-pill.ok {
+      background: var(--success-bg);
+      color: #166534;
+    }
+    .auth-pill.locked {
+      background: var(--danger-bg);
+      color: #991b1b;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Layout & Cards */
+    .wrap {
+      max-width: 1080px;
+      margin: 24px auto 60px;
+      padding: 0 20px;
+    }
+    .hero {
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 0 0 6px;
+      color: #0f172a;
+    }
+    .hero p {
+      color: var(--muted);
+      margin: 0;
+      font-size: 14px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+    .card-header h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    /* Forms & Inputs */
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin: 12px 0 6px;
+      color: #334155;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      font: inherit;
+      padding: 9px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+    }
+    textarea {
+      resize: vertical;
+      font-family: inherit;
+    }
+    .row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .col {
+      flex: 1;
+      min-width: 220px;
+    }
+    .col-sm {
+      flex: 0 0 140px;
+    }
+
+    /* Buttons */
+    button, .btn {
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 16px;
+      border-radius: 6px;
+      border: 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    button.primary, .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    button.primary:hover, .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    button.secondary, .btn-secondary {
+      background: #e2e8f0;
+      color: #334155;
+    }
+    button.secondary:hover, .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+    button.accent, .btn-accent {
+      background: var(--accent);
+      color: #ffffff;
+    }
+    button.accent:hover, .btn-accent:hover {
+      background: #0369a1;
+    }
+    button.danger, .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+    button.danger:hover, .btn-danger:hover {
+      background: #fecaca;
+    }
+    button.outline {
+      background: transparent;
+      border: 1px solid #cbd5e1;
+      color: var(--secondary);
+    }
+    button.outline:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Drop Zone */
+    .drop-zone {
+      border: 2px dashed #94a3b8;
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .drop-zone-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .drop-zone-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .drop-zone-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Image Preview & Copy Bar */
+    .image-preview-panel {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .image-preview-content {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .image-thumb-box {
+      max-width: 220px;
+      background: #fff;
+      padding: 6px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .image-thumb-box img {
+      max-width: 100%;
+      max-height: 160px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    .image-meta-info {
+      flex: 1;
+      min-width: 280px;
+    }
+    .code-box {
+      background: #1e293b;
+      color: #f8fafc;
+      font-family: ui-monospace, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 6px 0 10px;
+      user-select: all;
+    }
+
+    /* Image Gallery Grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .gallery-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+    .gallery-item:hover {
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+      border-color: #94a3b8;
+    }
+    .gallery-thumb {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .gallery-thumb img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .gallery-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .gallery-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: auto;
+    }
+    .gallery-actions button {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 11px;
+    }
+
+    /* Editor Toolbar */
+    .editor-toolbar {
+      display: flex;
+      gap: 6px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-bottom: 0;
+      border-radius: 6px 6px 0 0;
+      padding: 6px 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .tool-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tool-btn:hover {
+      background: #f8fafc;
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    .textarea-attached {
+      border-radius: 0 0 6px 6px !important;
+    }
+
+    /* Option row styling */
+    .option-row {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .option-letter {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--primary);
+      width: 24px;
+    }
+    .option-input-wrap {
+      flex: 1;
+    }
+    .option-attach-btn {
+      font-size: 11px;
+      padding: 5px 8px;
+    }
+
+    /* Preview Card */
+    .live-preview-box {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 18px;
+      margin-top: 14px;
+    }
+    .live-preview-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Status alerts */
+    .status {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      background: #e2e8f0;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+    .danger { background: var(--danger-bg); color: #991b1b; }
+    .ok { background: var(--success-bg); color: #166534; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+    th { font-weight: 700; color: #475569; background: #f8fafc; }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Header Bar -->
+  <header class="top-bar">
+    <div class="brand-group">
+      <a href="/" class="brand-logo">
+        <span>Oliveboard</span>
+      </a>
+      <span class="brand-badge">Admin & Mock Maker</span>
+    </div>
+
+    <nav class="nav-links">
+      <a href="#sec-images" class="nav-btn">🖼️ Image Inserter</a>
+      <a href="#sec-maker" class="nav-btn">✍️ Mock Maker</a>
+      <a href="#sec-upload-json" class="nav-btn">📄 Upload JSON</a>
+      <a href="#sec-tests" class="nav-btn">📊 Published Tests</a>
+      <a href="/" class="nav-btn">🌐 View Site</a>
+    </nav>
+
+    <div id="auth-status-pill" class="auth-pill locked">
+      <span class="dot"></span>
+      <span id="auth-status-text">Admin Locked</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="hero">
+      <h1>Mock Test & Image Management Console</h1>
+      <p>Upload diagrams and figures, insert images into mock questions and solutions, or publish new JSON exams.</p>
+    </div>
+
+    <!-- 1. Authentication Card -->
+    <section class="card" id="sec-auth">
+      <div class="card-header">
+        <div>
+          <h2>🔐 Admin Authorization</h2>
+          <div class="card-subtitle">Unlock using your admin key to upload images, edit mocks, and publish tests.</div>
+        </div>
+      </div>
+      <div class="row" style="align-items:flex-end;">
+        <div class="col">
+          <label for="token">Admin Token</label>
+          <input id="token" type="password" autocomplete="off" placeholder="Enter admin token (default: admin)">
+        </div>
+        <div>
+          <button id="save" type="button" class="primary">Unlock Console</button>
+          <button id="clear" type="button" class="secondary">Clear</button>
+        </div>
+      </div>
+      <div id="status" class="status">Locked. Enter token and click "Unlock Console".</div>
+    </section>
+
+    <!-- 2. Core Image Inserter & Asset Manager Card -->
+    <section class="card" id="sec-images">
+      <div class="card-header">
+        <div>
+          <h2>🖼️ Image Inserter & Mock Diagram Assets</h2>
+          <div class="card-subtitle">Insert diagrams, graphs, tables, and formula figures into your questions, options, or explanations.</div>
+        </div>
+        <button id="btn-refresh-images" type="button" class="outline" style="font-size:12px;">🔄 Refresh Gallery</button>
+      </div>
+
+      <!-- Drag & Drop Zone -->
+      <div id="img-drop-zone" class="drop-zone">
+        <div class="drop-zone-icon">📷</div>
+        <div class="drop-zone-text">Drag & drop question diagram here, or click to browse</div>
+        <div class="drop-zone-hint">Supports PNG, JPG, JPEG, WEBP, GIF, SVG (up to 25MB) • You can also paste directly with <b>Ctrl+V</b></div>
+        <input type="file" id="img-file-input" accept="image/*" style="display:none;" multiple>
+      </div>
+
+      <div class="row" style="margin-top:12px; align-items:flex-end;">
+        <div class="col">
+          <label for="img-caption-input">Optional Alt Text / Diagram Caption</label>
+          <input type="text" id="img-caption-input" placeholder="e.g. Reasoning Seating Arrangement, DI Bar Graph, Triangle ABC">
+        </div>
+        <div>
+          <button id="btn-browse-img" type="button" class="secondary">Browse File</button>
+          <button id="btn-upload-img" type="button" class="primary" disabled>Upload & Insert</button>
+        </div>
+      </div>
+
+      <!-- Preview of Uploaded / Selected Image -->
+      <div id="image-preview-panel" class="image-preview-panel">
+        <div class="image-preview-content">
+          <div class="image-thumb-box">
+            <img id="preview-img-element" src="" alt="Selected Preview">
+            <div id="preview-img-dims" style="font-size:11px; color:var(--muted); margin-top:4px;">0 × 0 px</div>
+          </div>
+          <div class="image-meta-info">
+            <div style="font-weight:700; font-size:14px; margin-bottom:4px;" id="preview-img-name">Image Name</div>
+            
+            <label style="margin:4px 0 2px;">Image URL (for JSON tests or direct links):</label>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="preview-img-url" readonly style="font-family:monospace; font-size:12px;">
+              <button type="button" id="btn-copy-url" class="secondary" style="white-space:nowrap;">📋 Copy URL</button>
+            </div>
+
+            <label style="margin:8px 0 2px;">HTML &lt;img&gt; Tag (ready to paste in questions):</label>
+            <div class="code-box" id="preview-img-tag">&lt;img src="..." alt="Figure"&gt;</div>
+            
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+              <button type="button" id="btn-copy-tag" class="primary">📋 Copy HTML &lt;img&gt; Tag</button>
+              <button type="button" id="btn-insert-to-q" class="accent">➕ Insert into Question Text</button>
+              <button type="button" id="btn-insert-to-diag" class="secondary">🖼️ Set as Main Question Diagram</button>
+              <button type="button" id="btn-insert-to-exp" class="secondary">💡 Insert into Explanation</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Gallery of Existing Server Mock Images -->
+      <div style="margin-top:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label style="font-size:14px; margin:0;">Mock Images Library (Stored on Server)</label>
+          <input type="text" id="gallery-search" placeholder="Filter by filename..." style="width:200px; padding:4px 8px; font-size:12px;">
+        </div>
+        <div id="gallery-container" class="gallery-grid">
+          <div style="color:var(--muted); font-size:13px; grid-column:1/-1; padding:12px 0;">Unlock admin to view stored mock images.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Mock Test & Question Maker Card -->
+    <section class="card" id="sec-maker">
+      <div class="card-header">
+        <div>
+          <h2>✍️ Mock Question Builder & Question Inserter</h2>
+          <div class="card-subtitle">Create or edit mock questions with figures, multi-choice options, and step-by-step solutions.</div>
+        </div>
+        <button id="btn-reset-maker" type="button" class="outline" style="font-size:12px;">Clear / New Question</button>
+      </div>
+
+      <!-- Test & Section Selection -->
+      <div class="row">
+        <div class="col">
+          <label for="maker-test-select">Target Mock Test</label>
+          <select id="maker-test-select">
+            <option value="">-- Choose Existing Test or Create New --</option>
+            <option value="__new__">➕ Create New Mock Test...</option>
+          </select>
+        </div>
+        <div class="col" id="new-test-fields" style="display:none;">
+          <label for="maker-new-test-title">New Test Title</label>
+          <input type="text" id="maker-new-test-title" placeholder="e.g. SBI PO 2026 Prelims - Free Mock 2">
+        </div>
+        <div class="col">
+          <label for="maker-section-input">Section Name</label>
+          <input type="text" id="maker-section-input" list="section-presets" placeholder="e.g. Reasoning Ability">
+          <datalist id="section-presets">
+            <option value="Reasoning Ability">
+            <option value="Quantitative Aptitude">
+            <option value="English Language">
+            <option value="General Awareness">
+            <option value="Professional Knowledge">
+          </datalist>
+        </div>
+      </div>
+
+      <!-- Question Content Area -->
+      <div style="margin-top:14px;">
+        <label for="maker-question-text" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>Question Statement (HTML / Text)</span>
+          <span style="font-weight:normal; font-size:12px; color:var(--muted);">Supports inline images, tables & bold tags</span>
+        </label>
+
+        <!-- Formatting & Image Insert Toolbar -->
+        <div class="editor-toolbar">
+          <button type="button" class="tool-btn" id="tool-insert-img">🖼️ Insert Image</button>
+          <button type="button" class="tool-btn" id="tool-paste-img">📋 Paste Screenshot</button>
+          <button type="button" class="tool-btn" id="tool-bold"><b>B</b></button>
+          <button type="button" class="tool-btn" id="tool-italic"><i>I</i></button>
+          <button type="button" class="tool-btn" id="tool-table">📊 Table</button>
+          <button type="button" class="tool-btn" id="tool-blank">___ Blank</button>
+          <span style="flex:1;"></span>
+          <span style="font-size:11px; color:var(--muted);">Cursor insertion active</span>
+        </div>
+        <textarea id="maker-question-text" rows="5" class="textarea-attached" placeholder="Enter question statement here. You can insert images at any position using the 'Insert Image' button above."></textarea>
+      </div>
+
+      <!-- Dedicated Question Figure / Diagram Input -->
+      <div style="margin-top:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+        <label style="margin:0 0 6px;">Question Main Diagram / Figure (Optional)</label>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <input type="file" id="maker-diagram-file" accept="image/*" style="font-size:12px;">
+          <input type="text" id="maker-diagram-url" placeholder="Or enter image URL: /images/uploads/figure.png" style="flex:1; min-width:200px; font-size:12px;">
+          <button type="button" id="btn-clear-diagram" class="secondary" style="font-size:12px; padding:6px 10px;">Clear Diagram</button>
+        </div>
+        <div id="maker-diagram-preview" style="display:none; margin-top:8px;">
+          <img id="maker-diagram-img" src="" style="max-height:140px; border:1px solid #cbd5e1; border-radius:4px; padding:4px; background:#fff;">
+        </div>
+      </div>
+
+      <!-- Multiple Choice Options (A, B, C, D, E) -->
+      <div style="margin-top:18px;">
+        <label>Options & Correct Answer (Click radio to mark correct answer)</label>
+
+        <!-- Option A -->
+        <div class="option-row">
+          <input type="radio" name="maker-correct-answer" value="A" id="correct-opt-a" checked title="Mark as correct">
+          <span class="option-letter">A.</span>
+          <div class="option-input-wrap">
+            <input type="text" id="opt-text-a" placeholder="Option A text or HTML (e.g. 45 degrees or Statement 1)">
+          </div>
+          <button type="button" class="secondary option-attach-btn" onclick="attachOptionImage('a')">📷 Add Image</button>
+          <input type="file" id="opt-file-a" accept="image/*" style="display:none;" onchange="handleOptionFile(this, 'a')">
+        </div>
+
+        <!-- Option B -->
+        <div class="option-row">
+          <input type="radio" name="maker-correct-answer" value="B" id="correct-opt-b" title="Mark as correct">
+          <span class="option-letter">B.</span>
+          <div class="option-input-wrap">
+            <input type="text" id="opt-text-b" placeholder="Option B text or HTML">
+          </div>
+          <button type="button" class="secondary option-attach-btn" onclick="attachOptionImage('b')">📷 Add Image</button>
+          <input type="file" id="opt-file-b" accept="image/*" style="display:none;" onchange="handleOptionFile(this, 'b')">
+        </div>
+
+        <!-- Option C -->
+        <div class="option-row">
+          <input type="radio" name="maker-correct-answer" value="C" id="correct-opt-c" title="Mark as correct">
+          <span class="option-letter">C.</span>
+          <div class="option-input-wrap">
+            <input type="text" id="opt-text-c" placeholder="Option C text or HTML">
+          </div>
+          <button type="button" class="secondary option-attach-btn" onclick="attachOptionImage('c')">📷 Add Image</button>
+          <input type="file" id="opt-file-c" accept="image/*" style="display:none;" onchange="handleOptionFile(this, 'c')">
+        </div>
+
+        <!-- Option D -->
+        <div class="option-row">
+          <input type="radio" name="maker-correct-answer" value="D" id="correct-opt-d" title="Mark as correct">
+          <span class="option-letter">D.</span>
+          <div class="option-input-wrap">
+            <input type="text" id="opt-text-d" placeholder="Option D text or HTML">
+          </div>
+          <button type="button" class="secondary option-attach-btn" onclick="attachOptionImage('d')">📷 Add Image</button>
+          <input type="file" id="opt-file-d" accept="image/*" style="display:none;" onchange="handleOptionFile(this, 'd')">
+        </div>
+
+        <!-- Option E -->
+        <div class="option-row">
+          <input type="radio" name="maker-correct-answer" value="E" id="correct-opt-e" title="Mark as correct">
+          <span class="option-letter">E.</span>
+          <div class="option-input-wrap">
+            <input type="text" id="opt-text-e" placeholder="Option E text or HTML (optional)">
+          </div>
+          <button type="button" class="secondary option-attach-btn" onclick="attachOptionImage('e')">📷 Add Image</button>
+          <input type="file" id="opt-file-e" accept="image/*" style="display:none;" onchange="handleOptionFile(this, 'e')">
+        </div>
+      </div>
+
+      <!-- Marks & Explanation -->
+      <div class="row" style="margin-top:14px;">
+        <div class="col-sm">
+          <label for="maker-marks-correct">Correct Marks</label>
+          <input type="number" id="maker-marks-correct" value="1.0" step="0.25">
+        </div>
+        <div class="col-sm">
+          <label for="maker-marks-neg">Negative Marks</label>
+          <input type="number" id="maker-marks-neg" value="0.25" step="0.05">
+        </div>
+        <div class="col">
+          <label for="maker-explanation" style="display:flex; justify-content:space-between;">
+            <span>Explanation / Solution</span>
+            <button type="button" id="btn-insert-exp-img" class="outline" style="padding:2px 8px; font-size:11px;">📷 Insert Solution Figure</button>
+          </label>
+          <textarea id="maker-explanation" rows="3" placeholder="Step-by-step solution and explanation. Can include figures, equations, and logic breakdown."></textarea>
+        </div>
+      </div>
+
+      <!-- Live Question Preview -->
+      <div style="margin-top:16px;">
+        <div class="live-preview-badge">Live Candidate Exam Preview</div>
+        <div id="live-question-preview" class="live-preview-box">
+          <div id="prev-q-section" style="font-size:12px; font-weight:700; color:var(--muted); margin-bottom:6px;">Section: Reasoning Ability</div>
+          <div id="prev-q-diag" style="margin-bottom:10px;"></div>
+          <div id="prev-q-text" style="font-size:15px; font-weight:600; margin-bottom:14px;">Question statement will appear here...</div>
+          <div id="prev-q-options" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Save & Submit Question -->
+      <div style="margin-top:20px; display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap;">
+        <button type="button" id="btn-save-question" class="primary" style="padding:10px 24px; font-size:14px;">💾 Save Question to Mock Test</button>
+      </div>
+      <div id="maker-status" class="status" style="display:none;"></div>
+    </section>
+
+    <!-- 4. Upload JSON Test Card -->
+    <section class="card" id="sec-upload-json">
+      <div class="card-header">
+        <div>
+          <h2>📄 Upload JSON Mock Test</h2>
+          <div class="card-subtitle">Import full question papers with exam metadata, sectional timings, and embedded images.</div>
+        </div>
+      </div>
+      <p class="muted" style="font-size:13px; margin:0 0 12px;">
+        💡 <b>Tip for images in JSON:</b> You can reference any uploaded image using <code>&lt;img src="/images/uploads/your-figure.png"&gt;</code> or specify <code>"imageUrls": ["/images/uploads/your-figure.png"]</code> in question objects.
+      </p>
+      <input id="file" type="file" accept="application/json,.json">
+      <div id="preview" class="status">No file selected.</div>
+      <div style="margin-top:12px;">
+        <button id="upload" type="button" class="primary" disabled>Upload and Publish Test</button>
+      </div>
+    </section>
+
+    <!-- 5. Published Tests Catalog Card -->
+    <section class="card" id="sec-tests">
+      <div class="card-header">
+        <div>
+          <h2>📊 Published Tests</h2>
+          <div class="card-subtitle">All tests currently active in the SQLite database.</div>
+        </div>
+        <button id="refresh" type="button" class="secondary">🔄 Refresh List</button>
+      </div>
+      <div id="tests" class="status">Unlock to load tests.</div>
+    </section>
+  </main>
+
+  <!-- Floating Toast Notification -->
+  <div id="toast">Copied to clipboard!</div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const tokenKey = 'oliveboard_admin_token';
+
+    function token() {
+      return $('token').value.trim() || sessionStorage.getItem(tokenKey) || '';
+    }
+
+    function showToast(msg) {
+      const t = $('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function showStatus(text, kind = '') {
+      $('status').textContent = text;
+      $('status').className = 'status ' + kind;
+      const pill = $('auth-status-pill');
+      const pillText = $('auth-status-text');
+      if (kind === 'ok') {
+        pill.className = 'auth-pill ok';
+        pillText.textContent = 'Admin Unlocked';
+      } else if (kind === 'danger') {
+        pill.className = 'auth-pill locked';
+        pillText.textContent = 'Admin Error';
+      } else {
+        pill.className = 'auth-pill locked';
+        pillText.textContent = 'Admin Locked';
+      }
+    }
+
+    async function api(url, opts = {}) {
+      const t = token();
+      if (!t) throw Error('Enter the admin token first.');
+      const res = await fetch(url, {
+        ...opts,
+        headers: {
+          'x-admin-token': t,
+          ...(opts.headers || {})
+        }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw Error(data.error || 'Request failed (' + res.status + ')');
+      }
+      return data;
+    }
+
+    // -----------------------------------------------------------------
+    // 1. AUTHENTICATION HANDLERS
+    // -----------------------------------------------------------------
+    $('save').onclick = async () => {
+      const t = $('token').value.trim();
+      if (!t) return showStatus('Enter the admin token.', 'danger');
+      sessionStorage.setItem(tokenKey, t);
+      try {
+        await loadTests();
+        await loadImages();
+        showStatus('Admin access verified.', 'ok');
+      } catch (e) {
+        sessionStorage.removeItem(tokenKey);
+        showStatus(e.message, 'danger');
+      }
+    };
+
+    $('clear').onclick = () => {
+      sessionStorage.removeItem(tokenKey);
+      $('token').value = '';
+      $('tests').textContent = 'Unlock to load tests.';
+      $('gallery-container').innerHTML = '<div style="color:var(--muted); font-size:13px; grid-column:1/-1; padding:12px 0;">Unlock admin to view stored mock images.</div>';
+      showStatus('Locked');
+    };
+
+    // -----------------------------------------------------------------
+    // 2. IMAGE INSERTER & ASSET MANAGER
+    // -----------------------------------------------------------------
+    let pendingImage = null;
+    let uploadedImagesList = [];
+
+    const dropZone = $('img-drop-zone');
+    const fileInput = $('img-file-input');
+
+    dropZone.onclick = () => fileInput.click();
+    $('btn-browse-img').onclick = () => fileInput.click();
+
+    ['dragenter', 'dragover'].forEach(name => {
+      dropZone.addEventListener(name, e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(name => {
+      dropZone.addEventListener(name, e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      });
+    });
+
+    dropZone.addEventListener('drop', e => {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) handleSelectedImageFile(files[0]);
+    });
+
+    fileInput.onchange = e => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleSelectedImageFile(e.target.files[0]);
+      }
+    };
+
+    // Global Paste Support (Ctrl+V)
+    window.addEventListener('paste', e => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (const item of items) {
+        if (item.type.indexOf('image') === 0) {
+          const file = item.getAsFile();
+          handleSelectedImageFile(file, 'Pasted_Screenshot');
+          showToast('Image detected from clipboard!');
+          break;
+        }
+      }
+    });
+
+    function handleSelectedImageFile(file, defaultName = '') {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        pendingImage = {
+          file,
+          dataUrl: e.target.result,
+          name: file.name || defaultName || ('figure_' + Date.now() + '.png')
+        };
+        $('preview-img-element').src = pendingImage.dataUrl;
+        $('preview-img-name').textContent = pendingImage.name;
+        $('btn-upload-img').disabled = false;
+
+        const imgObj = new Image();
+        imgObj.onload = () => {
+          $('preview-img-dims').textContent = `${imgObj.naturalWidth} × ${imgObj.naturalHeight} px • ${(file.size / 1024).toFixed(1)} KB`;
+        };
+        imgObj.src = pendingImage.dataUrl;
+
+        $('image-preview-panel').style.display = 'block';
+        showToast('Image ready for upload!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    $('btn-upload-img').onclick = async () => {
+      if (!pendingImage) return;
+      $('btn-upload-img').disabled = true;
+      try {
+        const caption = $('img-caption-input').value.trim();
+        const data = await api('/api/admin/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: pendingImage.name,
+            dataUrl: pendingImage.dataUrl,
+            caption: caption
+          })
+        });
+
+        $('preview-img-url').value = data.url;
+        $('preview-img-tag').textContent = data.tag;
+        showToast('Image uploaded successfully!');
+        await loadImages();
+      } catch (err) {
+        alert('Upload failed: ' + err.message);
+      } finally {
+        $('btn-upload-img').disabled = false;
+      }
+    };
+
+    $('btn-copy-url').onclick = () => {
+      const url = $('preview-img-url').value;
+      if (!url) return;
+      navigator.clipboard.writeText(url).then(() => showToast('Image URL copied to clipboard!'));
+    };
+
+    $('btn-copy-tag').onclick = () => {
+      const tag = $('preview-img-tag').textContent;
+      if (!tag) return;
+      navigator.clipboard.writeText(tag).then(() => showToast('HTML <img> tag copied to clipboard!'));
+    };
+
+    $('btn-insert-to-q').onclick = () => {
+      const tag = $('preview-img-tag').textContent;
+      if (!tag) return;
+      insertIntoTextarea($('maker-question-text'), '\n' + tag + '\n');
+      updateLivePreview();
+      showToast('Inserted into Question statement!');
+      location.hash = '#sec-maker';
+    };
+
+    $('btn-insert-to-diag').onclick = () => {
+      const url = $('preview-img-url').value;
+      if (!url) return;
+      $('maker-diagram-url').value = url;
+      $('maker-diagram-img').src = url;
+      $('maker-diagram-preview').style.display = 'block';
+      updateLivePreview();
+      showToast('Set as main Question diagram!');
+      location.hash = '#sec-maker';
+    };
+
+    $('btn-insert-to-exp').onclick = () => {
+      const tag = $('preview-img-tag').textContent;
+      if (!tag) return;
+      insertIntoTextarea($('maker-explanation'), '\n' + tag + '\n');
+      showToast('Inserted into Explanation!');
+      location.hash = '#sec-maker';
+    };
+
+    async function loadImages() {
+      try {
+        const data = await api('/api/admin/images');
+        uploadedImagesList = data.images || [];
+        renderGallery(uploadedImagesList);
+      } catch (e) {
+        console.warn('Failed to load gallery images:', e);
+      }
+    }
+
+    $('btn-refresh-images').onclick = () => loadImages().catch(e => showToast(e.message));
+
+    $('gallery-search').oninput = e => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = uploadedImagesList.filter(img => img.filename.toLowerCase().includes(q));
+      renderGallery(filtered);
+    };
+
+    function renderGallery(images) {
+      const cont = $('gallery-container');
+      if (!images || images.length === 0) {
+        cont.innerHTML = '<div style="color:var(--muted); font-size:13px; grid-column:1/-1; padding:12px 0;">No uploaded mock images found yet.</div>';
+        return;
+      }
+      cont.innerHTML = '';
+      images.forEach(img => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        item.innerHTML = `
+          <div class="gallery-thumb">
+            <img src="${img.url}" alt="${esc(img.filename)}" loading="lazy">
+          </div>
+          <div class="gallery-title" title="${esc(img.filename)}">${esc(img.filename)}</div>
+          <div style="font-size:10px; color:var(--muted); margin-bottom:6px;">${(img.size / 1024).toFixed(1)} KB</div>
+          <div class="gallery-actions">
+            <button type="button" class="primary btn-copy-gallery-tag" title="Copy HTML tag">Tag</button>
+            <button type="button" class="secondary btn-copy-gallery-url" title="Copy URL">URL</button>
+            <button type="button" class="danger btn-del-gallery-img" title="Delete Image">✕</button>
+          </div>
+        `;
+
+        item.querySelector('.btn-copy-gallery-tag').onclick = () => {
+          navigator.clipboard.writeText(img.tag).then(() => showToast('Copied <img> tag!'));
+        };
+        item.querySelector('.btn-copy-gallery-url').onclick = () => {
+          navigator.clipboard.writeText(img.url).then(() => showToast('Copied URL!'));
+        };
+        item.querySelector('.btn-del-gallery-img').onclick = async () => {
+          if (!confirm(`Delete image "${img.filename}"?`)) return;
+          try {
+            await api(`/api/admin/images/${encodeURIComponent(img.filename)}`, { method: 'DELETE' });
+            showToast('Image deleted.');
+            await loadImages();
+          } catch (e) {
+            alert('Delete failed: ' + e.message);
+          }
+        };
+        cont.appendChild(item);
+      });
+    }
+
+    // -----------------------------------------------------------------
+    // 3. MOCK QUESTION BUILDER LOGIC
+    // -----------------------------------------------------------------
+    function insertIntoTextarea(textarea, textToInsert) {
+      const start = textarea.selectionStart || 0;
+      const end = textarea.selectionEnd || 0;
+      const val = textarea.value;
+      textarea.value = val.substring(0, start) + textToInsert + val.substring(end);
+      textarea.selectionStart = textarea.selectionEnd = start + textToInsert.length;
+      textarea.focus();
+    }
+
+    $('tool-bold').onclick = () => insertIntoTextarea($('maker-question-text'), '<b>Bold text</b>');
+    $('tool-italic').onclick = () => insertIntoTextarea($('maker-question-text'), '<i>Italic text</i>');
+    $('tool-blank').onclick = () => insertIntoTextarea($('maker-question-text'), ' ______ ');
+    $('tool-table').onclick = () => {
+      const tableHtml = '<table border="1" cellpadding="6" style="border-collapse:collapse;margin:8px 0;">\n  <tr><th>Column 1</th><th>Column 2</th></tr>\n  <tr><td>Item A</td><td>Value 1</td></tr>\n</table>';
+      insertIntoTextarea($('maker-question-text'), '\n' + tableHtml + '\n');
+      updateLivePreview();
+    };
+
+    $('tool-insert-img').onclick = () => {
+      fileInput.click();
+      showToast('Select image to insert into question...');
+    };
+
+    $('tool-paste-img').onclick = () => {
+      showToast('Press Ctrl+V to paste your screenshot diagram!');
+    };
+
+    $('maker-diagram-file').onchange = e => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async evt => {
+        try {
+          const data = await api('/api/admin/upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: file.name, dataUrl: evt.target.result })
+          });
+          $('maker-diagram-url').value = data.url;
+          $('maker-diagram-img').src = data.url;
+          $('maker-diagram-preview').style.display = 'block';
+          updateLivePreview();
+          showToast('Diagram uploaded and attached to question!');
+        } catch (err) {
+          alert('Upload failed: ' + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+
+    $('maker-diagram-url').oninput = e => {
+      const url = e.target.value.trim();
+      if (url) {
+        $('maker-diagram-img').src = url;
+        $('maker-diagram-preview').style.display = 'block';
+      } else {
+        $('maker-diagram-preview').style.display = 'none';
+      }
+      updateLivePreview();
+    };
+
+    $('btn-clear-diagram').onclick = () => {
+      $('maker-diagram-file').value = '';
+      $('maker-diagram-url').value = '';
+      $('maker-diagram-preview').style.display = 'none';
+      updateLivePreview();
+    };
+
+    // Option image attachers
+    window.attachOptionImage = function(letter) {
+      $(`opt-file-${letter}`).click();
+    };
+
+    window.handleOptionFile = function(input, letter) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async evt => {
+        try {
+          const data = await api('/api/admin/upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename: file.name, dataUrl: evt.target.result })
+          });
+          const optText = $(`opt-text-${letter}`);
+          optText.value = (optText.value.trim() ? optText.value + ' ' : '') + `<img src="${data.url}" style="max-height:80px; vertical-align:middle; margin-left:6px;">`;
+          updateLivePreview();
+          showToast(`Image attached to Option ${letter.toUpperCase()}!`);
+        } catch (err) {
+          alert('Option image upload failed: ' + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+
+    $('btn-insert-exp-img').onclick = () => {
+      const tag = $('preview-img-tag').textContent;
+      if (tag && tag.includes('<img')) {
+        insertIntoTextarea($('maker-explanation'), '\n' + tag + '\n');
+        showToast('Solution figure inserted from active preview!');
+      } else {
+        fileInput.click();
+        showToast('Select image to insert into explanation...');
+      }
+    };
+
+    // Live Preview Updater
+    function updateLivePreview() {
+      const sec = $('maker-section-input').value.trim() || 'General';
+      $('prev-q-section').textContent = 'Section: ' + sec;
+
+      const diagUrl = $('maker-diagram-url').value.trim();
+      if (diagUrl) {
+        $('prev-q-diag').innerHTML = `<img src="${diagUrl}" style="max-width:100%; max-height:240px; border:1px solid #cbd5e1; border-radius:6px; display:block; margin-bottom:8px;">`;
+      } else {
+        $('prev-q-diag').innerHTML = '';
+      }
+
+      const qText = $('maker-question-text').value.trim();
+      $('prev-q-text').innerHTML = qText || '<i>Question statement will appear here...</i>';
+
+      const optCont = $('prev-q-options');
+      optCont.innerHTML = '';
+      ['a', 'b', 'c', 'd', 'e'].forEach(l => {
+        const val = $(`opt-text-${l}`).value.trim();
+        if (val || l === 'a' || l === 'b') {
+          const isCorrect = document.querySelector(`input[name="maker-correct-answer"]:checked`)?.value === l.toUpperCase();
+          const row = document.createElement('div');
+          row.style.cssText = `padding:8px 12px; border-radius:6px; border:1px solid ${isCorrect ? '#10b981' : '#e2e8f0'}; background:${isCorrect ? '#ecfdf5' : '#ffffff'}; font-size:14px; display:flex; align-items:center; gap:8px;`;
+          row.innerHTML = `<b>${l.toUpperCase()}.</b> <span>${val || '(Empty option)'}</span> ${isCorrect ? '<span style="margin-left:auto; font-size:11px; color:#10b981; font-weight:700;">✓ Correct</span>' : ''}`;
+          optCont.appendChild(row);
+        }
+      });
+    }
+
+    $('maker-question-text').oninput = updateLivePreview;
+    $('maker-section-input').oninput = updateLivePreview;
+    ['a', 'b', 'c', 'd', 'e'].forEach(l => {
+      $(`opt-text-${l}`).oninput = updateLivePreview;
+    });
+    document.querySelectorAll('input[name="maker-correct-answer"]').forEach(r => r.onchange = updateLivePreview);
+
+    $('maker-test-select').onchange = e => {
+      if (e.target.value === '__new__') {
+        $('new-test-fields').style.display = 'block';
+      } else {
+        $('new-test-fields').style.display = 'none';
+      }
+    };
+
+    $('btn-reset-maker').onclick = () => {
+      $('maker-question-text').value = '';
+      $('maker-diagram-file').value = '';
+      $('maker-diagram-url').value = '';
+      $('maker-diagram-preview').style.display = 'none';
+      ['a', 'b', 'c', 'd', 'e'].forEach(l => $(`opt-text-${l}`).value = '');
+      $('correct-opt-a').checked = true;
+      $('maker-explanation').value = '';
+      updateLivePreview();
+      showToast('Form cleared for new question.');
+    };
+
+    // Save Question to Test
+    $('btn-save-question').onclick = async () => {
+      const testSelect = $('maker-test-select').value;
+      let testId = testSelect;
+      let testTitle = '';
+
+      if (!testSelect) {
+        return alert('Please select a target mock test or choose "Create New Mock Test"');
+      }
+
+      if (testSelect === '__new__') {
+        testTitle = $('maker-new-test-title').value.trim();
+        if (!testTitle) return alert('Enter a title for the new mock test');
+        testId = 'test_' + Date.now();
+      } else {
+        const opt = $('maker-test-select').selectedOptions[0];
+        testTitle = opt ? opt.textContent : testSelect;
+      }
+
+      const qText = $('maker-question-text').value.trim();
+      if (!qText) return alert('Please enter question statement text.');
+
+      const sectionTitle = $('maker-section-input').value.trim() || 'General';
+      const diagUrl = $('maker-diagram-url').value.trim();
+      const imageUrls = diagUrl ? [diagUrl] : [];
+
+      const options = [];
+      ['A', 'B', 'C', 'D', 'E'].forEach(l => {
+        const txt = $(`opt-text-${l.toLowerCase()}`).value.trim();
+        if (txt) {
+          options.push({ letter: l, text: txt, html: txt });
+        }
+      });
+
+      if (options.length < 2) {
+        return alert('Please enter at least 2 options (Option A and B).');
+      }
+
+      const correctAnswer = document.querySelector('input[name="maker-correct-answer"]:checked')?.value || 'A';
+      const marksForCorrect = parseFloat($('maker-marks-correct').value) || 1.0;
+      const negativeMarks = parseFloat($('maker-marks-neg').value) || 0.25;
+      const explanationHTML = $('maker-explanation').value.trim();
+
+      const questionObj = {
+        questionHTML: qText,
+        imageUrls: imageUrls,
+        options: options,
+        correctAnswer: correctAnswer,
+        explanationHTML: explanationHTML,
+        marksForCorrect: marksForCorrect,
+        negativeMarks: negativeMarks
+      };
+
+      try {
+        const btn = $('btn-save-question');
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        const data = await api('/api/admin/save-mock-question', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            testId: testId,
+            testTitle: testTitle,
+            sectionTitle: sectionTitle,
+            question: questionObj
+          })
+        });
+
+        $('maker-status').textContent = `✓ Question saved successfully! Question #${data.questionNumber} added to test "${testTitle}". Total questions in test: ${data.totalQuestions}.`;
+        $('maker-status').className = 'status ok';
+        $('maker-status').style.display = 'block';
+
+        showToast(`Saved Question #${data.questionNumber} to test!`);
+        await loadTests();
+      } catch (e) {
+        $('maker-status').textContent = 'Error: ' + e.message;
+        $('maker-status').className = 'status danger';
+        $('maker-status').style.display = 'block';
+      } finally {
+        $('btn-save-question').disabled = false;
+        $('btn-save-question').textContent = '💾 Save Question to Mock Test';
+      }
+    };
+
+    // -----------------------------------------------------------------
+    // 4. JSON UPLOAD & PUBLISHED TESTS
+    // -----------------------------------------------------------------
+    let selectedFile = null;
+    $('file').onchange = async e => {
+      selectedFile = e.target.files[0];
+      if (!selectedFile) return;
+      $('upload').disabled = true;
+      try {
+        const raw = JSON.parse(await selectedFile.text());
+        const exam = raw.exam || {};
+        const test = raw.test || raw;
+        $('preview').textContent = `Detected Exam: ${exam.name || raw.examName || raw.examId || 'Auto'}\nTest Title: ${test.title || raw.title || 'Auto'}\nID: ${test.id || raw.id || 'Auto'}\nSections: ${(raw.sections || test.sections || []).length}`;
+        $('upload').disabled = false;
+      } catch (err) {
+        $('preview').textContent = 'Invalid JSON: ' + err.message;
+        $('preview').className = 'status danger';
+      }
+    };
+
+    $('upload').onclick = async () => {
+      if (!selectedFile) return;
+      try {
+        const raw = await selectedFile.text();
+        const data = await api('/api/tests/upload-json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rawPaper: raw, filename: selectedFile.name })
+        });
+        $('preview').textContent = `Published: ${data.test.title}\nExam: ${data.test.examName}\nQuestions: ${data.test.questionsCount}`;
+        $('preview').className = 'status ok';
+        showToast('JSON mock test published!');
+        await loadTests();
+      } catch (e) {
+        $('preview').textContent = e.message;
+        $('preview').className = 'status danger';
+      }
+    };
+
+    async function loadTests() {
+      const data = await api('/api/admin/tests');
+      const select = $('maker-test-select');
+      
+      // Preserve first options
+      select.innerHTML = '<option value="">-- Choose Existing Test or Create New --</option><option value="__new__">➕ Create New Mock Test...</option>';
+
+      if (!data.tests.length) {
+        $('tests').textContent = 'No tests published yet.';
+        return;
+      }
+
+      const table = document.createElement('table');
+      table.innerHTML = '<tr><th>Exam</th><th>Title</th><th>Type</th><th>Questions</th><th>Action</th></tr>';
+      data.tests.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${esc(t.exam_name)}</td>
+          <td><b>${esc(t.title)}</b></td>
+          <td>${esc(t.type)}</td>
+          <td>${t.questions_count} Qs</td>
+          <td><button type="button" class="secondary" style="padding:4px 8px; font-size:12px;">Add Question</button></td>
+        `;
+        tr.querySelector('button').onclick = () => {
+          select.value = t.id;
+          location.hash = '#sec-maker';
+          showToast(`Test "${t.title}" selected in question maker.`);
+        };
+        table.append(tr);
+
+        // Populate maker select
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.title} (${t.questions_count} Qs)`;
+        select.appendChild(opt);
+      });
+      $('tests').replaceChildren(table);
+    }
+
+    function esc(v) {
+      const d = document.createElement('div');
+      d.textContent = v ?? '';
+      return d.innerHTML;
+    }
+
+    $('refresh').onclick = () => loadTests().catch(e => showStatus(e.message, 'danger'));
+
+    // Check token on page load
+    if (sessionStorage.getItem(tokenKey)) {
+      $('token').value = sessionStorage.getItem(tokenKey);
+      Promise.all([loadTests(), loadImages()])
+        .then(() => showStatus('Admin access verified.', 'ok'))
+        .catch(() => sessionStorage.removeItem(tokenKey));
+    }
+  </script>
+</body>
+</html>

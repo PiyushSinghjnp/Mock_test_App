@@ -221,6 +221,12 @@ class OliveboardTestEngine {
     const handleB3 = (e) => { e.preventDefault(); e.stopPropagation(); this.getCandProfile(); };
     if (this.btnBottomProfile) this.btnBottomProfile.onclick = handleB3;
     else if (this.b3El) this.b3El.onclick = handleB3;
+    const candImage = document.getElementById('cand-image');
+    if (candImage) {
+      candImage.style.cursor = 'pointer';
+      candImage.title = 'View Candidate Details (Profile)';
+      candImage.onclick = handleB3;
+    }
 
     const handleB4 = (e) => {
       e.preventDefault();
@@ -1389,7 +1395,11 @@ class OliveboardTestEngine {
     if (rollEl) rollEl.textContent = `: ${user ? (user.roll_no || 'OB-2026-9041') : 'OB-2026-9041'}`;
     if (examEl) examEl.textContent = `: ${this.testData.title}`;
 
-    if (this.candidateDetailsOnButton) this.candidateDetailsOnButton.style.display = 'block';
+    if (this.candidateDetailsOnButton) {
+      this.candidateDetailsOnButton.style.display = 'block';
+      this.candidateDetailsOnButton.style.visibility = 'visible';
+      this.candidateDetailsOnButton.style.opacity = '1';
+    }
     if (this.mainBackButton) this.mainBackButton.style.display = 'flex';
   }
 

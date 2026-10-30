@@ -41,6 +41,12 @@ class OliveboardAppController {
 
     // 4. Initialize History & Deep-Linking Router (prevents about:blank back-button exit)
     this.initHistoryRouter();
+
+    // 5. REQUIREMENT: When someone opens the site, the login modal should open first if not logged in
+    const currentActiveUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+    if (!currentActiveUser) {
+      this.openLoginModal(false);
+    }
   }
 
   showToast(message, type = 'info') {
@@ -261,6 +267,18 @@ class OliveboardAppController {
       const targetModal = state.modal || null;
 
       // 1. Modals Handling (Bidirectional: open when navigating forward to modal, close when popping)
+      const loginModal = document.getElementById('login-modal-overlay');
+      const currentUserForModal = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+      if (targetModal === 'login') {
+        if (!currentUserForModal && loginModal && !loginModal.classList.contains('active')) {
+          this.openLoginModal(false);
+        }
+      } else {
+        if (loginModal && loginModal.classList.contains('active')) {
+          this.closeLoginModal(false);
+        }
+      }
+
       const obLiveModal = document.getElementById('ob-live-browser-modal');
       if (targetModal === 'live-browser') {
         if (obLiveModal && obLiveModal.style.display !== 'flex') {
@@ -400,6 +418,7 @@ class OliveboardAppController {
   }
 
   hasAnyModalOrOverlayOpen() {
+    const loginModal = document.getElementById('login-modal-overlay');
     const obLiveModal = document.getElementById('ob-live-browser-modal');
     const userModal = document.getElementById('user-profile-modal');
     const examModal = document.getElementById('exam-switcher-modal');
@@ -407,22 +426,42 @@ class OliveboardAppController {
     const solnOverlay = document.getElementById('solution-console-overlay');
     const testOverlay = document.getElementById('test-modal-overlay');
 
-    return (obLiveModal && obLiveModal.style.display === 'flex') ||
-           (userModal && userModal.classList.contains('active')) ||
-           (examModal && examModal.classList.contains('active')) ||
-           (scorecardModal && scorecardModal.classList.contains('active')) ||
-           (solnOverlay && solnOverlay.classList.contains('active')) ||
-           (testOverlay && testOverlay.classList.contains('active'));
+    return Boolean(
+      (loginModal && (loginModal.classList.contains('active') || loginModal.style.display === 'flex' || loginModal.style.display === 'block')) ||
+      (obLiveModal && obLiveModal.style.display === 'flex') ||
+      (userModal && userModal.classList.contains('active')) ||
+      (examModal && examModal.classList.contains('active')) ||
+      (scorecardModal && scorecardModal.classList.contains('active')) ||
+      (solnOverlay && solnOverlay.classList.contains('active')) ||
+      (testOverlay && testOverlay.classList.contains('active'))
+    );
   }
 
   closeAllModalsAndOverlays() {
+    const loginModal = document.getElementById('login-modal-overlay');
+    if (loginModal) {
+      loginModal.classList.remove('active');
+      loginModal.style.display = 'none';
+    }
+
+    const profileDropdown = document.getElementById('profileDropdownMenu');
+    if (profileDropdown) {
+      profileDropdown.classList.remove('is-open');
+      profileDropdown.style.display = 'none';
+      profileDropdown.style.visibility = 'hidden';
+      profileDropdown.style.opacity = '0';
+    }
+
     const obLiveModal = document.getElementById('ob-live-browser-modal');
     if (obLiveModal) {
       this.closeOliveboardLiveBrowser(false);
     }
 
     const userModal = document.getElementById('user-profile-modal');
-    if (userModal) userModal.classList.remove('active');
+    if (userModal) {
+      userModal.classList.remove('active');
+      userModal.style.display = 'none';
+    }
 
     const examModal = document.getElementById('exam-switcher-modal');
     if (examModal) examModal.classList.remove('active');
@@ -442,6 +481,12 @@ class OliveboardAppController {
   }
 
   goBack() {
+    const loginModal = document.getElementById('login-modal-overlay');
+    if (loginModal && (loginModal.classList.contains('active') || loginModal.style.display === 'flex' || loginModal.style.display === 'block')) {
+      this.closeLoginModal(false);
+      return;
+    }
+
     const obLiveModal = document.getElementById('ob-live-browser-modal');
     const userModal = document.getElementById('user-profile-modal');
     const examModal = document.getElementById('exam-switcher-modal');
@@ -473,7 +518,8 @@ class OliveboardAppController {
       return;
     }
 
-    const hasModalOpen = (obLiveModal && obLiveModal.style.display === 'flex') ||
+    const hasModalOpen = (loginModal && (loginModal.classList.contains('active') || loginModal.style.display === 'flex' || loginModal.style.display === 'block')) ||
+                         (obLiveModal && obLiveModal.style.display === 'flex') ||
                          (userModal && userModal.classList.contains('active')) ||
                          (examModal && examModal.classList.contains('active')) ||
                          (scorecardModal && scorecardModal.classList.contains('active'));
@@ -551,12 +597,132 @@ class OliveboardAppController {
   }
 
   // ==========================================
+  // CANDIDATE LOGIN & AUTHENTICATION MODAL
+  // ==========================================
+
+  openLoginModal(pushHistory = false) {
+    const modal = document.getElementById('login-modal-overlay');
+    if (!modal) return;
+    this.switchLoginTab('signin');
+    const alertBox = document.getElementById('login-alert-box');
+    if (alertBox) {
+      alertBox.textContent = '';
+      alertBox.style.display = 'none';
+      alertBox.className = 'login-alert';
+    }
+    const usernameInput = document.getElementById('login-username');
+    const passwordInput = document.getElementById('login-password');
+    if (usernameInput) usernameInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+    if (usernameInput) {
+      setTimeout(() => usernameInput.focus(), 50);
+    }
+
+    if (pushHistory && window.location.hash !== '#login') {
+      window.history.replaceState({ ...window.history.state, modal: 'login' }, '', '#login');
+    }
+  }
+
+  closeLoginModal(updateHistory = true) {
+    const modal = document.getElementById('login-modal-overlay');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.style.display = 'none';
+    }
+    const alertBox = document.getElementById('login-alert-box');
+    if (alertBox) {
+      alertBox.textContent = '';
+      alertBox.style.display = 'none';
+      alertBox.className = 'login-alert';
+    }
+    if (updateHistory && window.location.hash === '#login') {
+      const cleanUrl = window.location.pathname + window.location.search;
+      window.history.replaceState({ ...(window.history.state || {}), modal: null }, '', cleanUrl);
+    }
+  }
+
+  switchLoginTab(mode) {
+    const tabLogin = document.getElementById('tab-login-mode');
+    const tabRegister = document.getElementById('tab-register-mode');
+    const groupName = document.getElementById('group-register-name');
+    const groupExam = document.getElementById('group-register-exam');
+    const metaRow = document.getElementById('login-meta-row');
+    const submitBtn = document.getElementById('btn-login-submit');
+    const demoHint = document.getElementById('login-demo-hint');
+    const modalTitle = document.getElementById('login-modal-title');
+    const modalSubtitle = document.getElementById('login-modal-subtitle');
+    const alertBox = document.getElementById('login-alert-box');
+
+    if (alertBox) {
+      alertBox.textContent = '';
+      alertBox.style.display = 'none';
+      alertBox.className = 'login-alert';
+    }
+
+    if (mode === 'register') {
+      if (tabLogin) tabLogin.classList.remove('active');
+      if (tabRegister) tabRegister.classList.add('active');
+      if (groupName) groupName.style.display = 'block';
+      if (groupExam) groupExam.style.display = 'block';
+      if (metaRow) metaRow.style.display = 'none';
+      if (demoHint) demoHint.style.display = 'none';
+      if (submitBtn) submitBtn.textContent = 'Create Candidate Account';
+      if (modalTitle) modalTitle.textContent = 'Create Candidate Account';
+      if (modalSubtitle) modalSubtitle.textContent = 'Register to unlock personalized mocks and analytics';
+    } else {
+      if (tabLogin) tabLogin.classList.add('active');
+      if (tabRegister) tabRegister.classList.remove('active');
+      if (groupName) groupName.style.display = 'none';
+      if (groupExam) groupExam.style.display = 'none';
+      if (metaRow) metaRow.style.display = 'flex';
+      if (demoHint) demoHint.style.display = 'block';
+      if (submitBtn) submitBtn.textContent = 'Sign In';
+      if (modalTitle) modalTitle.textContent = 'Candidate Login';
+      if (modalSubtitle) modalSubtitle.textContent = 'Sign in to access mock tests, saved scores & analytics';
+    }
+  }
+
+  async logoutCandidate() {
+    const profileDropdown = document.getElementById('profileDropdownMenu');
+    if (profileDropdown) profileDropdown.style.display = 'none';
+
+    if (window.obDataManager) {
+      window.obDataManager.logout();
+    }
+
+    this._resetPerCandidateUIState();
+    this.renderUserProfileHeader();
+    this.renderHeader();
+    this.renderExamHero();
+    await this.loadAndRenderMockCards();
+    await this.renderAnalytics();
+
+    this.showToast('You have been signed out.', 'info');
+    this.openLoginModal();
+  }
+
+  // ==========================================
   // CANDIDATE PROFILE & MULTI-USER ISOLATION
   // ==========================================
 
   renderUserProfileHeader() {
     const user = window.obDataManager ? window.obDataManager.getActiveUser() : null;
-    if (!user) return;
+    const profileWrap = document.querySelector('.upd-relative-wrapper');
+    const loginBtn = document.getElementById('btn-header-login');
+
+    if (!user) {
+      if (profileWrap) profileWrap.style.display = 'none';
+      if (loginBtn) loginBtn.style.display = 'inline-flex';
+      const tagEl = document.getElementById('analytics-user-tag');
+      if (tagEl) tagEl.textContent = 'Sign in to track your personal performance & analytics';
+      return;
+    }
+
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (profileWrap) profileWrap.style.display = 'block';
 
     const nameEl = document.getElementById('header-user-name');
     const rollEl = document.getElementById('header-user-roll');
@@ -586,9 +752,15 @@ class OliveboardAppController {
       await window.obDataManager.loadUsers();
     }
 
-    const activeUser = window.obDataManager.getActiveUser();
-    const allUsers = window.obDataManager.users || [];
-    if (!activeUser) return;
+    let activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+    const allUsers = (window.obDataManager && window.obDataManager.users) || [];
+    if (!activeUser && allUsers.length > 0) {
+      activeUser = window.obDataManager.setActiveUser(allUsers[0].id);
+    }
+    if (!activeUser) {
+      this.openLoginModal(pushHistory);
+      return;
+    }
 
     // Active candidate banner
     activeBox.innerHTML = `
@@ -624,6 +796,7 @@ class OliveboardAppController {
       </div>
     `).join('');
 
+    modal.style.display = 'flex';
     modal.classList.add('active');
     if (pushHistory) {
       this.pushNavState({ modal: 'user-profile', view: this.currentViewTab }, '#profile');
@@ -2018,36 +2191,196 @@ class OliveboardAppController {
       });
     }
 
+    // Candidate Login Modal & Authentication Event Bindings
+    const btnHeaderLogin = document.getElementById('btn-header-login');
+    const btnUserLogout = document.getElementById('btn-user-logout');
+    const btnCloseLoginModal = document.getElementById('btn-close-login-modal');
+    const loginModal = document.getElementById('login-modal-overlay');
+    const tabLoginMode = document.getElementById('tab-login-mode');
+    const tabRegisterMode = document.getElementById('tab-register-mode');
+    const btnTogglePwd = document.getElementById('btn-toggle-pwd');
+    const formLoginCandidate = document.getElementById('form-login-candidate');
+
+    if (btnHeaderLogin) {
+      btnHeaderLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openLoginModal();
+      });
+    }
+
+    if (btnUserLogout) {
+      btnUserLogout.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await this.logoutCandidate();
+      });
+    }
+
+    if (btnCloseLoginModal) {
+      btnCloseLoginModal.addEventListener('click', () => {
+        this.closeLoginModal(true);
+      });
+    }
+
+    if (loginModal) {
+      loginModal.addEventListener('click', (e) => {
+        if (e.target === loginModal) {
+          this.closeLoginModal(true);
+        }
+      });
+    }
+
+    if (tabLoginMode) {
+      tabLoginMode.addEventListener('click', () => {
+        this.switchLoginTab('signin');
+      });
+    }
+
+    if (tabRegisterMode) {
+      tabRegisterMode.addEventListener('click', () => {
+        this.switchLoginTab('register');
+      });
+    }
+
+    if (btnTogglePwd) {
+      btnTogglePwd.addEventListener('click', () => {
+        const pwdInput = document.getElementById('login-password');
+        if (pwdInput) {
+          const isPassword = pwdInput.type === 'password';
+          pwdInput.type = isPassword ? 'text' : 'password';
+          btnTogglePwd.textContent = isPassword ? '🙈' : '👁️';
+        }
+      });
+    }
+
+    if (formLoginCandidate) {
+      formLoginCandidate.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = (document.getElementById('login-username')?.value || '').trim();
+        const password = document.getElementById('login-password')?.value || '';
+        const isRegister = tabRegisterMode && tabRegisterMode.classList.contains('active');
+        const alertBox = document.getElementById('login-alert-box');
+        const submitBtn = document.getElementById('btn-login-submit');
+
+        if (!username || !password) {
+          if (alertBox) {
+            alertBox.textContent = 'Please enter both username and password.';
+            alertBox.className = 'login-alert danger';
+            alertBox.style.display = 'block';
+          }
+          return;
+        }
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = isRegister ? 'Creating Account...' : 'Signing In...';
+        }
+
+        try {
+          let user;
+          if (isRegister) {
+            const name = (document.getElementById('register-fullname')?.value || '').trim();
+            const targetExam = document.getElementById('register-target-exam')?.value || 'sbi-po';
+            user = await window.obDataManager.register(username, password, name, targetExam);
+            this.showToast(`Account created! Welcome, ${user.name}!`, 'success');
+          } else {
+            user = await window.obDataManager.login(username, password);
+            this.showToast(`Welcome back, ${user.name}!`, 'success');
+          }
+
+          // Instantly close the modal so it never lingers on screen
+          this.closeLoginModal(true);
+
+          // Update header and active candidate UI state immediately
+          this._resetPerCandidateUIState();
+          this.renderUserProfileHeader();
+          this.renderHeader();
+          this.renderExamHero();
+
+          // Refresh mocks & statistics
+          this.loadAndRenderMockCards().catch(console.error);
+          this.renderAnalytics().catch(console.error);
+          this.renderLeaderboard().catch(console.error);
+        } catch (err) {
+          if (alertBox) {
+            alertBox.textContent = err.message || 'Authentication failed. Please check credentials.';
+            alertBox.className = 'login-alert danger';
+            alertBox.style.display = 'block';
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = isRegister ? 'Create Candidate Account' : 'Sign In';
+          }
+        }
+      });
+    }
+
     // Candidate profile dropdown & switcher modal
     const btnUserProfile = document.getElementById('btn-user-profile');
     const profileDropdown = document.getElementById('profileDropdownMenu');
+    const dropdownHeaderUser = document.getElementById('dropdown-header-user');
     const btnOpenCandidateModal = document.getElementById('btn-open-candidate-modal');
     const userModal = document.getElementById('user-profile-modal');
     const btnCloseUserModal = document.getElementById('btn-close-user-modal');
     const formCreateUser = document.getElementById('form-create-user');
 
+    const toggleProfileDropdown = (forceState) => {
+      if (!profileDropdown) return;
+      const shouldOpen = typeof forceState === 'boolean'
+        ? forceState
+        : !profileDropdown.classList.contains('is-open');
+
+      if (shouldOpen) {
+        profileDropdown.style.display = 'flex';
+        profileDropdown.style.visibility = 'visible';
+        profileDropdown.style.opacity = '1';
+        profileDropdown.style.pointerEvents = 'auto';
+        profileDropdown.classList.add('is-open');
+      } else {
+        profileDropdown.classList.remove('is-open');
+        profileDropdown.style.visibility = 'hidden';
+        profileDropdown.style.opacity = '0';
+        profileDropdown.style.pointerEvents = 'none';
+        setTimeout(() => {
+          if (!profileDropdown.classList.contains('is-open')) {
+            profileDropdown.style.display = 'none';
+          }
+        }, 150);
+      }
+    };
+
     if (btnUserProfile) {
       btnUserProfile.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        if (profileDropdown) {
-          const isOpen = profileDropdown.style.display === 'block';
-          profileDropdown.style.display = isOpen ? 'none' : 'block';
-        } else {
-          this.renderUserProfileModal();
+        const user = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+        if (!user) {
+          this.openLoginModal();
+          return;
         }
+        toggleProfileDropdown();
       });
     }
 
     if (profileDropdown) {
       profileDropdown.querySelectorAll('.upd-nav-item').forEach(item => {
         item.addEventListener('click', () => {
-          profileDropdown.style.display = 'none';
+          toggleProfileDropdown(false);
         });
       });
       document.addEventListener('click', (e) => {
-        if (profileDropdown.style.display === 'block' && !profileDropdown.contains(e.target) && e.target !== btnUserProfile) {
-          profileDropdown.style.display = 'none';
+        if (profileDropdown.classList.contains('is-open') && !profileDropdown.contains(e.target) && (!btnUserProfile || !btnUserProfile.contains(e.target))) {
+          toggleProfileDropdown(false);
         }
+      });
+    }
+
+    if (dropdownHeaderUser) {
+      dropdownHeaderUser.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleProfileDropdown(false);
+        this.renderUserProfileModal();
       });
     }
 
@@ -2055,7 +2388,7 @@ class OliveboardAppController {
       btnOpenCandidateModal.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (profileDropdown) profileDropdown.style.display = 'none';
+        toggleProfileDropdown(false);
         this.renderUserProfileModal();
       });
     }
@@ -2450,6 +2783,12 @@ class OliveboardAppController {
   // ==========================================
 
   async startMockTest(testId, forceFresh = false, pushHistory = true) {
+    if (!window.obDataManager || !window.obDataManager.getActiveUser()) {
+      this.showToast('Please sign in to take this mock test.', 'info');
+      this.openLoginModal();
+      return;
+    }
+
     // If live browser modal was open, close it cleanly so it never obstructs the mock test engine
     const liveModal = document.getElementById('ob-live-browser-modal');
     if (liveModal && (liveModal.style.display === 'flex' || liveModal.style.display === 'block')) {
@@ -2484,6 +2823,12 @@ class OliveboardAppController {
   }
 
   async resumeMockTest(testId, pushHistory = true) {
+    if (!window.obDataManager || !window.obDataManager.getActiveUser()) {
+      this.showToast('Please sign in to resume this mock test.', 'info');
+      this.openLoginModal();
+      return;
+    }
+
     // If live browser modal was open, close it cleanly so it never obstructs the mock test engine
     const liveModal = document.getElementById('ob-live-browser-modal');
     if (liveModal && (liveModal.style.display === 'flex' || liveModal.style.display === 'block')) {

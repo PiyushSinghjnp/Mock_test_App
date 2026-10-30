@@ -1,9 +1,0 @@
-{
-  "success": false,
-  "evidenceId": "ev_local_1792759472012",
-  "provider": {
-    "id": "rea-cdp-browser-local",
-    "name": "REA Chrome DevTools Protocol Provider (Local)"
-  },
-  "error": "spawnSync C:\\WINDOWS\\system32\\cmd.exe ETIMEDOUT"
-}

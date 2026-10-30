@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -66,26 +66,24 @@
 
     <!-- ACTION AREA -->
     <div class="hdr-action-area">
-      <!-- Live REA MCP Scrape Helper -->
-      <button id="btn-open-ob-live-browser" title="Capture the original Oliveboard browser and apply validated tests" class="btn-rea-scrape">
-        <span>🌐</span>
-        <span>Live REA Scrape</span>
-      </button>
-
       <!-- Buy Now CTA -->
       <button class="btn-buy-nw" onclick="window.appController.switchAppView('subscription');">Buy Now</button>
 
+      <!-- Candidate Login CTA -->
+      <button class="btn-hdr-login" id="btn-header-login" type="button" style="display: none;">Sign In</button>
+
       <!-- User Profile & Dropdown -->
       <div class="upd-relative-wrapper">
-        <button class="upd-trigger-btn" id="btn-user-profile" title="Switch or Manage Candidate Profile">
+        <button class="upd-trigger-btn" id="btn-user-profile" type="button" title="Switch or Manage Candidate Profile" style="position:relative;z-index:1100;pointer-events:auto;">
           <span id="header-user-avatar">R</span>
         </button>
-        <div class="upd-menu-card" id="profileDropdownMenu" style="display: none;">
-          <div class="upd-header">
+        <div class="upd-menu-card" id="profileDropdownMenu" style="display: none; position:absolute; z-index:1101; pointer-events:auto;">
+          <div class="upd-header" id="dropdown-header-user" title="Open Full Candidate Profile" style="cursor: pointer;">
             <div class="upd-avatar" id="dropdown-user-avatar">R</div>
             <div class="upd-user-details">
               <span class="upd-name" id="header-user-name">Rahul Sharma</span>
               <span style="font-size: 11px; color: #64748b;" id="header-user-roll">OB-2026-9041</span>
+              <span id="header-admin-identity" style="display:none;font-size:11px;color:#0f766e;font-weight:800;">Piyush · Admin</span>
             </div>
           </div>
           <div class="upd-divider"></div>
@@ -105,6 +103,10 @@
             <a href="javascript:void(0)" class="upd-nav-item" id="btn-open-candidate-modal" style="margin-top: 4px;">
               <div class="upd-icon"><img src="img/newlogout.svg" alt=""></div>
               <span>Switch Candidate</span>
+            </a>
+            <a href="javascript:void(0)" class="upd-nav-item" id="btn-user-logout" style="margin-top: 4px; color: #ef4444;">
+              <div class="upd-icon"><span style="font-size: 16px;">🚪</span></div>
+              <span>Sign Out</span>
             </a>
           </nav>
         </div>
@@ -319,6 +321,86 @@
         </section>
       </main>
 
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: CANDIDATE LOGIN MODAL
+       ======================================================== -->
+  <div class="login-modal-overlay" id="login-modal-overlay" style="display: none;">
+    <div class="login-modal-dialog">
+      <div class="login-modal-header">
+        <div class="login-brand">
+          <img src="img/logo/tlogo-28.png" alt="Oliveboard" style="height: 28px; width: auto;">
+          <div>
+            <h3 id="login-modal-title">Candidate Login</h3>
+            <p id="login-modal-subtitle">Sign in to access mock tests, saved scores & analytics</p>
+          </div>
+        </div>
+        <button class="btn-close-login-modal" id="btn-close-login-modal" type="button" title="Close">✕</button>
+      </div>
+
+      <div class="login-modal-body">
+        <!-- Mode Switcher (Sign In vs Register) -->
+        <div class="login-tabs">
+          <button type="button" class="login-tab active" id="tab-login-mode">Sign In</button>
+          <button type="button" class="login-tab" id="tab-register-mode">New Candidate</button>
+        </div>
+
+        <!-- Inline Status / Error Alert -->
+        <div id="login-alert-box" class="login-alert" style="display: none;"></div>
+
+        <!-- Login / Register Form -->
+        <form id="form-login-candidate" autocomplete="on">
+          <div class="login-field-group">
+            <label for="login-username">Username</label>
+            <div class="login-input-wrap">
+              <span class="login-input-icon">👤</span>
+              <input type="text" id="login-username" name="username" placeholder="Enter username (e.g. rahul)" required autocomplete="username">
+            </div>
+          </div>
+
+          <div class="login-field-group" id="group-register-name" style="display: none;">
+            <label for="register-fullname">Full Name</label>
+            <div class="login-input-wrap">
+              <span class="login-input-icon">📝</span>
+              <input type="text" id="register-fullname" name="name" placeholder="Candidate Full Name" autocomplete="name">
+            </div>
+          </div>
+
+          <div class="login-field-group">
+            <label for="login-password">Password</label>
+            <div class="login-input-wrap">
+              <span class="login-input-icon">🔒</span>
+              <input type="password" id="login-password" name="password" placeholder="Enter password" required autocomplete="current-password">
+              <button type="button" class="btn-toggle-pwd" id="btn-toggle-pwd" title="Toggle password visibility">👁️</button>
+            </div>
+          </div>
+
+          <div class="login-field-group" id="group-register-exam" style="display: none;">
+            <label for="register-target-exam">Target Exam</label>
+            <select id="register-target-exam" style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;">
+              <option value="sbi-po">SBI PO 2026</option>
+              <option value="ibps-so">IBPS SO IT Officer</option>
+              <option value="ssc-cgl">SSC CGL</option>
+              <option value="ibps-po">IBPS PO</option>
+            </select>
+          </div>
+
+          <div class="login-meta-row" id="login-meta-row">
+            <label class="remember-label">
+              <input type="checkbox" id="login-remember-me" checked>
+              <span>Remember me on this browser</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-login-submit" id="btn-login-submit">Sign In</button>
+
+          <div class="login-demo-hint" id="login-demo-hint">
+            <span>Demo accounts: <b>rahul</b>, <b>priya</b>, or <b>vikram</b> / Password: <b>password123</b></span>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -1249,57 +1331,12 @@
     </div>
   </div>
 
-  <!-- Real isolated browser preview; remote executable content never runs in this app. -->
-  <div id="ob-live-browser-modal" role="dialog" aria-modal="true" aria-labelledby="ob-live-title" style="display:none;position:fixed;inset:0;z-index:10000;background:#0f172a;flex-direction:column;font-family:Inter,sans-serif;color:#e2e8f0;">
-    <div style="padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #334155;">
-      <strong id="ob-live-title" style="color:#38bdf8;">Oliveboard Live Capture</strong>
-      <span id="ob-live-stage-badge" style="font-size:12px;">Not connected</span>
-      <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:260px;">
-        <button id="btn-ob-nav-back" title="Back" style="padding:6px 9px;">Back</button>
-        <button id="btn-ob-nav-reload" title="Reload" style="padding:6px 9px;">Reload</button>
-        <input id="ob-live-url-input" type="url" aria-label="Oliveboard URL" value="https://www.oliveboard.in/" style="flex:1;min-width:120px;padding:7px 10px;background:#1e293b;color:#fff;border:1px solid #475569;border-radius:4px;">
-        <button id="btn-ob-nav-go" style="padding:7px 12px;">Go</button>
-      </div>
-      <button id="btn-ob-bring-front" style="padding:7px 12px;">Open browser window</button>
-      <button id="btn-ob-scrape-now" style="padding:8px 12px;background:#16a34a;color:#fff;border:1px solid #86efac;border-radius:4px;font-weight:700;">Capture &amp; apply complete tests</button>
-      <button id="btn-close-ob-live-browser" aria-label="Close capture panel" style="padding:7px 12px;">Close</button>
-    </div>
-    <div id="ob-live-tabs-bar" style="padding:6px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #334155;font-size:12px;overflow-x:auto;flex-shrink:0;">Open Oliveboard tabs:</div>
-    <div style="padding:8px 14px;background:#1e293b;font-size:12px;line-height:1.5;">
-      Sign in directly in the original browser window, then open the dashboard, tests, and solutions you want to capture. Capture collects all open Oliveboard tabs; only complete, validated tests are added to your app. Keep source tabs open until capture finishes.
-    </div>
-    <div style="padding:6px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;">
-      <label for="ob-live-type-input">Selected field:</label>
-      <input id="ob-live-type-input" type="text" autocomplete="off" placeholder="Type text into the selected field" style="width:230px;padding:5px 8px;">
-      <button id="btn-ob-send-text">Send text</button>
-      <button id="btn-ob-press-enter">Enter</button>
-      <button id="btn-ob-press-tab">Tab</button>
-      <button id="btn-ob-press-backspace">Backspace</button>
-      <span style="color:#94a3b8;">Use the original browser for passwords, CAPTCHA, and OTP.</span>
-    </div>
-    <div id="ob-live-viewport-wrapper" tabindex="0" aria-label="Live browser preview. Click and scroll to interact." style="position:relative;flex:1;min-height:120px;overflow:hidden;outline:none;background:#020617;">
-      <p id="ob-live-empty-state" style="position:absolute;inset:35% 10%;text-align:center;color:#94a3b8;">The real browser preview will appear here after connecting.</p>
-      <img id="ob-live-screen-img" alt="Current Oliveboard browser viewport" draggable="false" style="width:100%;height:100%;object-fit:contain;display:none;cursor:pointer;user-select:none;">
-    </div>
-    <div id="ob-live-snapshot-bar" style="display:none;padding:8px 14px;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid #334155;font-size:12px;">
-      <a id="ob-snapshot-link" target="_blank" rel="noopener noreferrer" hidden><img id="ob-snapshot-thumb" alt="Captured page screenshot" style="width:64px;height:40px;object-fit:contain;" hidden></a>
-      <span id="ob-snapshot-info">No capture yet</span>
-      <div id="ob-snapshot-badges" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
-      <a id="btn-view-snapshot-full" target="_blank" rel="noopener noreferrer" style="color:#38bdf8;" hidden>View screenshot</a>
-      <a id="btn-view-report-json" target="_blank" rel="noopener noreferrer" style="color:#38bdf8;" hidden>Capture report</a>
-    </div>
-    <div id="ob-live-status-footer" aria-live="polite" style="padding:8px 14px;border-top:1px solid #334155;font-size:12px;line-height:1.5;max-height:120px;overflow:auto;">
-      <div id="ob-live-status-msg">Open the browser to start.</div>
-      <div id="ob-live-scrape-summary" style="color:#38bdf8;">No capture or import has run.</div>
-    </div>
-  </div>
-
   <!-- Scripts -->
   <script src="js/exam-patterns-2026.js?v=20261026_4"></script>
   <script src="js/data.js?v=20261026_4"></script>
   <script src="js/data-manager.js?v=20261026_4"></script>
   <script src="js/test-engine.js?v=20261026_4"></script>
   <script src="js/solution-engine.js?v=20261026_4"></script>
-  <script src="js/app.js?v=20261026_4"></script>
+  <script src="js/app.js?v=20261028_1"></script>
 </body>
 </html>
