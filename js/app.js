@@ -3455,7 +3455,7 @@ class OliveboardAppController {
 
     let testData = null;
     try {
-      testData = await window.obDataManager.getTestById(testId);
+      testData = await window.obDataManager.getTestById(testId, attemptId || attemptObj.id || attemptObj.attempt_id);
     } catch (err) {
       const localQ = window.OB_TEST_APP && window.OB_TEST_APP.mockQuestions && window.OB_TEST_APP.mockQuestions[testId];
       if (localQ) {

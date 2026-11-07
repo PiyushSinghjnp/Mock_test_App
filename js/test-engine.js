@@ -2198,17 +2198,21 @@ class OliveboardTestEngine {
     if (btnLaunchSol) {
       btnLaunchSol.onclick = () => {
         if (this.scorecardOverlay) this.scorecardOverlay.classList.remove('active');
-        if (window.openOliveboardSolutions) {
-          window.openOliveboardSolutions(resultObj, this.testData);
+        const attemptId = resultObj?.attemptId || resultObj?.attempt_id || resultObj?.id;
+        if (attemptId && window.appController?.viewSolutions) {
+          window.appController.viewSolutions(attemptId, this.testData.id);
         }
       };
     }
     const btnReviewMistakes = document.getElementById('btn-scorecard-review-mistakes');
     if (btnReviewMistakes) {
-      btnReviewMistakes.onclick = () => {
+      btnReviewMistakes.onclick = async () => {
         this.scorecardOverlay?.classList.remove('active');
-        window.openOliveboardSolutions?.(resultObj, this.testData);
-        setTimeout(() => document.getElementById('btn-review-mistakes')?.click(), 0);
+        const attemptId = resultObj?.attemptId || resultObj?.attempt_id || resultObj?.id;
+        if (attemptId && window.appController?.viewSolutions) {
+          await window.appController.viewSolutions(attemptId, this.testData.id);
+          document.getElementById('btn-review-mistakes')?.click();
+        }
       };
     }
 
@@ -2370,17 +2374,21 @@ class OliveboardTestEngine {
     if (btnLaunchSol) {
       btnLaunchSol.onclick = () => {
         if (this.scorecardOverlay) this.scorecardOverlay.classList.remove('active');
-        if (window.openOliveboardSolutions) {
-          window.openOliveboardSolutions(attempt, testData);
+        const attemptId = attempt?.id || attempt?.attempt_id;
+        if (attemptId && window.appController?.viewSolutions) {
+          window.appController.viewSolutions(attemptId, testData.id);
         }
       };
     }
     const btnReviewMistakes = document.getElementById('btn-scorecard-review-mistakes');
     if (btnReviewMistakes) {
-      btnReviewMistakes.onclick = () => {
+      btnReviewMistakes.onclick = async () => {
         this.scorecardOverlay?.classList.remove('active');
-        window.openOliveboardSolutions?.(attempt, testData);
-        setTimeout(() => document.getElementById('btn-review-mistakes')?.click(), 0);
+        const attemptId = attempt?.id || attempt?.attempt_id;
+        if (attemptId && window.appController?.viewSolutions) {
+          await window.appController.viewSolutions(attemptId, testData.id);
+          document.getElementById('btn-review-mistakes')?.click();
+        }
       };
     }
   }

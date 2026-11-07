@@ -394,6 +394,7 @@ function createApp() {
       sectionsSummary: parseJson(row.sections_summary_json, []),
       userAttempt: row.attempt_id ? { attempt_id: row.attempt_id, test_id: row.id, score: row.attempt_score, max_score: row.attempt_max_score,
         accuracy: row.attempt_accuracy, percentile: row.attempt_percentile, estimated_air: row.attempt_estimated_air, completed_at: row.attempt_completed_at } : null,
+      isAttempted: Boolean(row.attempt_id),
       pausedAttempt: row.revision !== null ? { currentSectionIndex: row.current_section_index, currentQuestionIndex: row.current_question_index,
         lastQuestionNumber: row.last_question_number, sectionRemainingSeconds: row.section_remaining_seconds, remainingSeconds: row.remaining_seconds,
         completedSections: parseJson(row.completed_sections_json, []), responses: parseJson(row.responses_json, {}),
@@ -595,7 +596,9 @@ function createApp() {
         selected.timing.sectionRemainingSeconds, selected.timing.remainingSeconds, JSON.stringify(selected.timing.completedSections),
         JSON.stringify(body.responses && typeof body.responses === 'object' ? body.responses : {}),
         JSON.stringify(body.bookmarkedQuestions && typeof body.bookmarkedQuestions === 'object' ? body.bookmarkedQuestions : {}), revision]);
-      const current = saved.rowCount ? saved.rows[0].revision : selected.row.revision;
+      const currentResult = saved.rowCount ? saved : await client.query(
+        'SELECT revision FROM paused_attempts WHERE user_id=$1 AND test_id=$2', [req.auth.user_id,body.testId]);
+      const current = currentResult.rows[0]?.revision;
       const timing = saved.rowCount ? (await selectTimer(client,req.auth.user_id,body.testId)).timing : selected.timing;
       return { saved: Boolean(saved.rowCount), revision: Number(current) || revision, timing };
     });

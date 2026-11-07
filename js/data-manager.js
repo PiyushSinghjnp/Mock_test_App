@@ -397,7 +397,10 @@ class OBTestDataManager {
         if (response.ok && data.success) {
           const currentRevision = Number(data.revision) || payload.revision;
           this.pauseRevisions.set(pausedState.testId, Math.max(this.pauseRevisions.get(pausedState.testId) || 0, currentRevision));
-          this.lastPausedSaveSucceeded = Boolean(data.saved || currentRevision >= payload.revision);
+          // A PostgreSQL stale-write response is successful at the HTTP level but
+          // explicitly says this payload was not persisted. Legacy SQLite has no
+          // `saved` field, so preserve its success behavior.
+          this.lastPausedSaveSucceeded = data.saved === undefined ? true : data.saved === true;
           this.lastAttemptTiming = data.timing || null;
           return payload;
         }
