@@ -1,10 +1,10 @@
 @font-face {
   font-family: SF-UI-Display_medium;
-  src: url("../fonts/sf-ui-display-medium-58646be638f96.woff") format("woff"); }
+  src: local("Arial"); }
 
 @font-face {
   font-family: SF-UI-Display_regular;
-  src: url("../fonts/SF-UI-Display_Regular_Cyrillic.otf") format("opentype"); }
+  src: local("Arial"); }
 
 .solution-console-overlay *, .solution-console-overlay ::before, .solution-console-overlay ::after {
   box-sizing: border-box;

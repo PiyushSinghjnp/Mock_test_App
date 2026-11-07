@@ -3071,8 +3071,6 @@ section.highlight-green {
     max-width: 65px;
 }*/
 
-
-}
 .lsc-meta-icon {
     color: #00829a; /* Teal Icons */
 }
@@ -3626,7 +3624,7 @@ section.highlight-green {
 }
 
 .campus-bg {
-	background-image: url(/landingpages/iit/img/main-banner-option-1.jpg)
+	background-image: none;
 }
 
 .sec-hero-form .hero-blue-wave {

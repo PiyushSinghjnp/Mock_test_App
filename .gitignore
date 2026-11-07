@@ -1,10 +1,35 @@
 # Dependencies
 node_modules/
+dist/
 package-lock.json.bak
 
 # SQLite temporary WAL and SHM files
 database.sqlite-shm
 database.sqlite-wal
+database.sqlite
+backups/
+.env
+.env.*
+!.env.example
+
+# Local databases, SQLite WAL/SHM files, and exports
+*.sqlite
+*.sqlite-*
+*.sqlite3*
+*.db
+*.db-*
+*.pem
+*.key
+*.p12
+*.pfx
+backups/
+migration-report-*.json
+
+# Generated browser evidence and test output
+ui-evidence/
+test-results/
+playwright-report/
+scripts/ui-cdp-audit.mjs
 
 # OS generated files
 .DS_Store

@@ -18,9 +18,8 @@
   <!-- App Stylesheets (Authentic Oliveboard Cascade) -->
   <link rel="stylesheet" href="css/bootstrap.min.css?v=20261026_1">
   <link rel="stylesheet" href="css/style.css?v=20261026_1">
-  <link rel="stylesheet" href="css/app-shell.css?v=20261026_1">
-  <link rel="stylesheet" href="css/test-engine.css?v=20261026_1">
-  <link rel="stylesheet" href="css/style4.css?v=20261026_1">
+  <link rel="stylesheet" href="css/app-shell.css?v=20261103_4">
+  <link rel="stylesheet" href="css/test-engine.css?v=20261103_6">
 </head>
 <body class="app-body">
 
@@ -33,7 +32,7 @@
   <header class="hdr-main" id="hdr-main" style="z-index: 1040;">
     <!-- BRAND AREA -->
     <div class="hdr-brand-area">
-      <button class="mrp-back-btn hdr-back-btn" id="hdr-global-back-btn" title="Back to Tests" style="display: none;" onclick="window.appController.goBack()">
+      <button type="button" class="mrp-back-btn hdr-back-btn" id="hdr-global-back-btn" title="Back to Tests" style="display: none;" data-app-action="go-back">
         <img src="img/backbutton.svg" alt="Back" style="width: 18px; height: 18px;">
       </button>
       <div class="hdr-logo-group">
@@ -50,24 +49,24 @@
 
     <!-- EXAM SELECTOR DROPDOWN (Pill trigger) -->
     <div id="exam-category-selector">
-      <div class="exam-category-trigger" id="btn-active-exam-selector" title="Switch Target Exam">
+      <button type="button" class="exam-category-trigger" id="btn-active-exam-selector" title="Switch Target Exam" aria-haspopup="dialog" aria-expanded="false">
         <span class="exam-category-current-label" id="active-exam-title">💻 IBPS SO IT Officer</span>
         <i class="fa-solid fa-chevron-down exam-category-chevron"></i>
-      </div>
+      </button>
     </div>
 
     <!-- SEARCH AREA -->
-    <div class="hdr-search-area">
+    <div class="hdr-search-area" role="search">
       <div class="hdr-search-box">
         <img src="img/ic-search.svg" alt="" style="width: 14px; height: 14px;">
-        <input style="padding-left:8px;" type="text" class="hdr-search-input" id="app-search-input" placeholder="Search tests, topics, PYPs...">
+        <input style="padding-left:8px;" type="search" class="hdr-search-input" id="app-search-input" aria-label="Search tests, topics, and previous year papers" placeholder="Search tests, topics, PYPs...">
       </div>
     </div>
 
     <!-- ACTION AREA -->
     <div class="hdr-action-area">
       <!-- Buy Now CTA -->
-      <button class="btn-buy-nw" onclick="window.appController.switchAppView('subscription');">Buy Now</button>
+      <button type="button" class="btn-buy-nw" data-app-action="switch-view" data-view="subscription">Buy Now</button>
 
       <!-- Candidate Login CTA -->
       <button class="btn-hdr-login" id="btn-header-login" type="button" style="display: none;">Sign In</button>
@@ -88,26 +87,26 @@
           </div>
           <div class="upd-divider"></div>
           <nav class="upd-nav-list">
-            <a href="javascript:void(0)" class="upd-nav-item" onclick="window.appController.switchAppView('analytics')">
+            <button type="button" class="upd-nav-item" data-app-action="switch-view" data-view="analytics">
               <div class="upd-icon"><img src="img/dashboard.svg" alt=""></div>
               <span>Analytics &amp; Streaks (🔥 <span id="header-user-streak">1d</span>)</span>
-            </a>
-            <a href="javascript:void(0)" class="upd-nav-item" onclick="window.appController.switchAppView('bookmarks')">
+            </button>
+            <button type="button" class="upd-nav-item" data-app-action="switch-view" data-view="bookmarks">
               <div class="upd-icon"><img src="img/bm.svg" alt=""></div>
               <span>My Bookmarks</span>
-            </a>
-            <a href="javascript:void(0)" class="upd-nav-item" onclick="window.appController.switchAppView('subscription')">
+            </button>
+            <button type="button" class="upd-nav-item" data-app-action="switch-view" data-view="subscription">
               <div class="upd-icon"><img src="img/brief.svg" alt=""></div>
               <span>My Subscription (🪙 <span id="header-user-coins">300</span> coins)</span>
-            </a>
-            <a href="javascript:void(0)" class="upd-nav-item" id="btn-open-candidate-modal" style="margin-top: 4px;">
+            </button>
+            <button type="button" class="upd-nav-item" id="btn-open-candidate-modal" style="margin-top: 4px;">
               <div class="upd-icon"><img src="img/newlogout.svg" alt=""></div>
               <span>Switch Candidate</span>
-            </a>
-            <a href="javascript:void(0)" class="upd-nav-item" id="btn-user-logout" style="margin-top: 4px; color: #ef4444;">
+            </button>
+            <button type="button" class="upd-nav-item" id="btn-user-logout" style="margin-top: 4px; color: #ef4444;">
               <div class="upd-icon"><span style="font-size: 16px;">🚪</span></div>
               <span>Sign Out</span>
-            </a>
+            </button>
           </nav>
         </div>
       </div>
@@ -116,54 +115,71 @@
 
   <!-- 2. AUTHENTIC OLIVEBOARD NAVIGATION SIDEBAR (.sm-nav-container) -->
   <nav class="sm-nav-container" id="sm-nav-container">
-    <a href="javascript:void(0)" class="plainanchor sm-nav-item" data-view="analytics" title="Dashboard &amp; Analytics">
+    <button type="button" class="plainanchor sm-nav-item" data-view="analytics" title="Dashboard &amp; Analytics">
       <img src="img/dashboard.svg" alt="">
       <span class="sm-text-desk">Dashboard</span>
       <span class="sm-text-mob">Dashboard</span>
-    </a>
+    </button>
     
-    <a href="javascript:void(0)" class="plainanchor sm-nav-item" data-view="courses" title="Courses &amp; Batches">
+    <button type="button" class="plainanchor sm-nav-item" data-view="courses" title="Courses &amp; Batches">
       <img src="img/courses.svg" alt="">
       <span class="sm-text-desk">Courses</span>
       <span class="sm-text-mob">Courses</span>
-    </a>
+    </button>
     
-    <a href="javascript:void(0)" class="plainanchor sm-nav-item active" data-view="tests" title="Mock Tests">
+    <button type="button" class="plainanchor sm-nav-item active" data-view="tests" title="Mock Tests" aria-current="page">
       <img src="img/Tests_active.svg" alt="" id="sm-tests-active-icon">
       <span class="sm-text-desk">Tests</span>
       <span class="sm-text-mob">Tests</span>
-    </a>
+    </button>
+        <button type="button" class="plainanchor sm-nav-item" data-view="quizzes" title="Daily 10-Min Mini Quizzes">
+      <div style="font-size: 20px; line-height: 1; margin-bottom: 2px;">⚡</div>
+      <span class="sm-text-desk">Daily Quiz</span>
+      <span class="sm-text-mob">Quiz</span>
+    </button>
     
-    <a href="javascript:void(0)" class="plainanchor sm-nav-item" data-view="pyp" title="Previous Year Papers">
+    <button type="button" class="plainanchor sm-nav-item" data-view="pyp" title="Previous Year Papers">
       <img src="img/Tests.svg" alt="">
       <span class="sm-text-desk">PYPs + Past</span>
       <span class="sm-text-mob">PYPs</span>
-    </a>
+    </button>
     
-    <a href="javascript:void(0)" class="plainanchor sm-nav-item" data-view="mentorship" title="Personalised Mentorship">
+    <button type="button" class="plainanchor sm-nav-item sm-nav-secondary" data-view="mentorship" title="Personalised Mentorship">
       <img src="img/mentorship.svg" alt="">
       <span class="sm-text-desk">Mentorship</span>
       <span class="sm-text-mob">Mentorship</span>
-    </a>
+    </button>
     
-    <a href="javascript:void(0)" class="plainanchor sm-nav-item" data-view="bookmarks" title="My Bookmarks">
+    <button type="button" class="plainanchor sm-nav-item sm-nav-secondary" data-view="bookmarks" title="My Bookmarks">
       <img src="img/bm24.svg" alt="">
       <span class="sm-text-desk">Bookmarks</span>
       <span class="sm-text-mob">Bookmarks</span>
-    </a>
+    </button>
     
-    <a href="javascript:void(0)" class="plainanchor sm-nav-item" data-view="subscription" title="My Subscription">
+    <button type="button" class="plainanchor sm-nav-item sm-nav-secondary" data-view="subscription" title="My Subscription">
       <img src="img/brief24.svg?v=20261024_9" alt="">
       <span class="sm-text-desk">Subscription</span>
       <span class="sm-text-mob">Subscription</span>
-    </a>
+    </button>
 
-    <a href="javascript:void(0)" class="plainanchor sm-nav-item" data-view="leaderboard" title="All India Leaderboard">
+    <button type="button" class="plainanchor sm-nav-item sm-nav-secondary" data-view="leaderboard" title="All India Leaderboard">
       <img src="img/expert.svg" alt="">
       <span class="sm-text-desk">Leaderboard</span>
       <span class="sm-text-mob">Ranks</span>
-    </a>
+    </button>
+    <button type="button" class="sm-nav-item sm-nav-more" id="mobile-more-trigger" aria-haspopup="menu" aria-expanded="false" title="More navigation options">
+      <span class="sm-nav-more-icon" aria-hidden="true">•••</span>
+      <span class="sm-text-desk">More</span>
+      <span class="sm-text-mob">More</span>
+    </button>
   </nav>
+
+  <div class="mobile-more-menu" id="mobile-more-menu" role="menu" aria-label="More navigation options" hidden>
+    <button type="button" role="menuitem" data-view="mentorship">Mentorship</button>
+    <button type="button" role="menuitem" data-view="bookmarks">Bookmarks</button>
+    <button type="button" role="menuitem" data-view="subscription">Subscription</button>
+    <button type="button" role="menuitem" data-view="leaderboard">Leaderboard</button>
+  </div>
 
   <!-- 3. AUTHENTIC MAIN WORKSPACE (.main-wrapper) -->
   <div class="main-wrapper" id="main-wrapper">
@@ -172,9 +188,23 @@
       
       <!-- Main Application Views -->
       <main class="app-content-area" style="padding: 0;">
+        <div class="app-status-banner" id="app-status-banner" role="status" aria-live="polite" hidden>
+          <span class="app-status-icon" aria-hidden="true">⚠️</span>
+          <span id="app-status-message"></span>
+          <button type="button" class="app-status-retry" id="btn-retry-connection">Retry connection</button>
+        </div>
         <!-- VIEW 1: Tests View -->
         <section class="app-view-tab active" id="view-tests">
+          <header class="catalog-heading">
+            <div>
+              <span class="catalog-eyebrow">TEST LIBRARY</span>
+              <h1>Mock Tests</h1>
+              <p>Choose a test type, then narrow it by your attempt status.</p>
+            </div>
+          </header>
+          <aside class="continue-test-banner" id="continue-test-banner" hidden></aside>
           <!-- Top Tabs Row (.tabs-wrapper > .fltr-tabs-row) -->
+          <div class="filter-group-label" id="test-type-filter-label">Test type</div>
           <div class="tabs-wrapper" id="test-tabs-wrapper">
             <span class="scroll-arrow left-arrow">❮</span>
             <div class="fltr-tabs-row" id="filter-tabs-bar">
@@ -190,10 +220,20 @@
 
           <!-- Status Filter Row: All, Attempted, Unattempted, Free -->
           <div class="fltr-nav-wrapper" id="test-fltr-nav-wrapper">
+            <div class="filter-group-label">Attempt status</div>
             <div class="fltr-controls-row">
               <div class="fltr-lang-toggle" id="status-filter-bar">
                 <!-- Rendered dynamically via renderStatusFilterPills() -->
               </div>
+              <label class="test-sort-control" for="test-sort">
+                <span>Sort</span>
+                <select id="test-sort">
+                  <option value="recommended">Recommended</option>
+                  <option value="duration-asc">Shortest first</option>
+                  <option value="questions-asc">Fewest questions</option>
+                  <option value="title-asc">Title A–Z</option>
+                </select>
+              </label>
               <div style="font-size: 13px; font-weight: 600; color: #475569;" id="active-tab-tests-count">
                 Loading Tests...
               </div>
@@ -208,7 +248,7 @@
         <!-- VIEW 2: Analytics & Dashboard View -->
         <section class="app-view-tab" id="view-analytics">
           <div class="subview-back-bar" style="margin-bottom: 12px;">
-            <button class="btn-subview-back" onclick="window.appController.goBack()" title="Back to Tests">
+            <button type="button" class="btn-subview-back" data-app-action="go-back" title="Back to Tests">
               <img src="img/backbutton.svg" alt="" style="width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;">
               <span>← Back to Tests</span>
             </button>
@@ -228,7 +268,7 @@
         <!-- VIEW 3: Courses View -->
         <section class="app-view-tab" id="view-courses">
           <div class="subview-back-bar" style="margin-bottom: 12px;">
-            <button class="btn-subview-back" onclick="window.appController.goBack()" title="Back to Tests">
+            <button type="button" class="btn-subview-back" data-app-action="go-back" title="Back to Tests">
               <img src="img/backbutton.svg" alt="" style="width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;">
               <span>← Back to Tests</span>
             </button>
@@ -247,7 +287,7 @@
         <!-- VIEW 4: Mentorship View -->
         <section class="app-view-tab" id="view-mentorship">
           <div class="subview-back-bar" style="margin-bottom: 12px;">
-            <button class="btn-subview-back" onclick="window.appController.goBack()" title="Back to Tests">
+            <button type="button" class="btn-subview-back" data-app-action="go-back" title="Back to Tests">
               <img src="img/backbutton.svg" alt="" style="width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;">
               <span>← Back to Tests</span>
             </button>
@@ -266,7 +306,7 @@
         <!-- VIEW 5: Bookmarks View -->
         <section class="app-view-tab" id="view-bookmarks">
           <div class="subview-back-bar" style="margin-bottom: 12px;">
-            <button class="btn-subview-back" onclick="window.appController.goBack()" title="Back to Tests">
+            <button type="button" class="btn-subview-back" data-app-action="go-back" title="Back to Tests">
               <img src="img/backbutton.svg" alt="" style="width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;">
               <span>← Back to Tests</span>
             </button>
@@ -285,7 +325,7 @@
         <!-- VIEW 6: Subscription View -->
         <section class="app-view-tab" id="view-subscription">
           <div class="subview-back-bar" style="margin-bottom: 12px;">
-            <button class="btn-subview-back" onclick="window.appController.goBack()" title="Back to Tests">
+            <button type="button" class="btn-subview-back" data-app-action="go-back" title="Back to Tests">
               <img src="img/backbutton.svg" alt="" style="width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;">
               <span>← Back to Tests</span>
             </button>
@@ -293,7 +333,7 @@
           <div class="section-label-bar" style="margin-bottom: 16px;">
             <div>
               <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;">Subscription &amp; Pass Management</h3>
-              <span style="font-size: 12px; color: #008479; font-weight: 600;">Active Plan: Banking Super Elite 2026</span>
+              <span style="font-size: 12px; color: #64748b; font-weight: 600;">Account-specific status is shown only when verified</span>
             </div>
           </div>
           <div id="subscription-view-container">
@@ -304,7 +344,7 @@
         <!-- VIEW 7: Leaderboard View -->
         <section class="app-view-tab" id="view-leaderboard">
           <div class="subview-back-bar" style="margin-bottom: 12px;">
-            <button class="btn-subview-back" onclick="window.appController.goBack()" title="Back to Tests">
+            <button type="button" class="btn-subview-back" data-app-action="go-back" title="Back to Tests">
               <img src="img/backbutton.svg" alt="" style="width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;">
               <span>← Back to Tests</span>
             </button>
@@ -319,6 +359,80 @@
             <!-- Rendered dynamically -->
           </div>
         </section>
+
+        <!-- VIEW 8: Daily 10-Minute Mini Quizzes View -->
+        <section class="app-view-tab" id="view-quizzes">
+          <div class="subview-back-bar" style="margin-bottom: 12px;">
+            <button type="button" class="btn-subview-back" data-app-action="go-back" title="Back to Tests">
+              <img src="img/backbutton.svg" alt="" style="width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;">
+              <span>← Back to Tests</span>
+            </button>
+          </div>
+
+          <!-- Hero & Streak Banner -->
+          <div class="quiz-hero-card">
+            <div class="quiz-hero-main">
+              <div class="quiz-badge-pill">DAILY PRACTICE</div>
+              <h2 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 8px 0 6px 0;">Daily Subject Quizzes</h2>
+              <p style="color: #64748b; font-size: 14px; margin: 0 0 16px 0; max-width: 600px;">
+                Practice up to 10 currently available questions in a subject and track your completed work.
+              </p>
+
+              <!-- Rewards & Live Stats -->
+              <div class="quiz-stats-row">
+                <div class="quiz-stat-card">
+                  <span class="quiz-stat-icon">🔥</span>
+                  <div>
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Active Streak</div>
+                    <div style="font-size: 18px; font-weight: 800; color: #ea580c;" id="quiz-hero-streak">1 Day</div>
+                  </div>
+                </div>
+
+                <div class="quiz-stat-card">
+                  <span class="quiz-stat-icon">🪙</span>
+                  <div>
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Candidate Coins</div>
+                    <div style="font-size: 18px; font-weight: 800; color: #d97706;" id="quiz-hero-coins">300</div>
+                  </div>
+                </div>
+
+                <div class="quiz-stat-card" style="background: #ecfdf5; border-color: #a7f3d0;">
+                  <span class="quiz-stat-icon">🎯</span>
+                  <div>
+                    <div style="font-size: 11px; font-weight: 700; color: #047857; text-transform: uppercase;">Daily Reward</div>
+                    <div style="font-size: 14px; font-weight: 800; color: #065f46;">+50 Coins &amp; +1 Streak</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subject Selection Section -->
+          <div class="section-label-bar" style="margin: 24px 0 16px 0;">
+            <div>
+              <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;">Choose Your Quiz Subject</h3>
+              <span style="font-size: 12px; color: #64748b;">Select any section to attempt an authentic 10-minute speed quiz</span>
+            </div>
+          </div>
+
+          <!-- Dynamic Subjects Grid -->
+          <div class="quiz-subject-grid" id="quiz-subjects-container">
+            <div class="status" style="grid-column: 1 / -1; padding: 24px; text-align: center; color: #64748b;">Loading available quiz sections...</div>
+          </div>
+
+          <!-- Quiz Details Card -->
+          <div class="quiz-rules-card" style="margin-top: 24px; padding: 18px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+              <span aria-hidden="true">ⓘ</span> Quiz details
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; font-size: 12px; color: #475569;">
+              <div>⏱️ <b>10 Minutes Time Limit</b>: Real exam countdown with automatic submit on timer expiry.</div>
+              <div>⚖️ <b>Marking Scheme</b>: +1.0 for correct answer, -0.25 negative marks for incorrect.</div>
+              <div><b>Available practice</b>: Quiz size adapts when fewer than 10 questions are currently available.</div>
+              <div><b>Saved progress</b>: Sign in to keep subject progress separate for your candidate profile.</div>
+            </div>
+          </div>
+        </section>
       </main>
 
     </div>
@@ -327,8 +441,8 @@
   <!-- ========================================================
        MODAL: CANDIDATE LOGIN MODAL
        ======================================================== -->
-  <div class="login-modal-overlay" id="login-modal-overlay" style="display: none;">
-    <div class="login-modal-dialog">
+  <div class="login-modal-overlay" id="login-modal-overlay" style="display: none;" aria-hidden="true">
+    <div class="login-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="login-modal-title" aria-describedby="login-modal-subtitle" tabindex="-1">
       <div class="login-modal-header">
         <div class="login-brand">
           <img src="img/logo/tlogo-28.png" alt="Oliveboard" style="height: 28px; width: auto;">
@@ -337,18 +451,18 @@
             <p id="login-modal-subtitle">Sign in to access mock tests, saved scores & analytics</p>
           </div>
         </div>
-        <button class="btn-close-login-modal" id="btn-close-login-modal" type="button" title="Close">✕</button>
+        <button class="btn-close-login-modal" id="btn-close-login-modal" type="button" title="Close" aria-label="Close login dialog">✕</button>
       </div>
 
       <div class="login-modal-body">
         <!-- Mode Switcher (Sign In vs Register) -->
-        <div class="login-tabs">
-          <button type="button" class="login-tab active" id="tab-login-mode">Sign In</button>
-          <button type="button" class="login-tab" id="tab-register-mode">New Candidate</button>
+        <div class="login-tabs" role="tablist" aria-label="Candidate account options">
+          <button type="button" class="login-tab active" id="tab-login-mode" role="tab" aria-selected="true" aria-controls="form-login-candidate">Sign In</button>
+          <button type="button" class="login-tab" id="tab-register-mode" role="tab" aria-selected="false" aria-controls="form-login-candidate">New Candidate</button>
         </div>
 
         <!-- Inline Status / Error Alert -->
-        <div id="login-alert-box" class="login-alert" style="display: none;"></div>
+        <div id="login-alert-box" class="login-alert" style="display: none;" role="alert" aria-live="assertive"></div>
 
         <!-- Login / Register Form -->
         <form id="form-login-candidate" autocomplete="on">
@@ -373,7 +487,7 @@
             <div class="login-input-wrap">
               <span class="login-input-icon">🔒</span>
               <input type="password" id="login-password" name="password" placeholder="Enter password" required autocomplete="current-password">
-              <button type="button" class="btn-toggle-pwd" id="btn-toggle-pwd" title="Toggle password visibility">👁️</button>
+              <button type="button" class="btn-toggle-pwd" id="btn-toggle-pwd" title="Toggle password visibility" aria-label="Show password">👁️</button>
             </div>
           </div>
 
@@ -480,8 +594,8 @@
         <div id="pausetext">Test has been paused. You can resume the test by visiting the main test page.</div>
       </div>
       <div class="calin">
-        <a href="javascript:void(0)" id="pauseok" class="okbtn">OK</a>
-        <a href="javascript:void(0)" id="btn-resume-test" class="okbtn" style="background-color: #2e7d32; margin-right: 8px;">Resume</a>
+        <button type="button" id="pauseok" class="okbtn">OK</button>
+        <button type="button" id="btn-resume-test" class="okbtn" style="background-color: #2e7d32; margin-right: 8px;">Resume</button>
       </div>
     </div>
 
@@ -540,8 +654,8 @@
           <center>
             <p id="sure-warning-text">Are you sure you want to submit?</p>
             <p id="sure-section-lock-note" style="font-size: 12px; color: #c2410c; margin: 4px 0 14px 0; display: none;"></p>
-            <a href="javascript:void(0)" id="btn-s-back"><span id="s-back">Back</span></a>
-            <a href="javascript:void(0)" id="btn-s-submit"><span id="s-submit">Submit</span></a>
+            <button type="button" id="btn-s-back"><span id="s-back">Back</span></button>
+            <button type="button" id="btn-s-submit"><span id="s-submit">Submit</span></button>
           </center>
         </div>
 
@@ -650,7 +764,7 @@
             <span>I have read and understood the instructions. All computer hardware allotted to me are in proper working condition. I declare that I am not in possession of any electronic devices or prohibited materials.</span>
           </label>
           <div style="text-align: center; margin-top: 8px;">
-            <a href="javascript:void(0)" id="start-test" style="visibility: visible;">Start Test</a>
+            <a href="#" id="start-test" role="button" style="visibility: visible;">Start Test</a>
           </div>
         </div>
 
@@ -681,23 +795,23 @@
           <tbody>
             <tr>
               <td>Answered</td>
-              <td><a id="answ" href="javascript:void(0)">0</a></td>
+              <td><a id="answ" href="#" role="button">0</a></td>
             </tr>
             <tr>
               <td>Not Answered</td>
-              <td><a id="unansw" href="javascript:void(0)">0</a></td>
+              <td><a id="unansw" href="#" role="button">0</a></td>
             </tr>
             <tr>
               <td>Marked for Review</td>
-              <td><a id="marked" href="javascript:void(0)">0</a></td>
+              <td><a id="marked" href="#" role="button">0</a></td>
             </tr>
             <tr>
               <td>Not Visited</td>
-              <td><a id="notvisited" href="javascript:void(0)">0</a></td>
+              <td><a id="notvisited" href="#" role="button">0</a></td>
             </tr>
             <tr>
               <td>Answered Marked for review</td>
-              <td><a id="ansmarked" href="javascript:void(0)">0</a></td>
+              <td><a id="ansmarked" href="#" role="button">0</a></td>
             </tr>
           </tbody>
         </table>
@@ -718,6 +832,20 @@
               </tbody>
             </table>
           </span>
+        </div>
+
+        <div class="mobile-exam-toolbar" id="mobile-exam-toolbar" aria-label="Mobile exam controls">
+          <div class="mobile-exam-time" aria-live="off">
+            <span>Time left</span>
+            <strong id="mobile-exam-timer">20:00</strong>
+          </div>
+          <div class="mobile-pane-switch" id="mobile-pane-switch" hidden>
+            <button type="button" id="btn-mobile-passage" aria-pressed="false">Passage</button>
+            <button type="button" id="btn-mobile-question" class="active" aria-pressed="true">Question</button>
+          </div>
+          <button type="button" class="mobile-palette-trigger" id="btn-mobile-palette" aria-expanded="false" aria-controls="right-container-post">
+            Questions
+          </button>
         </div>
 
         <!-- Question Outer Pane (#question-outer-pane) -->
@@ -762,7 +890,7 @@
 
           <!-- In-Pane Back Button Footer (#main-back-button - Spec 3.7) -->
           <div id="main-back-button" style="display: none;">
-            <a href="javascript:void(0)" id="btn-get-all-back">
+            <a href="#" id="btn-get-all-back" role="button">
               <div id="back">Back</div>
             </a>
           </div>
@@ -841,23 +969,25 @@
           <!-- Bottom Action Buttons (#button-holder - Spec 3.6) -->
           <div id="button-holder">
             <div class="action-left-buttons">
-              <a href="javascript:void(0)" id="btn-mark-review">
+              <button type="button" id="btn-mark-review">
                 <span id="mark">Mark for Review &amp; Next</span>
-              </a>
-              <a href="javascript:void(0)" id="btn-clear-response">
+              </button>
+              <button type="button" id="btn-clear-response">
                 <span id="clear">Clear Response</span>
-              </a>
+              </button>
             </div>
             <div>
-              <a href="javascript:void(0)" id="btn-save-next">
+              <button type="button" id="btn-save-next">
                 <span id="next">Save &amp; Next</span>
-              </a>
+              </button>
             </div>
           </div>
 
         </div>
 
       </div>
+
+      <button type="button" class="palette-drawer-backdrop" id="palette-drawer-backdrop" aria-label="Close question palette" tabindex="-1"></button>
 
       <!-- Right 20% Container - Candidate, Timer, Legend & Palette (#right-container-post) -->
       <div id="right-container-post" style="display: none;">
@@ -872,16 +1002,20 @@
             <span id="exam-timer-display" style="display: none;">00:20:00</span>
             <i id="exam-sec-timer-name" style="display: none;">English Language</i>
             <div style="margin-top: 4px;">
-              <a href="javascript:void(0)" class="apausebut" id="btn-pause-test">
+              <button type="button" class="apausebut" id="btn-pause-test">
                 <img src="images/oliveboard/pause_icon.png" alt="Pause">
                 <span class="pausebut">Pause Test</span>
-              </a>
+              </button>
             </div>
           </div>
         </div>
 
         <!-- Lower Half: Legend, Palette, and Bottom Buttons (#right-low-half-outer) -->
         <div id="right-low-half-outer">
+          <div class="mobile-palette-header">
+            <strong>Question palette</strong>
+            <button type="button" id="btn-mobile-palette-close" aria-label="Close question palette">✕</button>
+          </div>
           <!-- Drawer Collapse Arrow -->
           <span class="darr-rightslide" id="btn-collapse-sidebar" title="Hide Question Palette">&raquo;</span>
           
@@ -924,26 +1058,26 @@
               <tbody>
                 <tr>
                   <td>
-                    <a href="javascript:void(0)" id="btn-bottom-paper">
+                    <button type="button" id="btn-bottom-paper">
                       <div id="b1">Question Paper</div>
-                    </a>
+                    </button>
                   </td>
                   <td>
-                    <a href="javascript:void(0)" id="btn-bottom-instructions">
+                    <button type="button" id="btn-bottom-instructions">
                       <div id="b2">Instructions</div>
-                    </a>
+                    </button>
                   </td>
                 </tr>
                 <tr>
                   <td>
-                    <a href="javascript:void(0)" id="btn-bottom-profile">
+                    <button type="button" id="btn-bottom-profile">
                       <div id="b3">Profile</div>
-                    </a>
+                    </button>
                   </td>
                   <td>
-                    <a href="javascript:void(0)" id="btn-submit-exam">
+                    <button type="button" id="btn-submit-exam">
                       <div id="b4">Next Section</div>
-                    </a>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -1057,15 +1191,16 @@
       <section id="sec-status">
         <div class="oliveblk oliveblk-middle padd5">
           <div class="container" style="display: flex; justify-content: flex-end; align-items: center; gap: 24px; padding: 12px 15px; flex-wrap: wrap;">
+            <button type="button" class="review-mistakes-cta" id="btn-review-mistakes">Review mistakes</button>
             <div class="ddncol" style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
-              <span id="chkwrong" class="cuc-review" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; color: #1e293b;">
+              <label id="chkwrong" class="cuc-review" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; color: #1e293b;">
                 <input type="checkbox" id="chkwrong-cb" style="margin: 0; cursor: pointer;">
                 Review Wrong
-              </span>
-              <span id="chkunat" class="cuc-review" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; color: #1e293b;">
+              </label>
+              <label id="chkunat" class="cuc-review" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; color: #1e293b;">
                 <input type="checkbox" id="chkunat-cb" style="margin: 0; cursor: pointer;">
                 Review Unattempted
-              </span>
+              </label>
             </div>
             <div class="ddncol" style="display: flex; align-items: center; gap: 8px;">
               <div class="switch-block" style="display: flex; align-items: center; gap: 8px;">
@@ -1165,7 +1300,7 @@
           <div class="attemptalert" id="sol-attempt-alert">
             <div class="sol-alert-prompt">
               <span>Attempt again or </span>
-              <a href="javascript:void(0)" class="btn-viewsol" id="btn-sol-toggle-mode" style="font-weight: 700; color: #0958d9; text-decoration: underline;">View Solution</a>
+              <a href="#" class="btn-viewsol" id="btn-sol-toggle-mode" role="button" style="font-weight: 700; color: #0958d9; text-decoration: underline;">View Solution</a>
             </div>
             <div id="sol-mode-indicator">Solution Mode</div>
           </div>
@@ -1241,7 +1376,7 @@
           <h2>Performance Scorecard &amp; Cutoff Analysis</h2>
           <span style="font-size: 13px; color: #b2dfdb;" id="scorecard-test-title">IBPS SO IT Officer Mains - Full Mock 1</span>
         </div>
-        <button class="btn-close-exam-modal" id="btn-close-scorecard-header" title="Close Scorecard" onclick="window.appController.goBack()">✕</button>
+        <button type="button" class="btn-close-exam-modal" id="btn-close-scorecard-header" title="Close Scorecard" data-app-action="go-back">✕</button>
       </div>
 
       <div class="scorecard-body">
@@ -1253,7 +1388,7 @@
             <div class="number" id="metric-score">0.00</div>
           </div>
           <div class="metric-card">
-            <div class="label">All India Percentile</div>
+            <div class="label">Estimated percentile</div>
             <div class="number" id="metric-percentile">0.0%ile</div>
           </div>
           <div class="metric-card">
@@ -1261,7 +1396,7 @@
             <div class="number" id="metric-accuracy">0%</div>
           </div>
           <div class="metric-card">
-            <div class="label">Estimated AIR</div>
+            <div class="label">Estimated rank</div>
             <div class="number" id="metric-rank">#--</div>
           </div>
         </div>
@@ -1272,6 +1407,12 @@
           <div><span style="font-size: 11px; color: #64748b;">Wrong:</span> <strong style="color: #e53935;" id="metric-wrong">0</strong></div>
           <div><span style="font-size: 11px; color: #64748b;">Unanswered:</span> <strong style="color: #64748b;" id="metric-unanswered">0</strong></div>
           <div><span style="font-size: 11px; color: #64748b;">Time Spent:</span> <strong style="color: #008479;" id="metric-time">0m 0s</strong></div>
+        </div>
+
+        <div class="scorecard-insights" id="scorecard-insights">
+          <div><span>Strongest area</span><strong id="scorecard-strength">Complete a test to see this</strong></div>
+          <div><span>Focus next</span><strong id="scorecard-weakness">Complete a test to see this</strong></div>
+          <button type="button" id="btn-scorecard-review-mistakes">Review incorrect answers</button>
         </div>
 
         <!-- Sectional Performance Analysis Table (Spec 5.2) -->
@@ -1286,7 +1427,7 @@
                 <th>Correct</th>
                 <th>Wrong</th>
                 <th>Net Score</th>
-                <th>Cutoff</th>
+                <th>Estimated cutoff</th>
                 <th>Status</th>
                 <th>Accuracy</th>
                 <th>Time Spent</th>
@@ -1299,11 +1440,11 @@
         </div>
 
         <!-- Topic-wise Breakdown Grid (Spec 5.2) -->
-        <div class="solutions-section-title">Topic-wise Mastery Breakdown</div>
+        <div class="solutions-section-title">Estimated topic breakdown <span class="estimate-note">Derived from section totals</span></div>
         <div class="topic-analysis-grid" id="scorecard-topic-breakdown" style="margin-bottom: 24px;"></div>
 
         <!-- Topper vs You Comparative Analysis Module (Spec 5.3) -->
-        <div class="solutions-section-title">Comparative Analysis: You vs Average vs Topper</div>
+        <div class="solutions-section-title">Estimated comparison: You vs Average vs Topper <span class="estimate-note">Benchmarks are illustrative</span></div>
         <div class="topper-comparison-module" id="scorecard-topper-module" style="margin-bottom: 24px;">
           <div class="comparison-tabs" id="comp-tabs-bar">
             <button class="comp-tab active" data-tab="score">Score &amp; Accuracy</button>
@@ -1332,11 +1473,9 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/exam-patterns-2026.js?v=20261026_4"></script>
-  <script src="js/data.js?v=20261026_4"></script>
-  <script src="js/data-manager.js?v=20261026_4"></script>
-  <script src="js/test-engine.js?v=20261026_4"></script>
-  <script src="js/solution-engine.js?v=20261026_4"></script>
-  <script src="js/app.js?v=20261028_1"></script>
+  <script type="module" src="js/exam-patterns-2026.js?v=20261026_4"></script>
+  <script type="module" src="js/data.js?v=20261026_4"></script>
+  <script type="module" src="js/data-manager.js?v=20261026_4"></script>
+  <script type="module" src="js/app.js?v=20261103_2"></script>
 </body>
 </html>

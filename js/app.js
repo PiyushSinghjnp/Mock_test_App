@@ -8,6 +8,8 @@ class OliveboardAppController {
     this.currentExamId = "ibps-so"; // default to the full 150-Q IBPS SO IT exam
     this.currentFilterTab = "all";
     this.currentStatusFilter = "all"; // 'all' | 'unattempted' | 'attempted' | 'free' (Spec 1.2)
+    this.currentSort = "recommended";
+    this.currentSearchQuery = "";
     this.currentViewTab = "tests"; // 'tests' | 'analytics' | 'leaderboard' | 'mcp'
     this.testsCache = [];
 
@@ -32,21 +34,19 @@ class OliveboardAppController {
     this.renderExamHero();
     this.renderFilterTabs();
     this.renderStatusFilterPills();
-    await this.loadAndRenderMockCards();
-    await this.renderLeaderboard();
-    await this.renderAnalytics();
-
-    // 3. Bind UI events
+    // Bind static shell interactions before slow API calls complete.
     this.bindEvents();
+    await this.loadAndRenderMockCards();
+    await Promise.all([
+      this.renderLeaderboard(),
+      this.renderAnalytics()
+    ]);
+    this.renderBackendStatus();
 
-    // 4. Initialize History & Deep-Linking Router (prevents about:blank back-button exit)
+    // Initialize History & Deep-Linking Router (prevents about:blank back-button exit)
     this.initHistoryRouter();
 
-    // 5. REQUIREMENT: When someone opens the site, the login modal should open first if not logged in
-    const currentActiveUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
-    if (!currentActiveUser) {
-      this.openLoginModal(false);
-    }
+    // Guests can browse the catalog. Authentication is requested when a protected action starts.
   }
 
   showToast(message, type = 'info') {
@@ -66,8 +66,89 @@ class OliveboardAppController {
     }, 3600);
   }
 
+  renderBackendStatus() {
+    const banner = document.getElementById('app-status-banner');
+    const message = document.getElementById('app-status-message');
+    if (!banner || !message) return;
+
+    const manager = window.obDataManager;
+    const unavailable = manager && manager.backendAvailable === false;
+    banner.hidden = !unavailable;
+    banner.classList.toggle('is-visible', unavailable);
+    if (unavailable) {
+      message.textContent = 'Some live data is temporarily unavailable. You can still browse the local test catalog.';
+    }
+  }
+
+  toggleMobileMoreMenu(event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const trigger = document.getElementById('mobile-more-trigger');
+    const menu = document.getElementById('mobile-more-menu');
+    if (!trigger || !menu) return;
+    const nextOpen = menu.hidden;
+    menu.hidden = !nextOpen;
+    menu.classList.toggle('is-open', nextOpen);
+    trigger.setAttribute('aria-expanded', String(nextOpen));
+  }
+
+  selectMobileMoreView(view, event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.switchAppView(view);
+    const menu = document.getElementById('mobile-more-menu');
+    const trigger = document.getElementById('mobile-more-trigger');
+    if (menu) {
+      menu.hidden = true;
+      menu.classList.remove('is-open');
+    }
+    trigger?.setAttribute('aria-expanded', 'false');
+  }
+
   getCurrentExam() {
     return window.OB_TEST_APP.exams.find(e => e.id === this.currentExamId) || window.OB_TEST_APP.exams[0];
+  }
+
+  loadScriptOnce(src) {
+    this._lazyScripts = this._lazyScripts || new Map();
+    if (this._lazyScripts.has(src)) return this._lazyScripts.get(src);
+
+    const promise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.dataset.lazyScript = src;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error(`Unable to load ${src}.`));
+      document.body.appendChild(script);
+    });
+    this._lazyScripts.set(src, promise);
+    return promise;
+  }
+
+  loadStylesheetOnce(href) {
+    this._lazyStyles = this._lazyStyles || new Map();
+    if (this._lazyStyles.has(href)) return this._lazyStyles.get(href);
+
+    const promise = new Promise((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.dataset.lazyStylesheet = href;
+      link.onload = resolve;
+      link.onerror = () => reject(new Error(`Unable to load ${href}.`));
+      document.head.appendChild(link);
+    });
+    this._lazyStyles.set(href, promise);
+    return promise;
+  }
+
+  async ensureTestEngineLoaded(includeSolutions = false) {
+    await this.loadScriptOnce('js/test-engine.js?v=20261103_5');
+    if (includeSolutions) {
+      await this.loadStylesheetOnce('css/style4.css?v=20261026_1');
+      await this.loadScriptOnce('js/solution-engine.js?v=20261103_2');
+    }
   }
 
   // ==========================================
@@ -143,6 +224,10 @@ class OliveboardAppController {
 
     if (hash === '#leaderboard') {
       return { view: 'leaderboard' };
+    }
+
+    if (hash === '#quizzes' || hash === '#quiz' || hash === '#daily-quiz') {
+      return { view: 'quizzes' };
     }
 
     if (hash === '#exam-switcher') {
@@ -596,6 +681,167 @@ class OliveboardAppController {
     await this.refreshAnalytics(targetTestId);
   }
 
+
+  // ==========================================
+  // DAILY 10-MINUTE MINI QUIZZES & STREAK
+  // ==========================================
+
+  async renderDailyQuizzesView() {
+    const container = document.getElementById('quiz-subjects-container');
+    const heroStreak = document.getElementById('quiz-hero-streak');
+    const heroCoins = document.getElementById('quiz-hero-coins');
+    if (!container) return;
+
+    const activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+    const userId = activeUser ? activeUser.id : null;
+
+    if (activeUser) {
+      if (heroStreak) heroStreak.textContent = `${activeUser.streak_days || 1} Day${(activeUser.streak_days || 1) > 1 ? 's' : ''}`;
+      if (heroCoins) heroCoins.textContent = activeUser.coins !== undefined ? activeUser.coins : 300;
+    } else {
+      if (heroStreak) heroStreak.textContent = 'Sign in to track';
+      if (heroCoins) heroCoins.textContent = '—';
+    }
+
+    try {
+      const url = userId ? `/api/quizzes/subjects?userId=${encodeURIComponent(userId)}` : '/api/quizzes/subjects';
+      const requestJson = window.obDataManager?.requestJson
+        ? window.obDataManager.requestJson.bind(window.obDataManager)
+        : async (path) => {
+            const response = await fetch(path);
+            const raw = await response.text();
+            const data = raw ? JSON.parse(raw) : {};
+            if (!response.ok) throw new Error(data.error || `Request failed (${response.status}).`);
+            return data;
+          };
+      const data = await requestJson(url);
+
+      if (!data.success || !Array.isArray(data.subjects) || data.subjects.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state-card">
+            <div class="empty-state-icon" aria-hidden="true">📚</div>
+            <h4>No quiz subjects available yet</h4>
+            <p>Once question pools are added, your daily speed drills will appear here.</p>
+            <a class="btn-secondary-action" href="/admin#sec-quiz-bank">Open Admin Console</a>
+          </div>
+        `;
+        return;
+      }
+
+      if (data.userStreak !== undefined && heroStreak) {
+        heroStreak.textContent = `${data.userStreak} Day${data.userStreak > 1 ? 's' : ''}`;
+      }
+      if (data.userCoins !== undefined && heroCoins) {
+        heroCoins.textContent = data.userCoins;
+      }
+
+      const iconMap = {
+        'reasoning': '🧩',
+        'quant': '📐',
+        'math': '📐',
+        'english': '📖',
+        'general': '🌍',
+        'awareness': '🌍',
+        'current': '📰',
+        'computer': '💻',
+        'professional': '⚡'
+      };
+
+      const getSubjectIcon = (subName) => {
+        const lower = subName.toLowerCase();
+        for (const [k, ic] of Object.entries(iconMap)) {
+          if (lower.includes(k)) return ic;
+        }
+        return '📝';
+      };
+
+      container.innerHTML = data.subjects.map(sub => {
+        const icon = getSubjectIcon(sub.subject);
+        const solved = sub.solvedCount || 0;
+        const total = Math.max(0, Number(sub.totalQuestions) || 0);
+        const quizSize = Math.min(10, total);
+        const pct = total > 0 ? Math.min(100, Math.round((solved / total) * 100)) : 0;
+
+        return `
+          <div class="quiz-subject-card">
+            <div>
+              <div class="quiz-card-top">
+                <div class="quiz-subject-icon">${icon}</div>
+                <div style="flex: 1;">
+                  <h4 class="quiz-subject-title">${sub.subject}</h4>
+                  <div style="font-size: 12px; color: #64748b;">${quizSize} available question${quizSize === 1 ? '' : 's'} • up to 10 minutes</div>
+                </div>
+              </div>
+
+              <div class="quiz-meta-row">
+                <span><b>${Math.max(0, total - solved)} remaining</b> of ${total}</span>
+                <span>•</span>
+                <span style="color: #008479; font-weight: 700;">${solved} Solved</span>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; font-weight: 600;">
+                <span>Subject progress</span>
+                <span>${pct}%</span>
+              </div>
+              <div class="quiz-progress-track">
+                <div class="quiz-progress-fill" style="width: ${pct}%;"></div>
+              </div>
+            </div>
+
+            <div style="margin-top: 10px;">
+              <button type="button" class="quiz-btn-start" data-app-action="start-daily-quiz" data-subject="${sub.subject.replace(/"/g, '&quot;')}" ${quizSize === 0 ? 'disabled' : ''}>
+                <span>${quizSize > 0 ? `Start ${quizSize}-Question Quiz` : 'No practice available'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('Failed to render daily quizzes:', err);
+      container.innerHTML = `
+        <div class="empty-state-card empty-state-card-error" role="alert">
+          <div class="empty-state-icon" aria-hidden="true">⚠️</div>
+          <h4>Quiz subjects are temporarily unavailable</h4>
+          <p>Check your connection and try again. Your saved progress is not affected.</p>
+          <button type="button" class="btn-secondary-action" id="btn-retry-quizzes">Try again</button>
+        </div>
+      `;
+      this.renderBackendStatus();
+    }
+  }
+
+  async startDailyQuiz(subject) {
+    if (!window.obDataManager || !window.obDataManager.getActiveUser()) {
+      this.showToast('Please sign in to attempt daily quizzes & track your streak.', 'info');
+      this.openLoginModal();
+      return;
+    }
+
+    const user = window.obDataManager.getActiveUser();
+    this.showToast(`Generating 10-Question ${subject} speed quiz...`, 'info');
+
+    try {
+      const data = await window.obDataManager.requestJson('/api/quizzes/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          subject: subject
+        })
+      });
+
+      if (!data.success || !data.test) {
+        throw new Error(data.error || 'Failed to generate quiz');
+      }
+
+      // Start test engine with the generated 10-question, 10-minute quiz
+      await this.startMockTest(data.test.id, true);
+    } catch (err) {
+      console.error('Error starting daily quiz:', err);
+      this.showToast(`Error: ${err.message}`, 'error');
+    }
+  }
+
   // ==========================================
   // CANDIDATE LOGIN & AUTHENTICATION MODAL
   // ==========================================
@@ -615,8 +861,10 @@ class OliveboardAppController {
     if (usernameInput) usernameInput.value = '';
     if (passwordInput) passwordInput.value = '';
 
+    this.loginModalReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     modal.style.display = 'flex';
     modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
     if (usernameInput) {
       setTimeout(() => usernameInput.focus(), 50);
     }
@@ -631,6 +879,7 @@ class OliveboardAppController {
     if (modal) {
       modal.classList.remove('active');
       modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
     }
     const alertBox = document.getElementById('login-alert-box');
     if (alertBox) {
@@ -642,6 +891,10 @@ class OliveboardAppController {
       const cleanUrl = window.location.pathname + window.location.search;
       window.history.replaceState({ ...(window.history.state || {}), modal: null }, '', cleanUrl);
     }
+    if (this.loginModalReturnFocus && document.contains(this.loginModalReturnFocus)) {
+      this.loginModalReturnFocus.focus();
+    }
+    this.loginModalReturnFocus = null;
   }
 
   switchLoginTab(mode) {
@@ -665,6 +918,8 @@ class OliveboardAppController {
     if (mode === 'register') {
       if (tabLogin) tabLogin.classList.remove('active');
       if (tabRegister) tabRegister.classList.add('active');
+      if (tabLogin) tabLogin.setAttribute('aria-selected', 'false');
+      if (tabRegister) tabRegister.setAttribute('aria-selected', 'true');
       if (groupName) groupName.style.display = 'block';
       if (groupExam) groupExam.style.display = 'block';
       if (metaRow) metaRow.style.display = 'none';
@@ -675,6 +930,8 @@ class OliveboardAppController {
     } else {
       if (tabLogin) tabLogin.classList.add('active');
       if (tabRegister) tabRegister.classList.remove('active');
+      if (tabLogin) tabLogin.setAttribute('aria-selected', 'true');
+      if (tabRegister) tabRegister.setAttribute('aria-selected', 'false');
       if (groupName) groupName.style.display = 'none';
       if (groupExam) groupExam.style.display = 'none';
       if (metaRow) metaRow.style.display = 'flex';
@@ -752,11 +1009,8 @@ class OliveboardAppController {
       await window.obDataManager.loadUsers();
     }
 
-    let activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
+    const activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
     const allUsers = (window.obDataManager && window.obDataManager.users) || [];
-    if (!activeUser && allUsers.length > 0) {
-      activeUser = window.obDataManager.setActiveUser(allUsers[0].id);
-    }
     if (!activeUser) {
       this.openLoginModal(pushHistory);
       return;
@@ -777,7 +1031,7 @@ class OliveboardAppController {
 
     // Candidate selection list
     usersList.innerHTML = allUsers.map(u => `
-      <div class="user-item-card ${u.id === activeUser.id ? 'selected' : ''}" onclick="window.appController.switchCandidate('${u.id}')">
+      <button type="button" class="user-item-card ${u.id === activeUser.id ? 'selected' : ''}" data-app-action="switch-candidate" data-user-id="${u.id}">
         <div style="display: flex; align-items: center; gap: 12px;">
           <div style="width: 34px; height: 34px; border-radius: 50%; background: ${u.id === activeUser.id ? '#008479' : '#e2e8f0'}; color: ${u.id === activeUser.id ? '#ffffff' : '#475569'}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">
             ${u.avatar || u.name.charAt(0)}
@@ -793,7 +1047,7 @@ class OliveboardAppController {
           </span>
           ${u.id === activeUser.id ? '<span style="color: #008479; font-weight: 800; margin-left: 6px;">✓</span>' : ''}
         </div>
-      </div>
+      </button>
     `).join('');
 
     modal.style.display = 'flex';
@@ -809,6 +1063,7 @@ class OliveboardAppController {
     this.activeBookmarkSubject = 'ALL';
     this.activeBookmarkTag = 'ALL';
     this.bookmarkSearchQuery = '';
+    this.testsCache = [];
 
     // Sync bookmarked question maps on active engine instances
     const bmMap = window.obDataManager ? window.obDataManager.getBookmarkedMap() : {};
@@ -928,7 +1183,7 @@ class OliveboardAppController {
         </div>
       </div>
       <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <button class="btn-attempt-live-hero" onclick="window.appController.startMockTest('${mainTestId}')">
+        <button type="button" class="btn-attempt-live-hero" data-app-action="start-test" data-test-id="${mainTestId}">
           ${mainBtnText}
         </button>
       </div>
@@ -940,18 +1195,19 @@ class OliveboardAppController {
     if (!tabsContainer) return;
 
     const tabs = [
-      { id: "all", label: "All Tests" },
-      { id: "prelims", label: "Prelims Full Tests" },
-      { id: "mains", label: "Mains Full Tests" },
-      { id: "sectional", label: "Sectional Speed Tests" },
-      { id: "topic", label: "Topic Tests & Drills" },
-      { id: "pyp", label: "Previous Year Papers" }
+      { id: "all", label: "All types" },
+      { id: "prelims", label: "Prelims" },
+      { id: "mains", label: "Mains" },
+      { id: "sectional", label: "Sectional" },
+      { id: "topic", label: "Topic drills" }
     ];
 
+    tabsContainer.setAttribute('role', 'group');
+    tabsContainer.setAttribute('aria-label', 'Filter by test type');
     tabsContainer.innerHTML = tabs.map(tab => `
-      <a href="javascript:void(0)" class="fltr-tab-link ${tab.id === this.currentFilterTab ? 'active' : ''}" data-tab="${tab.id}">
+      <button type="button" aria-pressed="${tab.id === this.currentFilterTab}" class="fltr-tab-link ${tab.id === this.currentFilterTab ? 'active' : ''}" data-tab="${tab.id}">
         ${tab.label}
-      </a>
+      </button>
     `).join('');
 
     tabsContainer.querySelectorAll('.fltr-tab-link').forEach(btn => {
@@ -968,14 +1224,16 @@ class OliveboardAppController {
     if (!statusContainer) return;
 
     const pills = [
-      { id: "all", label: "All Tests" },
-      { id: "unattempted", label: "Unattempted" },
+      { id: "all", label: "Any status" },
+      { id: "unattempted", label: "Not started" },
       { id: "attempted", label: "Attempted" },
-      { id: "free", label: "Free Tests" }
+      { id: "free", label: "Free" }
     ];
 
+    statusContainer.setAttribute('role', 'group');
+    statusContainer.setAttribute('aria-label', 'Filter tests by status');
     statusContainer.innerHTML = pills.map(p => `
-      <button class="fltr-lang-btn ${p.id === this.currentStatusFilter ? 'active' : ''}" data-status="${p.id}">
+      <button type="button" aria-pressed="${p.id === this.currentStatusFilter}" class="fltr-lang-btn ${p.id === this.currentStatusFilter ? 'active' : ''}" data-status="${p.id}">
         ${p.label}
       </button>
     `).join('');
@@ -994,12 +1252,33 @@ class OliveboardAppController {
     const countLabel = document.getElementById('active-tab-tests-count');
     if (!cardsContainer) return;
 
-    let tests = await window.obDataManager.getTestsList(this.currentExamId);
+    let tests = this.testsCache.length
+      ? this.testsCache
+      : await window.obDataManager.getTestsList(this.currentExamId);
     if (!tests || tests.length === 0) {
       tests = window.OB_TEST_APP.testPacks.filter(p => p.examId === this.currentExamId);
     }
 
     this.testsCache = tests;
+
+    const continueBanner = document.getElementById('continue-test-banner');
+    const activeUser = window.obDataManager?.getActiveUser();
+    const pausedTest = activeUser ? tests.find(test => test.isPaused && test.pausedAttempt) : null;
+    if (continueBanner) {
+      continueBanner.hidden = !pausedTest;
+      if (pausedTest) {
+        const paused = pausedTest.pausedAttempt || {};
+        const questionIndex = Number(paused.currentQuestionIndex ?? paused.current_question_index ?? 0) + 1;
+        continueBanner.innerHTML = `
+          <div>
+            <span>CONTINUE YOUR TEST</span>
+            <strong>${pausedTest.title}</strong>
+            <small>Resume at question ${questionIndex}; your saved timer and answers will be restored.</small>
+          </div>
+          <button type="button" data-app-action="resume-test" data-test-id="${pausedTest.id}">Resume test</button>
+        `;
+      }
+    }
 
     let displayPacks = [...tests];
     if (this.currentFilterTab !== "all") {
@@ -1019,16 +1298,40 @@ class OliveboardAppController {
       displayPacks = displayPacks.filter(p => !!(p.is_free || p.isFree));
     }
 
+    const searchQuery = this.currentSearchQuery.trim().toLowerCase();
+    if (searchQuery) {
+      displayPacks = displayPacks.filter(pack => {
+        const searchable = [
+          pack.title,
+          pack.subtitle,
+          pack.type,
+          ...(pack.sections_summary || pack.sections || [])
+        ].filter(Boolean).join(' ').toLowerCase();
+        return searchable.includes(searchQuery);
+      });
+    }
+
+    if (this.currentSort === 'duration-asc') {
+      displayPacks.sort((a, b) => Number(a.duration_minutes || a.durationMinutes || 0) - Number(b.duration_minutes || b.durationMinutes || 0));
+    } else if (this.currentSort === 'questions-asc') {
+      displayPacks.sort((a, b) => Number(a.questions_count || a.questionsCount || 0) - Number(b.questions_count || b.questionsCount || 0));
+    } else if (this.currentSort === 'title-asc') {
+      displayPacks.sort((a, b) => String(a.title || '').localeCompare(String(b.title || '')));
+    }
+
     if (countLabel) {
-      countLabel.textContent = `${displayPacks.length} Tests Available`;
+      countLabel.textContent = searchQuery
+        ? `${displayPacks.length} matching test${displayPacks.length === 1 ? '' : 's'}`
+        : `${displayPacks.length} test${displayPacks.length === 1 ? '' : 's'}`;
     }
 
     if (displayPacks.length === 0) {
       cardsContainer.innerHTML = `
         <div style="grid-column: span 2; text-align: center; padding: 48px; background: #ffffff; border-radius: 12px; border: 1px solid var(--ob-app-border);">
-          <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
-          <h4 style="font-size: 16px; font-weight: 700; color: #1e293b;">No tests found for this filter</h4>
-          <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Select 'All Tests' or switch status filters above to view available mock tests.</p>
+          <div class="empty-state-icon" aria-hidden="true">⌕</div>
+          <h4 style="font-size: 16px; font-weight: 700; color: #1e293b;">No matching tests</h4>
+          <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Try a different search, test type, or attempt status.</p>
+          <button type="button" class="btn-secondary-action" data-app-action="reset-test-filters">Clear search and filters</button>
         </div>
       `;
       return;
@@ -1041,6 +1344,10 @@ class OliveboardAppController {
       const paused = pack.pausedAttempt;
       const isFree = !!(pack.is_free || pack.isFree);
       const totalQs = pack.questions_count || pack.questionsCount || 100;
+      const lastAttemptedRaw = att && (att.completed_at || att.submitted_at || att.created_at);
+      const lastAttemptedLabel = lastAttemptedRaw && !Number.isNaN(new Date(lastAttemptedRaw).getTime())
+        ? new Date(lastAttemptedRaw).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+        : '';
 
       // Determine Top-Right Badge (Spec 1.3: 4 card state variants)
       let topBadgeHTML = '';
@@ -1118,9 +1425,9 @@ class OliveboardAppController {
             </div>
 
             <!-- Sections chips -->
-            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+            <div class="mock-section-chips">
               ${(pack.sections_summary || pack.sections || []).map(s => `
-                <span style="font-size: 11px; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-weight: 500;">${s}</span>
+                <span class="mock-section-chip">${s}</span>
               `).join('')}
             </div>
 
@@ -1156,6 +1463,7 @@ class OliveboardAppController {
                   <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #dc2626; display: inline-block;"></span> ${att.wrong_count ?? 0} Wrong</span>
                   <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block;"></span> ${att.unanswered_count ?? 0} Skipped</span>
                 </div>
+                ${lastAttemptedLabel ? `<div class="card-last-attempt">Last attempt: ${lastAttemptedLabel}</div>` : ''}
               </div>
             ` : ''}
           </div>
@@ -1165,24 +1473,24 @@ class OliveboardAppController {
             
             <div class="mock-card-actions">
               ${isPaused ? `
-                <button class="btn-attempt-card" style="background: #0284c7; color: #ffffff;" onclick="window.appController.resumeMockTest('${pack.id}')">
+                <button type="button" class="btn-attempt-card test-action-resume" data-app-action="resume-test" data-test-id="${pack.id}">
                   Resume Test ▶
                 </button>
-                <button class="btn-view-scorecard" onclick="window.appController.startMockTest('${pack.id}', true)">
+                <button type="button" class="btn-view-scorecard" data-app-action="start-test" data-test-id="${pack.id}" data-force-fresh="true">
                   Start Fresh
                 </button>
               ` : isAttempted ? `
-                <button class="btn-attempt-card" style="background: #3476BB; color: #ffffff;" onclick="window.appController.viewSolutions('${att.attempt_id}', '${pack.id}')">
+                <button type="button" class="btn-attempt-card test-action-solutions" data-app-action="view-solutions" data-attempt-id="${att.attempt_id}" data-test-id="${pack.id}">
                   Solutions
                 </button>
-                <button class="btn-view-scorecard" onclick="window.appController.viewAttemptScorecard('${att.attempt_id}', '${pack.id}')">
+                <button type="button" class="btn-view-scorecard" data-app-action="view-scorecard" data-attempt-id="${att.attempt_id}" data-test-id="${pack.id}">
                   Analytics
                 </button>
-                <button class="btn-view-scorecard" onclick="window.appController.startMockTest('${pack.id}', true)">
+                <button type="button" class="btn-view-scorecard" data-app-action="start-test" data-test-id="${pack.id}" data-force-fresh="true">
                   Re-attempt
                 </button>
               ` : `
-                <button class="btn-attempt-card" onclick="window.appController.startMockTest('${pack.id}')">
+                <button type="button" class="btn-attempt-card" data-app-action="start-test" data-test-id="${pack.id}">
                   Take Test
                 </button>
               `}
@@ -1237,6 +1545,29 @@ class OliveboardAppController {
       streakEl.textContent = `${stats.streakDays !== undefined ? stats.streakDays : 1}d`;
     }
 
+    const hasAttempts = Number(stats.testsAttempted || 0) > 0 || (stats.sectionBreakdowns && stats.sectionBreakdowns.length > 0);
+    if (!hasAttempts) {
+      container.innerHTML = `
+        <div class="analytics-empty-state">
+          <div class="analytics-empty-icon" aria-hidden="true">📈</div>
+          <h4>Your performance story starts with one mock test</h4>
+          <p>Attempt a test to unlock accuracy trends, sectional strengths, percentile movement, and your estimated rank.</p>
+          <button type="button" class="btn-analytics-start" id="btn-analytics-start-test">Browse mock tests</button>
+          <div class="analytics-preview-grid" aria-label="Analytics preview">
+            <span>Accuracy trends</span>
+            <span>Weakness heatmap</span>
+            <span>All India percentile</span>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const sectionBreakdowns = Array.isArray(stats.sectionBreakdowns) ? stats.sectionBreakdowns : [];
+    const strongestSection = sectionBreakdowns.slice().sort((a, b) => parseFloat(b.accuracy) - parseFloat(a.accuracy))[0];
+    const weakestSection = sectionBreakdowns.slice().sort((a, b) => parseFloat(a.accuracy) - parseFloat(b.accuracy))[0];
+    const recentAttempts = Array.isArray(stats.recentAttempts) ? stats.recentAttempts : [];
+
     container.innerHTML = `
       <div class="analytics-top-grid">
         <div class="analytics-stat-card">
@@ -1257,27 +1588,61 @@ class OliveboardAppController {
         </div>
       </div>
 
-      <div style="background: #ffffff; border-radius: 14px; border: 1px solid var(--ob-app-border); padding: 20px; margin-bottom: 20px;">
-        <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 14px; color: #0f172a;">Sectional Strength & Weakness Breakdown (Active Candidate)</h4>
+      <div class="analytics-insight-grid">
+        <div class="analytics-insight-card analytics-insight-positive">
+          <span class="analytics-insight-label">Strongest section</span>
+          <strong>${strongestSection ? strongestSection.sectionName : 'Building momentum'}</strong>
+          <span>${strongestSection ? `${strongestSection.accuracy}% accuracy` : 'Complete another mock to unlock this insight'}</span>
+        </div>
+        <div class="analytics-insight-card analytics-insight-warning">
+          <span class="analytics-insight-label">Focus next</span>
+          <strong>${weakestSection ? weakestSection.sectionName : 'Your next weak area'}</strong>
+          <span>${weakestSection ? `${weakestSection.accuracy}% accuracy · revise incorrect answers` : 'Your section heatmap will appear here'}</span>
+        </div>
+      </div>
+
+      ${recentAttempts.length > 0 ? `
+        <div class="analytics-trend-card">
+          <div class="analytics-panel-heading">
+            <div>
+              <h4>Recent performance trend</h4>
+              <p>Latest representative attempt per mock test</p>
+            </div>
+            <span class="analytics-trend-legend">Score %</span>
+          </div>
+          <div class="analytics-trend-chart" role="img" aria-label="Recent mock test score trend">
+            ${recentAttempts.map(attempt => `
+              <div class="analytics-trend-column" title="${attempt.testTitle}: ${attempt.score}% score, ${attempt.accuracy}% accuracy">
+                <div class="analytics-trend-bar-wrap"><div class="analytics-trend-bar" style="height: ${Math.max(8, Math.min(100, attempt.score))}%;"></div></div>
+                <strong>${attempt.score}%</strong>
+                <span>${attempt.completedAt ? new Date(attempt.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recent'}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="analytics-breakdown-card">
+        <h4>Sectional strength &amp; weakness breakdown</h4>
         
-        ${stats.sectionBreakdowns && stats.sectionBreakdowns.length > 0 ? `
-          <div style="display: flex; flex-direction: column; gap: 14px;">
-            ${stats.sectionBreakdowns.map(sec => `
-              <div>
-                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px;">
+        ${sectionBreakdowns.length > 0 ? `
+          <div class="analytics-breakdown-list">
+            ${sectionBreakdowns.map(sec => `
+              <div class="analytics-breakdown-row">
+                <div class="analytics-breakdown-label">
                   <span>${sec.sectionName}</span>
-                  <span style="color: ${parseFloat(sec.accuracy) >= 80 ? '#2e7d32' : (parseFloat(sec.accuracy) >= 60 ? '#008479' : '#e53935')};">
+                  <span class="analytics-accuracy-value ${parseFloat(sec.accuracy) >= 80 ? 'is-strong' : (parseFloat(sec.accuracy) >= 60 ? 'is-steady' : 'is-focus')}">
                     ${sec.accuracy}% Accuracy (${sec.correct} Correct, ${sec.wrong} Wrong)
                   </span>
                 </div>
-                <div style="height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden;">
-                  <div style="width: ${sec.accuracy}%; height: 100%; background: ${parseFloat(sec.accuracy) >= 80 ? '#2e7d32' : (parseFloat(sec.accuracy) >= 60 ? '#008479' : '#e53935')}; border-radius: 999px;"></div>
+                <div class="analytics-progress-track">
+                  <div class="analytics-progress-fill ${parseFloat(sec.accuracy) >= 80 ? 'is-strong' : (parseFloat(sec.accuracy) >= 60 ? 'is-steady' : 'is-focus')}" style="width: ${sec.accuracy}%;"></div>
                 </div>
               </div>
             `).join('')}
           </div>
         ` : `
-          <div style="text-align: center; padding: 24px; color: #64748b;">
+          <div class="analytics-breakdown-empty">
             <p>No attempts recorded yet for this candidate. Attempt a mock test above to view AI performance analytics and sectional heatmaps!</p>
           </div>
         `}
@@ -1352,21 +1717,19 @@ class OliveboardAppController {
     });
 
     list.innerHTML = combined.map(u => `
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: ${u.isCurrentUser ? '#f0fdfa' : (u.isRegisteredCandidate ? '#f8fafc' : '#ffffff')}; border-radius: 10px; border: ${u.isCurrentUser ? '1.5px solid #008479' : (u.isRegisteredCandidate ? '1px solid #94a3b8' : '1px solid var(--ob-app-border)')}; margin-bottom: 8px;">
-        <div style="display: flex; align-items: center; gap: 14px;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: ${u.rank === 1 ? '#ffd700' : (u.rank === 2 ? '#e0e0e0' : (u.rank === 3 ? '#cd7f32' : (u.isCurrentUser ? '#008479' : '#f1f5f9')))}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: ${u.isCurrentUser && u.rank > 3 ? '#ffffff' : '#1e293b'};">
-            ${u.rank}
-          </div>
+      <article class="leaderboard-row ${u.isCurrentUser ? 'is-current-user' : ''} ${u.isRegisteredCandidate ? 'is-registered-candidate' : ''}">
+        <div class="leaderboard-identity">
+          <div class="leaderboard-rank rank-${Math.min(u.rank, 4)}">${u.rank}</div>
           <div>
-            <div style="font-size: 14px; font-weight: 700; color: #0f172a;">${u.name}</div>
-            <div style="font-size: 12px; color: #64748b;">Time Taken: ${u.time}</div>
+            <div class="leaderboard-name">${u.name}</div>
+            <div class="leaderboard-time">Time taken: ${u.time}</div>
           </div>
         </div>
-        <div style="text-align: right;">
-          <div style="font-size: 16px; font-weight: 800; color: #008479;">${u.rawScoreDisplay}</div>
-          <span style="font-size: 11px; font-weight: 700; color: #2e7d32; background: #e8f5e9; padding: 2px 6px; border-radius: 4px;">Acc: ${u.accuracy}</span>
+        <div class="leaderboard-score">
+          <div class="leaderboard-score-value">${u.rawScoreDisplay}</div>
+          <span class="leaderboard-accuracy">Accuracy: ${u.accuracy}</span>
         </div>
-      </div>
+      </article>
     `).join('');
   }
 
@@ -1377,6 +1740,14 @@ class OliveboardAppController {
     // Handle Previous Year Papers tab link
     if (target === 'pyp') {
       this.currentFilterTab = 'pyp';
+      const title = document.querySelector('#view-tests .catalog-heading h1');
+      const description = document.querySelector('#view-tests .catalog-heading p');
+      const typeTabs = document.getElementById('test-tabs-wrapper');
+      const typeLabel = document.getElementById('test-type-filter-label');
+      if (title) title.textContent = 'Previous Year Papers';
+      if (description) description.textContent = 'Practice official-style papers and review your attempt status.';
+      if (typeTabs) typeTabs.hidden = true;
+      if (typeLabel) typeLabel.hidden = true;
       this.switchAppView('tests', false);
       this.renderFilterTabs();
       this.loadAndRenderMockCards();
@@ -1397,8 +1768,18 @@ class OliveboardAppController {
       this.renderFilterTabs();
       this.loadAndRenderMockCards();
     }
+    if (target === 'tests' && this.currentFilterTab !== 'pyp') {
+      const title = document.querySelector('#view-tests .catalog-heading h1');
+      const description = document.querySelector('#view-tests .catalog-heading p');
+      const typeTabs = document.getElementById('test-tabs-wrapper');
+      const typeLabel = document.getElementById('test-type-filter-label');
+      if (title) title.textContent = 'Mock Tests';
+      if (description) description.textContent = 'Choose a test type, then narrow it by your attempt status.';
+      if (typeTabs) typeTabs.hidden = false;
+      if (typeLabel) typeLabel.hidden = false;
+    }
 
-    const validViews = ['tests', 'analytics', 'courses', 'mentorship', 'bookmarks', 'subscription', 'leaderboard'];
+    const validViews = ['tests', 'analytics', 'courses', 'mentorship', 'bookmarks', 'subscription', 'leaderboard', 'quizzes'];
     if (!validViews.includes(target)) {
       target = 'tests';
     }
@@ -1416,6 +1797,7 @@ class OliveboardAppController {
     const viewBookmarks = document.getElementById('view-bookmarks');
     const viewSubscription = document.getElementById('view-subscription');
     const viewLeaderboard = document.getElementById('view-leaderboard');
+    const viewQuizzes = document.getElementById('view-quizzes');
 
     if (viewTests) viewTests.classList.toggle('active', target === 'tests');
     if (viewAnalytics) viewAnalytics.classList.toggle('active', target === 'analytics');
@@ -1424,6 +1806,7 @@ class OliveboardAppController {
     if (viewBookmarks) viewBookmarks.classList.toggle('active', target === 'bookmarks');
     if (viewSubscription) viewSubscription.classList.toggle('active', target === 'subscription');
     if (viewLeaderboard) viewLeaderboard.classList.toggle('active', target === 'leaderboard');
+    if (viewQuizzes) viewQuizzes.classList.toggle('active', target === 'quizzes');
 
     // Update Header Back Button
     const hdrBackBtn = document.getElementById('hdr-global-back-btn');
@@ -1440,6 +1823,8 @@ class OliveboardAppController {
         (v !== 'tests' && v !== 'pyp' && (v === target || (v === 'analytics' && target === 'analytics') || (v === 'dashboard' && target === 'analytics')))
       );
       item.classList.toggle('active', isActive);
+      if (isActive) item.setAttribute('aria-current', 'page');
+      else item.removeAttribute('aria-current');
       const img = item.querySelector('img');
       if (img && v === 'tests') {
         img.src = isActive ? 'img/Tests_active.svg' : 'img/Tests.svg';
@@ -1448,7 +1833,10 @@ class OliveboardAppController {
 
     // Update Bottom Navigation items (for mobile)
     document.querySelectorAll('#bottom-app-bar .app-nav-item').forEach(item => {
-      item.classList.toggle('active', item.dataset.view === target || (item.dataset.view === 'dashboard' && target === 'analytics'));
+      const isActive = item.dataset.view === target || (item.dataset.view === 'dashboard' && target === 'analytics');
+      item.classList.toggle('active', isActive);
+      if (isActive) item.setAttribute('aria-current', 'page');
+      else item.removeAttribute('aria-current');
     });
 
     // History routing
@@ -1463,7 +1851,9 @@ class OliveboardAppController {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    if (target === 'analytics') {
+    if (target === 'quizzes') {
+      this.renderDailyQuizzesView();
+    } else if (target === 'analytics') {
       this.renderAnalytics();
     } else if (target === 'leaderboard') {
       this.renderLeaderboard();
@@ -1538,30 +1928,30 @@ class OliveboardAppController {
       <div class="courses-grid">
         ${courses.map(c => `
           <div class="course-card">
-            <div class="course-card-header" style="background: ${c.gradient};">
+            <div class="course-card-header" style="--course-gradient: ${c.gradient};">
               <span class="course-badge-live">${c.tag}</span>
-              <h4 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0 0 6px 0;">${c.title}</h4>
-              <div style="font-size: 12px; color: rgba(255,255,255,0.85);">${c.instructor}</div>
+              <h4 class="course-card-title">${c.title}</h4>
+              <div class="course-card-instructor">${c.instructor}</div>
             </div>
             <div class="course-card-body">
-              <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; font-size: 13px; color: #475569;">
-                <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="course-card-facts">
+                <div class="course-fact">
                   <span>⏱️</span> <span><b>${c.duration}</b> interactive learning</span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="course-fact">
                   <span>📚</span> <span><b>${c.lectures}</b></span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span>⭐</span> <span style="color: #d97706; font-weight: 700;">${c.rating}</span>
                 </div>
               </div>
-              <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 14px;">
+              <div class="course-card-footer">
                 <div>
-                  <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Course Fee</div>
-                  <div style="font-size: 18px; font-weight: 800; color: #0f172a;">${c.price}</div>
+                  <div class="course-fee-label">Course fee</div>
+                  <div class="course-fee">${c.price}</div>
                 </div>
-                <button onclick="window.appController.enrollCourse('${c.id}', '${c.title}')" style="padding: 9px 18px; background: #008479; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.15s ease;">
-                  Start Learning 🚀
+                <button type="button" class="course-enroll-btn" data-app-action="enroll-course" data-course-id="${c.id}" data-course-title="${c.title.replace(/"/g, '&quot;')}">
+                  Start learning
                 </button>
               </div>
             </div>
@@ -1572,7 +1962,12 @@ class OliveboardAppController {
   }
 
   enrollCourse(courseId, courseTitle) {
-    this.showToast(`Enrolled in "${courseTitle}"! Access unlocked.`, 'success');
+    if (!window.obDataManager?.getActiveUser()) {
+      this.showToast('Sign in to view course availability.', 'info');
+      this.openLoginModal();
+      return;
+    }
+    this.showToast(`Enrollment for "${courseTitle}" is unavailable in this demo. No enrollment was created.`, 'info');
   }
 
   renderMentorship() {
@@ -1587,7 +1982,7 @@ class OliveboardAppController {
           <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0;">Get customized daily schedules, 1-on-1 mock interview preparation, weakness diagnosis, and personal doubt resolution every week.</p>
         </div>
         <div>
-          <button onclick="window.appController.bookMentorSession()" style="padding: 12px 22px; background: #008479; color: #ffffff; border: none; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,132,121,0.4);">
+          <button type="button" class="mentorship-cta" data-app-action="book-mentor" data-mentor="Assigned Mentor">
             📅 Schedule 1-on-1 Call
           </button>
         </div>
@@ -1608,10 +2003,10 @@ class OliveboardAppController {
           </div>
         </div>
         <div style="display: flex; gap: 10px;">
-          <button onclick="window.appController.showToast('Connecting to Google Meet Video Room...', 'info')" style="padding: 9px 16px; background: #008479; color: #ffffff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+          <button type="button" class="mentorship-action-primary" data-app-action="mentor-video">
             🎥 Join Video Room
           </button>
-          <button onclick="window.appController.showToast('Customized 30-Day Study Plan PDF downloaded', 'success')" style="padding: 9px 16px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #1e293b; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+          <button type="button" class="mentorship-action-secondary" data-app-action="mentor-plan">
             📄 Study Timetable
           </button>
         </div>
@@ -1624,7 +2019,7 @@ class OliveboardAppController {
           <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Vikram Malhotra</h4>
           <span style="font-size: 12px; color: #008479; font-weight: 600; margin-bottom: 8px;">Ex-IBPS SO IT Officer Scale-II</span>
           <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">Specialist in Professional Knowledge (DBMS, Networking, OS) & Mains descriptive guidance.</p>
-          <button onclick="window.appController.bookMentorSession('Vikram Malhotra')" style="width: 100%; padding: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">Request 1-on-1 Slot</button>
+          <button type="button" class="mentor-slot-btn" data-app-action="book-mentor" data-mentor="Vikram Malhotra">Request 1-on-1 Slot</button>
         </div>
 
         <div class="mentor-card">
@@ -1632,7 +2027,7 @@ class OliveboardAppController {
           <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Ananya Deshmukh</h4>
           <span style="font-size: 12px; color: #008479; font-weight: 600; margin-bottom: 8px;">RBI Grade B Officer (Rank 9)</span>
           <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">Specialist in High-Speed Quant DI & Elimination shortcuts under intense exam timer pressure.</p>
-          <button onclick="window.appController.bookMentorSession('Ananya Deshmukh')" style="width: 100%; padding: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">Request 1-on-1 Slot</button>
+          <button type="button" class="mentor-slot-btn" data-app-action="book-mentor" data-mentor="Ananya Deshmukh">Request 1-on-1 Slot</button>
         </div>
 
         <div class="mentor-card">
@@ -1640,14 +2035,19 @@ class OliveboardAppController {
           <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Rajeev Nambiar</h4>
           <span style="font-size: 12px; color: #008479; font-weight: 600; margin-bottom: 8px;">Chief Mock Interview Evaluator</span>
           <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">Specialist in Personality, Banking Awareness, and official IBPS / SBI interview preparation.</p>
-          <button onclick="window.appController.bookMentorSession('Rajeev Nambiar')" style="width: 100%; padding: 8px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">Request 1-on-1 Slot</button>
+          <button type="button" class="mentor-slot-btn" data-app-action="book-mentor" data-mentor="Rajeev Nambiar">Request 1-on-1 Slot</button>
         </div>
       </div>
     `;
   }
 
   bookMentorSession(mentorName = 'Assigned Mentor') {
-    this.showToast(`Session slot requested with ${mentorName}. Check your email for invite!`, 'success');
+    if (!window.obDataManager?.getActiveUser()) {
+      this.showToast('Sign in to view mentor availability.', 'info');
+      this.openLoginModal();
+      return;
+    }
+    this.showToast(`Booking with ${mentorName} is unavailable in this demo. No request was sent.`, 'info');
   }
 
   renderBookmarks() {
@@ -1667,7 +2067,7 @@ class OliveboardAppController {
           <div style="font-size: 36px; margin-bottom: 10px;">⭐</div>
           <h4 style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0;">No Saved Bookmarks Yet</h4>
           <p style="font-size: 13px; color: #64748b; max-width: 460px; margin: 0 auto 16px auto;">Click the <b>★ Bookmark</b> button on any question inside the Live Mock Test or Solution Window to automatically store it by subject for quick revision.</p>
-          <button onclick="window.appController.switchAppView('tests')" style="padding: 9px 18px; background: #008479; color: #ffffff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+          <button type="button" data-app-action="switch-view" data-view="tests" class="bm-empty-cta">
             Explore Mock Tests
           </button>
         </div>
@@ -1734,8 +2134,8 @@ class OliveboardAppController {
       <!-- Subject Filter Tabs Bar -->
       <div class="bm-hub-header-card">
         <div class="bm-subject-tabs-row">
-          <button class="bm-subject-tab ${this.activeBookmarkSubject === 'ALL' ? 'active' : ''}"
-                  onclick="window.appController.setBookmarkSubjectFilter('ALL')">
+          <button type="button" class="bm-subject-tab ${this.activeBookmarkSubject === 'ALL' ? 'active' : ''}"
+                  data-app-action="bookmark-subject" data-subject="ALL">
             <span>All Subjects</span>
             <span class="bm-tab-count">${subjectCounts.ALL}</span>
           </button>
@@ -1744,8 +2144,8 @@ class OliveboardAppController {
             const isActive = this.activeBookmarkSubject === subj;
             const safeSubj = subj.replace(/'/g, "\\'");
             return `
-              <button class="bm-subject-tab ${isActive ? 'active' : ''}"
-                      onclick="window.appController.setBookmarkSubjectFilter('${safeSubj}')">
+              <button type="button" class="bm-subject-tab ${isActive ? 'active' : ''}"
+                      data-app-action="bookmark-subject" data-subject="${safeSubj}">
                 <span>${subj}</span>
                 <span class="bm-tab-count">${count}</span>
               </button>
@@ -1760,23 +2160,23 @@ class OliveboardAppController {
                    id="bm-search-input"
                    placeholder="Search bookmarked questions by topic, keyword, or exam..."
                    value="${String(this.bookmarkSearchQuery || '').replace(/"/g, '&quot;')}"
-                   oninput="window.appController.setBookmarkSearchQuery(this.value)" />
+                   data-app-action="bookmark-search" />
             ${this.bookmarkSearchQuery ? `
-              <button class="bm-search-clear" onclick="window.appController.setBookmarkSearchQuery('')" title="Clear search">✕</button>
+              <button type="button" class="bm-search-clear" data-app-action="bookmark-search-clear" title="Clear search">✕</button>
             ` : ''}
           </div>
           <div class="bm-tag-filters">
             <span class="bm-tag-filter-label">Tag Filter:</span>
-            <button class="bm-tag-chip-filter ${this.activeBookmarkTag === 'ALL' ? 'active' : ''}"
-                    onclick="window.appController.setBookmarkTagFilter('ALL')">
+            <button type="button" class="bm-tag-chip-filter ${this.activeBookmarkTag === 'ALL' ? 'active' : ''}"
+                    data-app-action="bookmark-tag" data-tag="ALL">
               All (${bookmarks.length})
             </button>
             ${allCustomTags.map(tag => {
               const safeTag = String(tag).replace(/'/g, "\\'");
               const isAct = this.activeBookmarkTag === tag;
               return `
-                <button class="bm-tag-chip-filter ${isAct ? 'active' : ''}"
-                        onclick="window.appController.setBookmarkTagFilter('${safeTag}')">
+                <button type="button" class="bm-tag-chip-filter ${isAct ? 'active' : ''}"
+                        data-app-action="bookmark-tag" data-tag="${safeTag}">
                   #${tag}
                 </button>
               `;
@@ -1791,7 +2191,7 @@ class OliveboardAppController {
           <div style="text-align: center; padding: 36px 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;">
             <div style="font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">No bookmarked questions match this filter</div>
             <p style="font-size: 13px; color: #64748b; margin: 0 0 14px 0;">Try switching to "All Subjects" or clearing the tag/search filter.</p>
-            <button onclick="window.appController.resetBookmarkFilters()" style="padding: 7px 16px; background: #008479; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+            <button type="button" class="bm-reset-btn" data-app-action="bookmark-reset-filters">
               Show All Bookmarks (${bookmarks.length})
             </button>
           </div>
@@ -1820,7 +2220,7 @@ class OliveboardAppController {
                   </span>
                   <select class="bm-subject-select"
                           title="Change Subject Category"
-                          onchange="window.appController.changeBookmarkSubject('${safeQId}', this.value)">
+                          data-app-action="bookmark-subject-change" data-bookmark-id="${safeQId}">
                     ${canonicalSubjects.map(s => `<option value="${s}" ${s === subj ? 'selected' : ''}>Move to: ${s}</option>`).join('')}
                   </select>
                   <span style="background: #fef3c7; color: #b45309; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">
@@ -1831,11 +2231,11 @@ class OliveboardAppController {
                   </span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <button onclick="window.appController.startMockTest('${safeTestId}')"
+                  <button type="button" data-app-action="bookmark-start-test" data-test-id="${safeTestId}"
                           style="padding: 4px 10px; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
                     Open Test
                   </button>
-                  <button onclick="window.appController.removeBookmarkFromView('${safeQId}')"
+                  <button type="button" data-app-action="bookmark-remove" data-bookmark-id="${safeQId}"
                           title="Remove Bookmark"
                           style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; padding: 4px 9px; font-size: 11px; font-weight: 700; cursor: pointer;">
                     Remove
@@ -1850,20 +2250,20 @@ class OliveboardAppController {
                   return `
                     <span class="bm-custom-tag">
                       #${tag}
-                      <button type="button" onclick="window.appController.removeTagFromBookmark('${safeQId}', '${safeTag}')" title="Remove tag">×</button>
+                      <button type="button" data-app-action="bookmark-remove-tag" data-bookmark-id="${safeQId}" data-tag="${safeTag}" title="Remove tag">×</button>
                     </span>
                   `;
                 }).join('')}
                 <div class="bm-preset-tags-group">
                   ${presetTags.filter(pt => !tagsArr.includes(pt)).map(pt => `
-                    <button type="button" class="bm-add-preset-btn" onclick="window.appController.addTagToBookmark('${safeQId}', '${pt}')">
+                    <button type="button" class="bm-add-preset-btn" data-app-action="bookmark-add-tag" data-bookmark-id="${safeQId}" data-tag="${pt}">
                       + ${pt}
                     </button>
                   `).join('')}
                   <input type="text"
                          class="bm-custom-tag-input"
                          placeholder="+ Custom tag & Enter"
-                         onkeydown="if(event.key==='Enter'){ event.preventDefault(); window.appController.addTagToBookmark('${safeQId}', this.value); }" />
+                         data-app-action="bookmark-add-tag-input" data-bookmark-id="${safeQId}" />
                 </div>
               </div>
 
@@ -1898,7 +2298,7 @@ class OliveboardAppController {
                   return `
                     <button type="button"
                             class="bm-option-btn ${stateClass}"
-                            onclick="window.appController.attemptBookmarkQuestion('${safeQId}', ${idx})">
+                            data-app-action="bookmark-attempt" data-bookmark-id="${safeQId}" data-option-index="${idx}">
                       <span class="bm-opt-letter">${optLetter}</span>
                       <span class="bm-opt-text">${optText}</span>
                       ${badgeLabel}
@@ -1918,7 +2318,7 @@ class OliveboardAppController {
                     </span>
                     <button type="button"
                             class="bm-btn-secondary"
-                            onclick="window.appController.resetBookmarkAttempt('${safeQId}')">
+                            data-app-action="bookmark-reset-attempt" data-bookmark-id="${safeQId}">
                       ↺ Reset & Re-attempt
                     </button>
                   ` : `
@@ -1929,7 +2329,7 @@ class OliveboardAppController {
                 </div>
                 <button type="button"
                         class="bm-btn-solution"
-                        onclick="window.appController.toggleBookmarkSolution('${safeQId}')">
+                        data-app-action="bookmark-toggle-solution" data-bookmark-id="${safeQId}">
                   ${attemptState.showSolution ? '▲ Hide Solution & Explanation' : '▼ View Solution & Explanation'}
                 </button>
               </div>
@@ -2055,18 +2455,14 @@ class OliveboardAppController {
   renderSubscription() {
     const container = document.getElementById('subscription-view-container');
     if (!container) return;
+    const activeUser = window.obDataManager?.getActiveUser();
 
     container.innerHTML = `
-      <div style="background: linear-gradient(135deg, #008479 0%, #064e3b 100%); color: #ffffff; border-radius: 16px; padding: 24px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+      <div class="feature-state-banner ${activeUser ? 'state-unavailable' : 'state-demo'}">
         <div>
-          <span style="background: rgba(255,255,255,0.2); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">Active Membership</span>
-          <h2 style="font-size: 24px; font-weight: 800; margin: 8px 0 4px 0;">Banking Super Elite (12 Months)</h2>
-          <p style="font-size: 13px; color: rgba(255,255,255,0.9); margin: 0;">Unlimited access to All 25+ Bank & Insurance Mock Tests, Live Video Classes, Sectional Speed Drills, and OliveScore AI Analytics.</p>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 12px; color: rgba(255,255,255,0.8);">Validity Expires</div>
-          <div style="font-size: 18px; font-weight: 800;">Oct 24, 2027</div>
-          <span style="display: inline-block; margin-top: 4px; background: #22c55e; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">ACTIVE</span>
+          <span class="feature-state-label">${activeUser ? 'STATUS UNAVAILABLE' : 'DEMO CATALOGUE'}</span>
+          <h2>${activeUser ? 'Subscription data is not connected' : 'Browse plan examples'}</h2>
+          <p>${activeUser ? 'Your account is signed in, but this demo cannot verify an active plan or expiry date.' : 'Sign in to access account-specific features. Plans below are examples and cannot be purchased here.'}</p>
         </div>
       </div>
 
@@ -2083,7 +2479,7 @@ class OliveboardAppController {
               <li>OliveScore AIR & Percentile Analytics</li>
             </ul>
           </div>
-          <button onclick="window.appController.showToast('You already have higher Super Elite plan active!', 'info')" style="padding: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 13px; color: #475569; cursor: pointer;">
+          <button type="button" class="sub-plan-btn sub-plan-btn-muted" data-app-action="subscription-info">
             Included in Current Plan
           </button>
         </div>
@@ -2101,7 +2497,7 @@ class OliveboardAppController {
               <li>Complete PDF Notes & Descriptive Tests</li>
             </ul>
           </div>
-          <button style="padding: 10px; background: #008479; color: #ffffff; border: none; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: default;">
+          <button type="button" class="sub-plan-btn sub-plan-btn-active" aria-disabled="true">
             ✓ Active Plan
           </button>
         </div>
@@ -2117,7 +2513,7 @@ class OliveboardAppController {
               <li>Descriptive English Evaluation with Faculty</li>
             </ul>
           </div>
-          <button onclick="window.appController.showToast('Regulatory Pack add-on activated for testing!', 'success')" style="padding: 10px; background: #0f172a; color: #ffffff; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;">
+          <button type="button" class="sub-plan-btn sub-plan-btn-dark" data-app-action="subscription-upgrade">
             Add Regulatory Pack 🚀
           </button>
         </div>
@@ -2130,6 +2526,122 @@ class OliveboardAppController {
   // ==========================================
 
   bindEvents() {
+    const retryConnection = document.getElementById('btn-retry-connection');
+    if (retryConnection) {
+      retryConnection.addEventListener('click', async () => {
+        retryConnection.disabled = true;
+        retryConnection.textContent = 'Retrying…';
+        try {
+          await window.obDataManager?.loadUsers();
+          await this.loadAndRenderMockCards();
+          await this.renderLeaderboard();
+          await this.renderAnalytics();
+          await this.renderDailyQuizzesView();
+          this.renderBackendStatus();
+          this.showToast('Connection check complete.', 'success');
+        } finally {
+          retryConnection.disabled = false;
+          retryConnection.textContent = 'Retry connection';
+        }
+      });
+    }
+
+    document.addEventListener('click', (event) => {
+      const actionButton = event.target.closest('[data-app-action]');
+      if (actionButton) {
+        const action = actionButton.dataset.appAction;
+        if (action === 'enroll-course') {
+          this.enrollCourse(actionButton.dataset.courseId, actionButton.dataset.courseTitle || 'course');
+        } else if (action === 'start-daily-quiz') {
+          this.startDailyQuiz(actionButton.dataset.subject || 'General Awareness');
+        } else if (action === 'switch-candidate') {
+          this.switchCandidate(actionButton.dataset.userId);
+        } else if (action === 'start-test') {
+          this.startMockTest(actionButton.dataset.testId, actionButton.dataset.forceFresh === 'true');
+        } else if (action === 'resume-test') {
+          this.resumeMockTest(actionButton.dataset.testId);
+        } else if (action === 'view-solutions') {
+          this.viewSolutions(actionButton.dataset.attemptId, actionButton.dataset.testId);
+        } else if (action === 'view-scorecard') {
+          this.viewAttemptScorecard(actionButton.dataset.attemptId, actionButton.dataset.testId);
+        } else if (action === 'select-exam') {
+          this.selectExam(actionButton.dataset.examId);
+        } else if (action === 'switch-view') {
+          this.switchAppView(actionButton.dataset.view);
+        } else if (action === 'go-back') {
+          this.goBack();
+        } else if (action === 'book-mentor') {
+          this.bookMentorSession(actionButton.dataset.mentor || 'Assigned Mentor');
+        } else if (action === 'mentor-video') {
+          this.showToast('Video sessions are unavailable in this demo.', 'info');
+        } else if (action === 'mentor-plan') {
+          this.showToast('Study-plan downloads are unavailable in this demo.', 'info');
+        } else if (action === 'subscription-info') {
+          this.showToast('Subscription status is unavailable in this demo.', 'info');
+        } else if (action === 'subscription-upgrade') {
+          this.showToast('Purchases are unavailable in this demo. No plan was changed.', 'info');
+        } else if (action === 'reset-test-filters') {
+          this.currentFilterTab = 'all';
+          this.currentStatusFilter = 'all';
+          this.currentSort = 'recommended';
+          this.currentSearchQuery = '';
+          const search = document.getElementById('app-search-input');
+          const sort = document.getElementById('test-sort');
+          if (search) search.value = '';
+          if (sort) sort.value = 'recommended';
+          this.renderFilterTabs();
+          this.renderStatusFilterPills();
+          this.loadAndRenderMockCards();
+        } else if (action === 'bookmark-subject') {
+          this.setBookmarkSubjectFilter(actionButton.dataset.subject || 'ALL');
+        } else if (action === 'bookmark-search-clear') {
+          this.setBookmarkSearchQuery('');
+        } else if (action === 'bookmark-tag') {
+          this.setBookmarkTagFilter(actionButton.dataset.tag || 'ALL');
+        } else if (action === 'bookmark-reset-filters') {
+          this.resetBookmarkFilters();
+        } else if (action === 'bookmark-start-test') {
+          this.startMockTest(actionButton.dataset.testId);
+        } else if (action === 'bookmark-remove') {
+          this.removeBookmarkFromView(actionButton.dataset.bookmarkId);
+        } else if (action === 'bookmark-remove-tag') {
+          this.removeTagFromBookmark(actionButton.dataset.bookmarkId, actionButton.dataset.tag);
+        } else if (action === 'bookmark-add-tag') {
+          this.addTagToBookmark(actionButton.dataset.bookmarkId, actionButton.dataset.tag);
+        } else if (action === 'bookmark-attempt') {
+          this.attemptBookmarkQuestion(actionButton.dataset.bookmarkId, Number(actionButton.dataset.optionIndex));
+        } else if (action === 'bookmark-reset-attempt') {
+          this.resetBookmarkAttempt(actionButton.dataset.bookmarkId);
+        } else if (action === 'bookmark-toggle-solution') {
+          this.toggleBookmarkSolution(actionButton.dataset.bookmarkId);
+        }
+      }
+      if (event.target.closest('#btn-retry-quizzes')) {
+        this.renderDailyQuizzesView();
+      }
+      if (event.target.closest('#btn-analytics-start-test')) {
+        this.switchAppView('tests');
+      }
+    });
+
+    document.addEventListener('input', (event) => {
+      const input = event.target.closest('[data-app-action="bookmark-search"]');
+      if (input) this.setBookmarkSearchQuery(input.value);
+    });
+
+    document.addEventListener('change', (event) => {
+      const select = event.target.closest('[data-app-action="bookmark-subject-change"]');
+      if (select) this.changeBookmarkSubject(select.dataset.bookmarkId, select.value);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      const input = event.target.closest('[data-app-action="bookmark-add-tag-input"]');
+      if (!input) return;
+      event.preventDefault();
+      this.addTagToBookmark(input.dataset.bookmarkId, input.value);
+    });
+
     // Exam selector modal
     const btnSelector = document.getElementById('btn-active-exam-selector');
     const examModal = document.getElementById('exam-switcher-modal');
@@ -2139,12 +2651,14 @@ class OliveboardAppController {
       btnSelector.addEventListener('click', () => {
         this.renderExamSwitcherList();
         examModal.classList.add('active');
+        btnSelector.setAttribute('aria-expanded', 'true');
         this.pushNavState({ modal: 'exam-switcher', view: this.currentViewTab }, '#exam-switcher');
       });
     }
 
     if (btnCloseExamModal && examModal) {
       btnCloseExamModal.addEventListener('click', () => {
+        if (btnSelector) btnSelector.setAttribute('aria-expanded', 'false');
         this.goBack();
       });
     }
@@ -2169,25 +2683,22 @@ class OliveboardAppController {
     // App search box
     const searchInput = document.getElementById('app-search-input');
     if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
+      searchInput.addEventListener('input', async (e) => {
         const query = e.target.value.toLowerCase().trim();
+        this.currentSearchQuery = query;
         if (query && this.currentViewTab !== 'tests') {
           this.switchAppView('tests', false, true);
         }
-        const cards = document.querySelectorAll('#mock-cards-container .mock-test-card');
-        let visibleCount = 0;
-        cards.forEach(c => {
-          const text = c.innerText.toLowerCase();
-          const matches = !query || text.includes(query);
-          c.style.display = matches ? '' : 'none';
-          if (matches) visibleCount++;
-        });
-        const countEl = document.getElementById('active-tab-tests-count');
-        if (countEl && cards.length > 0) {
-          countEl.textContent = query
-            ? `${visibleCount} Matching Test${visibleCount === 1 ? '' : 's'}`
-            : `${cards.length} Tests Available`;
-        }
+        await this.loadAndRenderMockCards();
+      });
+    }
+
+    const sortSelect = document.getElementById('test-sort');
+    if (sortSelect) {
+      sortSelect.value = this.currentSort;
+      sortSelect.addEventListener('change', async (event) => {
+        this.currentSort = event.target.value;
+        await this.loadAndRenderMockCards();
       });
     }
 
@@ -2416,12 +2927,39 @@ class OliveboardAppController {
     }
 
     // Sidebar navigation clicks
-    document.querySelectorAll('#sm-nav-container .sm-nav-item, #ob-sidebar-nav .ob-nav-item').forEach(btn => {
+    document.querySelectorAll('#sm-nav-container .sm-nav-item:not(.sm-nav-more), #ob-sidebar-nav .ob-nav-item').forEach(btn => {
       btn.addEventListener('click', () => {
         const view = btn.dataset.view;
         this.switchAppView(view);
       });
     });
+
+    const mobileMoreTrigger = document.getElementById('mobile-more-trigger');
+    const mobileMoreMenu = document.getElementById('mobile-more-menu');
+    const closeMobileMoreMenu = () => {
+      if (!mobileMoreMenu || !mobileMoreTrigger) return;
+      mobileMoreMenu.hidden = true;
+      mobileMoreMenu.classList.remove('is-open');
+      mobileMoreTrigger.setAttribute('aria-expanded', 'false');
+    };
+
+    if (mobileMoreTrigger && mobileMoreMenu) {
+      mobileMoreTrigger.addEventListener('click', (event) => {
+        this.toggleMobileMoreMenu(event);
+      });
+
+      mobileMoreMenu.querySelectorAll('[data-view]').forEach(item => {
+        item.addEventListener('click', (event) => {
+          this.selectMobileMoreView(item.dataset.view, event);
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!mobileMoreMenu.hidden && !mobileMoreMenu.contains(event.target) && !mobileMoreTrigger.contains(event.target)) {
+          closeMobileMoreMenu();
+        }
+      });
+    }
 
     // Bottom Navigation switching (mobile)
     document.querySelectorAll('#bottom-app-bar .app-nav-item').forEach(btn => {
@@ -2433,6 +2971,36 @@ class OliveboardAppController {
 
     // ESC key closes modals
     document.addEventListener('keydown', (e) => {
+      const loginModal = document.getElementById('login-modal-overlay');
+      const loginIsOpen = loginModal && loginModal.classList.contains('active');
+      if (loginIsOpen) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          this.closeLoginModal(true);
+          return;
+        }
+        if (e.key === 'Tab') {
+          const focusable = loginModal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
+          if (!focusable.length) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+      const mobileMoreMenu = document.getElementById('mobile-more-menu');
+      if (e.key === 'Escape' && mobileMoreMenu && !mobileMoreMenu.hidden) {
+        mobileMoreMenu.hidden = true;
+        mobileMoreMenu.classList.remove('is-open');
+        document.getElementById('mobile-more-trigger')?.setAttribute('aria-expanded', 'false');
+        document.getElementById('mobile-more-trigger')?.focus();
+        return;
+      }
       if (e.key === 'Escape') {
         const obLiveModal = document.getElementById('ob-live-browser-modal');
         const scorecardModal = document.getElementById('scorecard-modal-overlay');
@@ -2751,7 +3319,7 @@ class OliveboardAppController {
     if (!list) return;
 
     list.innerHTML = window.OB_TEST_APP.exams.map(ex => `
-      <div class="exam-select-item ${ex.id === this.currentExamId ? 'selected' : ''}" onclick="window.appController.selectExam('${ex.id}')">
+      <button type="button" class="exam-select-item ${ex.id === this.currentExamId ? 'selected' : ''}" data-app-action="select-exam" data-exam-id="${ex.id}">
         <div class="exam-select-info">
           <div class="exam-badge-circ">${ex.icon}</div>
           <div>
@@ -2760,17 +3328,19 @@ class OliveboardAppController {
           </div>
         </div>
         ${ex.id === this.currentExamId ? '<span style="color: #008479; font-weight: 800; font-size: 18px;">✓</span>' : ''}
-      </div>
+      </button>
     `).join('');
   }
 
   async selectExam(examId) {
     this.currentExamId = examId;
+    this.testsCache = [];
     if (window.obDataManager && typeof window.obDataManager.updateUserTargetExam === 'function') {
       await window.obDataManager.updateUserTargetExam(examId);
     }
     const modal = document.getElementById('exam-switcher-modal');
     if (modal) modal.classList.remove('active');
+    document.getElementById('btn-active-exam-selector')?.setAttribute('aria-expanded', 'false');
 
     this.renderHeader();
     this.renderExamHero();
@@ -2816,6 +3386,13 @@ class OliveboardAppController {
       this.pushNavState({ view: 'test-engine', testId }, '#test/' + testId);
     }
 
+    try {
+      await this.ensureTestEngineLoaded();
+    } catch (error) {
+      this.showToast(error.message, 'error');
+      return;
+    }
+
     if (window.initTestEngine) {
       this.testEngine = window.initTestEngine(testData);
       this.testEngine.startTest(null);
@@ -2849,6 +3426,13 @@ class OliveboardAppController {
     }
 
     const pausedState = window.obDataManager ? await window.obDataManager.getPausedAttempt(testId) : null;
+    try {
+      await this.ensureTestEngineLoaded();
+    } catch (error) {
+      this.showToast(error.message, 'error');
+      return;
+    }
+
     if (window.initTestEngine) {
       this.testEngine = window.initTestEngine(testData);
       this.testEngine.startTest(pausedState);
@@ -2895,6 +3479,7 @@ class OliveboardAppController {
 
     try {
       const { attempt, testData } = await this._resolveAttemptAndTest(attemptId, testId);
+      await this.ensureTestEngineLoaded(true);
 
       if (pushHistory) {
         this.pushNavState({ view: 'solutions', testId, attemptId }, '#solutions/' + testId);
@@ -2915,6 +3500,7 @@ class OliveboardAppController {
 
     try {
       const { attempt, testData } = await this._resolveAttemptAndTest(attemptId, testId);
+      await this.ensureTestEngineLoaded();
 
       if (pushHistory) {
         this.pushNavState({ modal: 'scorecard', testId, attemptId, view: this.currentViewTab }, '#scorecard/' + attemptId);
@@ -2932,6 +3518,7 @@ class OliveboardAppController {
 
   async refreshAnalytics(focusTestId = null) {
     const targetId = focusTestId || this.lastActiveTestId || null;
+    this.testsCache = [];
     await this.loadAndRenderMockCards(targetId);
     await this.renderAnalytics();
     await this.renderLeaderboard();

@@ -488,6 +488,40 @@
       border-radius: 4px;
       margin-bottom: 10px;
     }
+    .workspace-panel[hidden] { display: none !important; }
+    .admin-sticky-preview {
+      position: sticky;
+      top: 82px;
+      z-index: 40;
+      margin: -2px 0 18px;
+      padding: 12px;
+      border: 1px solid #99f6e4;
+      border-radius: 10px;
+      background: rgba(240, 253, 250, 0.97);
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+    }
+    .admin-sticky-preview .live-preview-box {
+      max-height: 230px;
+      margin-top: 6px;
+      overflow: auto;
+    }
+    .validation-summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .validation-summary.ready { color: #166534; }
+    .validation-summary.needs-work { color: #9a3412; }
+    @media (max-width: 720px) {
+      .admin-sticky-preview { position: static; }
+      .top-bar { padding: 10px 12px; }
+      .nav-links { flex-wrap: nowrap; width: 100%; overflow-x: auto; }
+      .nav-btn { min-height: 44px; white-space: nowrap; }
+    }
 
     /* Toast Notification */
     #toast {
@@ -543,6 +577,7 @@
       <a href="#sec-images" class="nav-btn">🖼️ Image Inserter</a>
       <a href="#sec-maker" class="nav-btn">✍️ Mock Maker</a>
       <a href="#sec-upload-json" class="nav-btn">📄 Upload JSON</a>
+      <a href="#sec-quiz-bank" class="nav-btn">⚡ Daily Quiz Bank</a>
       <a href="#sec-tests" class="nav-btn">📊 Published Tests</a>
       <a href="/" class="nav-btn">🌐 View Site</a>
     </nav>
@@ -570,7 +605,7 @@
       <div class="row" style="align-items:flex-end;">
         <div class="col">
           <label for="token">Admin Token</label>
-          <input id="token" type="password" autocomplete="off" placeholder="Enter admin token (default: admin)">
+          <input id="token" type="password" autocomplete="off" aria-label="Admin token" placeholder="Enter admin token (default: admin)">
         </div>
         <div>
           <button id="save" type="button" class="primary">Unlock Console</button>
@@ -601,7 +636,7 @@
       <div class="row" style="margin-top:12px; align-items:flex-end;">
         <div class="col">
           <label for="img-caption-input">Optional Alt Text / Diagram Caption</label>
-          <input type="text" id="img-caption-input" placeholder="e.g. Reasoning Seating Arrangement, DI Bar Graph, Triangle ABC">
+          <input type="text" id="img-caption-input" aria-label="Image alt text or diagram caption" placeholder="e.g. Reasoning Seating Arrangement, DI Bar Graph, Triangle ABC">
         </div>
         <div>
           <button id="btn-browse-img" type="button" class="secondary">Browse File</button>
@@ -642,7 +677,7 @@
       <div style="margin-top:24px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <label style="font-size:14px; margin:0;">Mock Images Library (Stored on Server)</label>
-          <input type="text" id="gallery-search" placeholder="Filter by filename..." style="width:200px; padding:4px 8px; font-size:12px;">
+          <input type="text" id="gallery-search" aria-label="Filter image gallery by filename" placeholder="Filter by filename..." style="width:200px; padding:4px 8px; font-size:12px;">
         </div>
         <div id="gallery-container" class="gallery-grid">
           <div style="color:var(--muted); font-size:13px; grid-column:1/-1; padding:12px 0;">Unlock admin to view stored mock images.</div>
@@ -832,6 +867,99 @@
       <div id="preview" class="status">No file selected.</div>
       <div style="margin-top:12px;">
         <button id="upload" type="button" class="primary" disabled>Upload and Publish Test</button>
+      </div>
+    </section>
+
+    <!-- 4.5 Daily Quiz Question Bank Card -->
+    <section class="card" id="sec-quiz-bank">
+      <div class="card-header">
+        <div>
+          <h2>⚡ Daily 10-Min Quiz Question Bank</h2>
+          <div class="card-subtitle">Push JSON or Plain Text files of questions for specific subjects. Candidates will receive 10 randomized, non-repeating questions per quiz.</div>
+        </div>
+        <button id="btn-refresh-quiz-bank" type="button" class="secondary">🔄 Refresh Bank</button>
+      </div>
+
+      <!-- Subject Selection -->
+      <div class="row">
+        <div class="col" style="flex: 2;">
+          <label for="quiz-subject-select">Select Quiz Subject / Section</label>
+          <select id="quiz-subject-select" style="font-weight: 600;">
+            <option value="Reasoning Ability">Reasoning Ability</option>
+            <option value="Quantitative Aptitude">Quantitative Aptitude</option>
+            <option value="English Language">English Language</option>
+            <option value="General Awareness">General Awareness / Current Affairs</option>
+            <option value="Computer Knowledge">Computer Knowledge</option>
+            <option value="Professional Knowledge">Professional Knowledge</option>
+            <option value="__custom__">➕ Enter Custom Subject...</option>
+          </select>
+        </div>
+        <div class="col" id="col-custom-subject" style="flex: 2; display: none;">
+          <label for="quiz-custom-subject-input">Custom Subject Name</label>
+          <input type="text" id="quiz-custom-subject-input" placeholder="e.g. Banking Awareness, Science, History">
+        </div>
+        <div class="col" style="flex: 1.5;">
+          <label for="quiz-format-select">Format</label>
+          <select id="quiz-format-select">
+            <option value="json">JSON (.json)</option>
+            <option value="text">Plain Text (.txt)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- File Upload & Direct Input -->
+      <div style="margin-top: 14px;">
+        <label for="quiz-file-input">Upload Question File (.json or .txt)</label>
+        <input type="file" id="quiz-file-input" accept=".json,.txt,text/plain,application/json">
+      </div>
+
+      <div style="margin-top: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label for="quiz-text-content" style="margin: 0;">Or Paste Question Data Directly Below</label>
+          <button type="button" class="btn-subtle" id="btn-toggle-quiz-guide" style="font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; font-weight: 600;">📘 View Format Guide &amp; Samples</button>
+        </div>
+        <textarea id="quiz-text-content" rows="7" placeholder="Paste your questions in JSON or plain text format here..."></textarea>
+      </div>
+
+      <!-- Collapsible Format Guide -->
+      <div id="quiz-format-guide" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-top: 12px; font-size: 13px;">
+        <div style="font-weight: 700; color: #0f172a; margin-bottom: 8px;">Supported Formats:</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+          <div>
+            <span style="font-weight: 700; color: var(--primary);">1. JSON Format:</span>
+            <pre style="background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 11px; overflow-x: auto; margin-top: 4px;">[
+  {
+    "question": "Which state has the longest coastline in India?",
+    "options": ["Maharashtra", "Gujarat", "Tamil Nadu", "Andhra Pradesh"],
+    "correctAnswer": "B",
+    "explanation": "Gujarat has the longest coastline of 1,600 km."
+  }
+]</pre>
+          </div>
+          <div>
+            <span style="font-weight: 700; color: var(--accent);">2. Plain Text Format:</span>
+            <pre style="background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 11px; overflow-x: auto; margin-top: 4px;">Q1. What is the capital of Australia?
+A) Sydney
+B) Melbourne
+C) Canberra
+D) Brisbane
+Answer: C
+Explanation: Canberra was selected as the capital in 1908.</pre>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px;">
+        <button id="btn-import-quiz-bank" type="button" class="primary" style="background: #0f766e;">⚡ Import to Quiz Question Bank</button>
+        <span id="quiz-import-status" style="font-size: 13px; font-weight: 600;"></span>
+      </div>
+
+      <!-- Live Quiz Question Bank Inventory Table -->
+      <div style="margin-top: 24px;">
+        <h4 style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 10px;">📊 Current Question Bank Inventory</h4>
+        <div id="quiz-bank-table-container">
+          <div class="status">Loading quiz questions inventory...</div>
+        </div>
       </div>
     </section>
 
@@ -1462,6 +1590,251 @@
     }
 
     $('refresh').onclick = () => loadTests().catch(e => showStatus(e.message, 'danger'));
+
+    // ==========================================
+    // DAILY QUIZ QUESTION BANK HANDLERS
+    // ==========================================
+    const quizSubSelect = $('quiz-subject-select');
+    const colCustomSub = $('col-custom-subject');
+    const quizFormatSelect = $('quiz-format-select');
+    const quizFileInput = $('quiz-file-input');
+    const quizTextContent = $('quiz-text-content');
+    const btnImportQuiz = $('btn-import-quiz-bank');
+    const btnRefreshQuiz = $('btn-refresh-quiz-bank');
+    const quizStatus = $('quiz-import-status');
+    const quizTableContainer = $('quiz-bank-table-container');
+    const btnToggleGuide = $('btn-toggle-quiz-guide');
+    const quizGuide = $('quiz-format-guide');
+
+    if (quizSubSelect && colCustomSub) {
+      quizSubSelect.addEventListener('change', () => {
+        colCustomSub.style.display = quizSubSelect.value === '__custom__' ? 'block' : 'none';
+      });
+    }
+
+    if (btnToggleGuide && quizGuide) {
+      btnToggleGuide.addEventListener('click', () => {
+        const isHidden = quizGuide.style.display === 'none';
+        quizGuide.style.display = isHidden ? 'block' : 'none';
+        btnToggleGuide.textContent = isHidden ? '📘 Hide Format Guide' : '📘 View Format Guide & Samples';
+      });
+    }
+
+    if (quizFileInput) {
+      quizFileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (file.name.endsWith('.json')) {
+          quizFormatSelect.value = 'json';
+        } else if (file.name.endsWith('.txt')) {
+          quizFormatSelect.value = 'text';
+        }
+        const reader = new FileReader();
+        reader.onload = ev => {
+          quizTextContent.value = ev.target.result;
+          quizStatus.textContent = `Loaded "${file.name}" (${(file.size / 1024).toFixed(1)} KB)`;
+          quizStatus.style.color = 'var(--text)';
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    async function refreshQuizBankTable() {
+      if (!quizTableContainer) return;
+      try {
+        const res = await fetch('/api/quizzes/bank-summary');
+        const data = await res.json();
+        if (!data.success || !Array.isArray(data.summary) || data.summary.length === 0) {
+          quizTableContainer.innerHTML = '<div class="status">No custom questions in quiz bank yet. Use the form above to push questions.</div>';
+          return;
+        }
+
+        let tableHtml = `
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+                <th style="padding: 10px 12px;">Subject / Section</th>
+                <th style="padding: 10px 12px;">Questions in Pool</th>
+                <th style="padding: 10px 12px;">10-Min Quizzes Possible</th>
+                <th style="padding: 10px 12px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        data.summary.forEach(row => {
+          const quizzesCount = Math.floor(row.count / 10);
+          tableHtml += `
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+              <td style="padding: 10px 12px; font-weight: 700; color: #0f172a;">${row.subject}</td>
+              <td style="padding: 10px 12px;"><span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 999px; font-weight: 700;">${row.count} Qs</span></td>
+              <td style="padding: 10px 12px; color: #64748b;">${quizzesCount > 0 ? `${quizzesCount} full unique quiz cycle${quizzesCount > 1 ? 's' : ''}` : 'Repeats cycle after available Qs'}</td>
+              <td style="padding: 10px 12px; text-align: right;">
+                <button type="button" onclick="clearQuizSubject('${row.subject.replace(/'/g, "\\'")}')" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">Clear Subject</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        tableHtml += '</tbody></table>';
+        quizTableContainer.innerHTML = tableHtml;
+      } catch (err) {
+        quizTableContainer.innerHTML = `<div class="status danger">Failed to load quiz inventory: ${err.message}</div>`;
+      }
+    }
+
+    window.clearQuizSubject = async function(subName) {
+      if (!confirm(`Are you sure you want to clear all quiz questions for "${subName}"?`)) return;
+      try {
+        const res = await fetch('/api/quizzes/clear-subject', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-token': token()
+          },
+          body: JSON.stringify({ subject: subName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Cleared questions for "${subName}"`);
+          refreshQuizBankTable();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (e) {
+        alert('Failed: ' + e.message);
+      }
+    };
+
+    if (btnRefreshQuiz) {
+      btnRefreshQuiz.addEventListener('click', () => {
+        refreshQuizBankTable();
+      });
+    }
+
+    if (btnImportQuiz) {
+      btnImportQuiz.addEventListener('click', async () => {
+        let subject = quizSubSelect.value;
+        if (subject === '__custom__') {
+          subject = ($('quiz-custom-subject-input')?.value || '').trim();
+        }
+        if (!subject) {
+          alert('Please select or specify a subject for the quiz questions.');
+          return;
+        }
+
+        const content = (quizTextContent.value || '').trim();
+        if (!content) {
+          alert('Please upload a file or paste question data into the box.');
+          return;
+        }
+
+        const format = quizFormatSelect.value;
+        quizStatus.textContent = 'Importing questions to database...';
+        quizStatus.style.color = 'var(--accent)';
+        btnImportQuiz.disabled = true;
+
+        try {
+          const res = await fetch('/api/quizzes/import', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-admin-token': token()
+            },
+            body: JSON.stringify({
+              subject,
+              format,
+              content
+            })
+          });
+
+          const data = await res.json();
+          if (data.success) {
+            quizStatus.textContent = `✅ ${data.message} Total in pool: ${data.totalInSubject}`;
+            quizStatus.style.color = '#166534';
+            quizTextContent.value = '';
+            if (quizFileInput) quizFileInput.value = '';
+            showToast(`Added ${data.importedCount} questions for ${data.subject}!`);
+            refreshQuizBankTable();
+          } else {
+            quizStatus.textContent = `❌ Error: ${data.error}`;
+            quizStatus.style.color = '#991b1b';
+          }
+        } catch (err) {
+          quizStatus.textContent = `❌ Import failed: ${err.message}`;
+          quizStatus.style.color = '#991b1b';
+        } finally {
+          btnImportQuiz.disabled = false;
+        }
+      });
+    }
+
+    refreshQuizBankTable();
+
+    // Keep the admin workspace focused: one tool at a time, addressable by hash.
+    const workspaceIds = ['sec-images', 'sec-maker', 'sec-upload-json', 'sec-quiz-bank', 'sec-tests'];
+    const workspacePanels = workspaceIds.map(id => document.getElementById(id)).filter(Boolean);
+    workspacePanels.forEach(panel => panel.classList.add('workspace-panel'));
+
+    function showWorkspacePanel(id, updateHistory = true) {
+      const targetId = workspaceIds.includes(id) ? id : 'sec-images';
+      workspacePanels.forEach(panel => { panel.hidden = panel.id !== targetId; });
+      document.querySelectorAll('.nav-links .nav-btn[href^="#sec-"]').forEach(link => {
+        const active = link.getAttribute('href') === `#${targetId}`;
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      });
+      if (updateHistory && window.location.hash !== `#${targetId}`) {
+        history.pushState(null, '', `#${targetId}`);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.nav-links .nav-btn[href^="#sec-"]').forEach(link => {
+      link.addEventListener('click', event => {
+        event.preventDefault();
+        showWorkspacePanel(link.getAttribute('href').slice(1));
+      });
+    });
+    window.addEventListener('hashchange', () => showWorkspacePanel(window.location.hash.slice(1), false));
+    showWorkspacePanel(window.location.hash.slice(1), false);
+
+    // Keep candidate-facing output visible while a question is authored.
+    const previewBox = document.getElementById('live-question-preview');
+    const makerPanel = document.getElementById('sec-maker');
+    const previewWrap = previewBox?.parentElement;
+    if (previewWrap && makerPanel) {
+      previewWrap.classList.add('admin-sticky-preview');
+      makerPanel.querySelector('.card-header')?.after(previewWrap);
+      const validation = document.createElement('div');
+      validation.id = 'maker-validation-summary';
+      validation.className = 'validation-summary needs-work';
+      previewWrap.appendChild(validation);
+
+      const updateMakerValidation = () => {
+        const target = document.getElementById('maker-test-select')?.value || '';
+        const newTitle = document.getElementById('maker-new-test-title')?.value.trim() || '';
+        const section = document.getElementById('maker-section-input')?.value.trim() || '';
+        const question = document.getElementById('maker-question-text')?.value.trim() || '';
+        const options = ['a', 'b', 'c', 'd'].map(letter => document.getElementById(`opt-text-${letter}`)?.value.trim() || '');
+        const correct = document.querySelector('input[name="maker-correct-answer"]:checked');
+        const missing = [];
+        if (!target || (target === '__new__' && !newTitle)) missing.push('test');
+        if (!section) missing.push('section');
+        if (!question) missing.push('question');
+        if (options.some(option => !option)) missing.push('options A–D');
+        if (!correct) missing.push('correct answer');
+        validation.className = `validation-summary ${missing.length ? 'needs-work' : 'ready'}`;
+        validation.textContent = missing.length
+          ? `Before saving: add ${missing.join(', ')}.`
+          : 'Ready to save: required question fields are complete.';
+      };
+      makerPanel.addEventListener('input', updateMakerValidation);
+      makerPanel.addEventListener('change', updateMakerValidation);
+      updateMakerValidation();
+    }
+
 
     // Check token on page load
     if (sessionStorage.getItem(tokenKey)) {

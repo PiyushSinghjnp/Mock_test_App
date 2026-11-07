@@ -1,3 +1,12 @@
+require('dotenv').config();
+
+// Production must never open or seed the legacy SQLite database. Keep the
+// existing SQLite server as the local development path until cutover.
+if (process.env.NODE_ENV === 'production') {
+  const postgresServer = require('./server-postgres');
+  if (require.main === module) postgresServer.start();
+  module.exports = postgresServer;
+} else {
 /**
  * Oliveboard Mock Test App - Full-Stack Express Server & SQLite Engine
  * 
@@ -16,11 +25,27 @@ const fs = require('fs');
 const { DatabaseSync } = require('node:sqlite');
 const crypto = require('node:crypto');
 
+// Load environment variables from .env file (for local development)
+require('dotenv').config();
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+// Keep the API on a dedicated port so Vite can own the frontend port in dev.
+const PORT = process.env.PORT || 3001;
 const DB_PATH = path.join(__dirname, 'database.sqlite');
-const ADMIN_TOKEN = String(process.env.OLIVEBOARD_ADMIN_TOKEN || 'admin').trim();
 const UPLOADS_DIR = path.join(__dirname, 'images', 'uploads');
+
+// Admin token: MUST be set via environment variable in production.
+// In development, a default is allowed for convenience but logged as a warning.
+let ADMIN_TOKEN;
+if (process.env.OLIVEBOARD_ADMIN_TOKEN) {
+  ADMIN_TOKEN = String(process.env.OLIVEBOARD_ADMIN_TOKEN).trim();
+} else if (process.env.NODE_ENV === 'production') {
+  console.error('FATAL: OLIVEBOARD_ADMIN_TOKEN must be set in production environment.');
+  process.exit(1);
+} else {
+  ADMIN_TOKEN = 'admin';
+  console.warn('⚠️  WARNING: Using default admin token "admin". Set OLIVEBOARD_ADMIN_TOKEN for production!');
+}
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -34,6 +59,12 @@ function requireAdmin(req, res, next) {
     return res.status(401).json({ success: false, error: 'Admin authorization required.' });
   }
   next();
+}
+
+function toPublicUser(user) {
+  if (!user) return user;
+  const { password_hash, ...publicUser } = user;
+  return publicUser;
 }
 
 app.use(cors());
@@ -139,16 +170,51 @@ db.exec(`
     details_json TEXT,
     created_at TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS quiz_questions (
+    id TEXT PRIMARY KEY,
+    subject TEXT NOT NULL,
+    question_text TEXT NOT NULL,
+    passage_html TEXT DEFAULT '',
+    image_urls_json TEXT DEFAULT '[]',
+    options_json TEXT NOT NULL,
+    correct_answer TEXT NOT NULL,
+    explanation_html TEXT DEFAULT '',
+    marks REAL DEFAULT 1.0,
+    negative_marks REAL DEFAULT 0.25,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS candidate_quiz_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    question_id TEXT NOT NULL,
+    attempted_at TEXT NOT NULL,
+    UNIQUE(user_id, question_id)
+  );
 `);
 
 console.log('SQLite database schema verified.');
 
-// Migration: Ensure password_hash column exists in users table
+// Migration: Ensure password_hash, coins, streak_days, last_quiz_date exist in users table
 try {
   const userCols = db.prepare('PRAGMA table_info(users)').all().map(c => c.name);
   if (!userCols.includes('password_hash')) {
     db.exec('ALTER TABLE users ADD COLUMN password_hash TEXT;');
     console.log('Added password_hash column to users table.');
+  }
+  if (!userCols.includes('coins')) {
+    db.exec('ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 300;');
+    console.log('Added coins column to users table.');
+  }
+  if (!userCols.includes('streak_days')) {
+    db.exec('ALTER TABLE users ADD COLUMN streak_days INTEGER DEFAULT 1;');
+    console.log('Added streak_days column to users table.');
+  }
+  if (!userCols.includes('last_quiz_date')) {
+    db.exec('ALTER TABLE users ADD COLUMN last_quiz_date TEXT;');
+    console.log('Added last_quiz_date column to users table.');
   }
 } catch (e) {
   console.warn('Migration note:', e.message);
@@ -169,10 +235,13 @@ function verifyPassword(password, stored) {
   return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(testHash, 'hex'));
 }
 
-// Seed default password for existing users without one
+// Keep development compatibility for old local profiles. Never assign a known
+// shared password to an account during a production startup.
 try {
-  const defaultHash = hashPassword('password123');
-  db.prepare("UPDATE users SET password_hash = ? WHERE password_hash IS NULL OR password_hash = ''").run(defaultHash);
+  if (process.env.NODE_ENV !== 'production') {
+    const defaultHash = hashPassword('password123');
+    db.prepare("UPDATE users SET password_hash = ? WHERE password_hash IS NULL OR password_hash = ''").run(defaultHash);
+  }
 } catch (e) {
   console.warn('Default password migration note:', e.message);
 }
@@ -181,6 +250,7 @@ try {
 // 2. SEED INITIAL USERS (ISOLATION DEMO)
 // ==========================================
 function seedUsers() {
+  if (process.env.NODE_ENV === 'production') return;
   const checkUserStmt = db.prepare('SELECT COUNT(*) as count FROM users');
   const userCount = checkUserStmt.get().count;
 
@@ -386,6 +456,73 @@ if (!fs.existsSync(PAPERS_DIR)) {
   fs.mkdirSync(PAPERS_DIR, { recursive: true });
 }
 
+function sanitizeQuestionContent(value) {
+  if (typeof value !== 'string') return value;
+
+  return value
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+    .replace(/ï¿½|Ã¯Â¿Â½|�/g, '')
+    .replace(/â€¢/g, '•')
+    .replace(/â€“/g, '–')
+    .replace(/â€”/g, '—')
+    .replace(/â€™/g, '’')
+    .replace(/â€œ/g, '“')
+    .replace(/â€/g, '”')
+    .replace(/Â/g, '');
+}
+
+function sanitizeQuestion(question) {
+  if (!question || typeof question !== 'object') return question;
+  for (const field of ['questionHTML', 'passageHTML', 'explanationHTML']) {
+    question[field] = sanitizeQuestionContent(question[field]);
+  }
+  if (Array.isArray(question.options)) {
+    question.options = question.options.map(option => ({
+      ...option,
+      text: sanitizeQuestionContent(option?.text)
+    }));
+  }
+  return question;
+}
+
+function repairKnownCapturedPaper(filename, parsedPaper) {
+  if (filename !== 'sbi-po-pre-01.json' || !parsedPaper || !Array.isArray(parsedPaper.sections)) {
+    return parsedPaper;
+  }
+
+  const cleanSourcePath = path.join(__dirname, 'scraped', 'sbi_po_prelims_1_full.json');
+  if (!fs.existsSync(cleanSourcePath)) return parsedPaper;
+
+  try {
+    const cleanPaper = JSON.parse(fs.readFileSync(cleanSourcePath, 'utf8'));
+    const targetQuestions = parsedPaper.sections.flatMap(section => section.questions || []);
+    const cleanQuestions = Array.isArray(cleanPaper.questions) ? cleanPaper.questions : [];
+    if (targetQuestions.length !== cleanQuestions.length || targetQuestions.length === 0) {
+      return parsedPaper;
+    }
+
+    targetQuestions.forEach((question, index) => {
+      const cleanQuestion = cleanQuestions[index];
+      if (!cleanQuestion) return;
+      Object.assign(question, {
+        questionHTML: cleanQuestion.questionHTML || question.questionHTML,
+        passageHTML: cleanQuestion.passageHTML || '',
+        hasPassage: Boolean(cleanQuestion.hasPassage),
+        imageUrls: Array.isArray(cleanQuestion.imageUrls) ? cleanQuestion.imageUrls : [],
+        options: Array.isArray(cleanQuestion.options) ? cleanQuestion.options : question.options,
+        correctAnswer: cleanQuestion.correctAnswer || question.correctAnswer,
+        correctIndex: cleanQuestion.correctIndex ?? question.correctIndex,
+        explanationHTML: cleanQuestion.explanationHTML || question.explanationHTML
+      });
+      sanitizeQuestion(question);
+    });
+    console.log(`[Backend Repair] Restored clean question content for ${filename} (${targetQuestions.length} questions).`);
+  } catch (error) {
+    console.warn(`[Backend Repair] Could not repair ${filename}:`, error.message);
+  }
+  return parsedPaper;
+}
+
 function ingestBackendPaperFile(filePath, options = {}) {
   try {
     if (!filePath.endsWith('.json')) return null;
@@ -393,7 +530,7 @@ function ingestBackendPaperFile(filePath, options = {}) {
     const rawContent = fs.readFileSync(filePath, 'utf8');
     if (!rawContent || !rawContent.trim()) return null;
 
-    const parsedPaper = JSON.parse(rawContent);
+    const parsedPaper = repairKnownCapturedPaper(filename, JSON.parse(rawContent));
     const normalizedTest = examPatterns2026.apply2026PatternToQuestionPaper(parsedPaper, {
       filename
     });
@@ -491,7 +628,7 @@ app.get('/api/users', (req, res) => {
       FROM users u
       ORDER BY u.created_at ASC
     `).all();
-    res.json({ success: true, users });
+    res.json({ success: true, users: users.map(toPublicUser) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -517,7 +654,7 @@ app.post('/api/users', (req, res) => {
     insert.run(id, username, name.trim(), `${username}@oliveboard.test`, avatar, rollNo, targetExam, createdAt);
 
     const newUser = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
-    res.json({ success: true, user: newUser });
+    res.json({ success: true, user: toPublicUser(newUser) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -546,7 +683,7 @@ app.patch('/api/users/:id', (req, res) => {
       FROM users u
       WHERE u.id = ?
     `).get(userId);
-    res.json({ success: true, user: updated });
+    res.json({ success: true, user: toPublicUser(updated) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -560,6 +697,9 @@ app.post('/api/auth/login', (req, res) => {
       return res.status(400).json({ success: false, error: 'Username and password are required.' });
     }
     const cleanUser = username.trim().toLowerCase();
+    if (process.env.NODE_ENV === 'production' && password === 'password123') {
+      return res.status(403).json({ success: false, error: 'This shared demo password is disabled in production. Contact an administrator to set a private password.' });
+    }
     const user = db.prepare('SELECT * FROM users WHERE LOWER(username) = ?').get(cleanUser);
     if (!user) {
       return res.status(401).json({ success: false, error: 'Invalid username or password.' });
@@ -576,6 +716,9 @@ app.post('/api/auth/login', (req, res) => {
       avatar: user.avatar,
       roll_no: user.roll_no,
       target_exam: user.target_exam,
+      coins: user.coins !== undefined && user.coins !== null ? user.coins : 300,
+      streak_days: user.streak_days !== undefined && user.streak_days !== null ? user.streak_days : 1,
+      last_quiz_date: user.last_quiz_date || null,
       created_at: user.created_at
     };
     res.json({
@@ -592,8 +735,9 @@ app.post('/api/auth/login', (req, res) => {
 app.post('/api/auth/register', (req, res) => {
   try {
     const { username, password, name, target_exam } = req.body || {};
-    if (!username || !username.trim() || !password || password.length < 4) {
-      return res.status(400).json({ success: false, error: 'Username and password (min 4 characters) are required.' });
+    const minimumPasswordLength = process.env.NODE_ENV === 'production' ? 12 : 4;
+    if (!username || !username.trim() || !password || password.length < minimumPasswordLength) {
+      return res.status(400).json({ success: false, error: `Username and password (min ${minimumPasswordLength} characters) are required.` });
     }
     const cleanUser = username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
     if (!cleanUser) {
@@ -616,7 +760,7 @@ app.post('/api/auth/register', (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(id, cleanUser, fullName, `${cleanUser}@oliveboard.test`, avatar, rollNo, targetExam, passwordHash, createdAt);
 
-    const newUser = db.prepare('SELECT id, username, name, email, avatar, roll_no, target_exam, created_at FROM users WHERE id = ?').get(id);
+    const newUser = db.prepare('SELECT id, username, name, email, avatar, roll_no, target_exam, coins, streak_days, last_quiz_date, created_at FROM users WHERE id = ?').get(id);
     const token = crypto.randomBytes(32).toString('hex');
     res.json({
       success: true,
@@ -635,7 +779,7 @@ app.get('/api/auth/me', (req, res) => {
     if (!userId) {
       return res.json({ success: true, authenticated: false, user: null });
     }
-    const user = db.prepare('SELECT id, username, name, email, avatar, roll_no, target_exam, created_at FROM users WHERE id = ?').get(userId);
+    const user = db.prepare('SELECT id, username, name, email, avatar, roll_no, target_exam, coins, streak_days, last_quiz_date, created_at FROM users WHERE id = ?').get(userId);
     if (!user) {
       return res.json({ success: true, authenticated: false, user: null });
     }
@@ -900,6 +1044,20 @@ app.get('/api/exam-patterns-2026', (req, res) => {
 });
 
 // 4.3c ADMIN-ONLY QUESTION PAPER UPLOAD
+app.put('/api/admin/users/:id/password', requireAdmin, (req, res) => {
+  const password = req.body?.password;
+  if (typeof password !== 'string' || password.length < 12) {
+    return res.status(400).json({ success: false, error: 'A new password of at least 12 characters is required.' });
+  }
+  try {
+    const result = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(password), req.params.id);
+    if (!result.changes) return res.status(404).json({ success: false, error: 'User not found.' });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ success: false, error: 'Unable to update the candidate password.' });
+  }
+});
+
 app.get('/api/admin/tests', requireAdmin, (req, res) => {
   const tests = db.prepare('SELECT id, exam_id, exam_name, type, title, questions_count, duration_minutes, created_at FROM tests ORDER BY created_at DESC').all();
   res.json({ success: true, tests });
@@ -1405,12 +1563,65 @@ app.post('/api/attempts', (req, res) => {
 
     console.log(`Test attempt saved permanently: ID ${attemptId} for User ${userId} on Test ${testId} (Percentile: ${rankData.percentile}%ile, AIR: #${rankData.estimatedAIR}/${rankData.totalCandidates})`);
 
+    // Streak & Coins reward calculation for Daily Quiz attempts
+    let streakReward = null;
+    if (String(testId).startsWith('quiz-')) {
+      try {
+        const userRow = db.prepare('SELECT coins, streak_days, last_quiz_date FROM users WHERE id = ?').get(userId);
+        if (userRow) {
+          const todayStr = (completedAt ? new Date(completedAt) : new Date()).toISOString().slice(0, 10);
+          const lastDate = userRow.last_quiz_date || null;
+          let streakDays = Number(userRow.streak_days) || 1;
+          let coinsAwarded = 50;
+
+          if (lastDate) {
+            const last = new Date(lastDate + 'T00:00:00Z');
+            const today = new Date(todayStr + 'T00:00:00Z');
+            const diffDays = Math.round((today - last) / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+              coinsAwarded = 25; // Same-day practice bonus
+            } else if (diffDays === 1) {
+              streakDays += 1; // Consecutive day streak
+              coinsAwarded = 50;
+            } else {
+              streakDays = 1; // Streak restarted
+              coinsAwarded = 50;
+            }
+          } else {
+            streakDays = 1;
+            coinsAwarded = 50;
+          }
+
+          const currentCoins = Number(userRow.coins !== undefined && userRow.coins !== null ? userRow.coins : 300);
+          const updatedCoins = currentCoins + coinsAwarded;
+
+          db.prepare('UPDATE users SET coins = ?, streak_days = ?, last_quiz_date = ? WHERE id = ?').run(
+            updatedCoins,
+            streakDays,
+            todayStr,
+            userId
+          );
+
+          streakReward = {
+            coinsAwarded,
+            streakDays,
+            totalCoins: updatedCoins
+          };
+          console.log(`[Quiz Streak Reward] User ${userId} awarded ${coinsAwarded} coins. Streak: ${streakDays}d, Total Coins: ${updatedCoins}`);
+        }
+      } catch (e) {
+        console.warn('Streak reward calculation error:', e.message);
+      }
+    }
+
     res.json({
       success: true,
       attemptId,
       percentile: rankData.percentile,
       estimatedAir: rankData.estimatedAIR,
       totalCandidates: rankData.totalCandidates,
+      streakReward,
       message: 'Mock test result saved permanently in SQLite database.'
     });
   } catch (err) {
@@ -1548,7 +1759,8 @@ app.get('/api/analytics', (req, res) => {
           overallPercentile: '0.0%ile',
           predictedAIR: '#--',
           streakDays: 0,
-          sectionBreakdowns: []
+          sectionBreakdowns: [],
+          recentAttempts: []
         }
       });
     }
@@ -1650,6 +1862,22 @@ app.get('/api/analytics', (req, res) => {
       };
     });
 
+    const recentAttempts = representativeAttempts
+      .slice()
+      .reverse()
+      .slice(-6)
+      .map(a => {
+        const completedAt = a.completed_at || a.started_at || a.submitted_at;
+        const date = completedAt ? new Date(completedAt) : null;
+        const scorePct = ((Number(a.score) || 0) / Math.max(1, Number(a.max_score) || 100)) * 100;
+        return {
+          testTitle: a.test_title || 'Mock test',
+          score: Number(scorePct.toFixed(1)),
+          accuracy: Number((Number(a.accuracy) || 0).toFixed(1)),
+          completedAt: date && !Number.isNaN(date.getTime()) ? date.toISOString() : null
+        };
+      });
+
     res.json({
       success: true,
       user: {
@@ -1666,7 +1894,8 @@ app.get('/api/analytics', (req, res) => {
         overallPercentile: `${avgPercentile}%ile`,
         predictedAIR: `#${bestAIR.toLocaleString()}`,
         streakDays: Math.max(1, streakDays),
-        sectionBreakdowns: sectionBreakdowns
+        sectionBreakdowns: sectionBreakdowns,
+        recentAttempts
       }
     });
   } catch (err) {
@@ -1730,6 +1959,729 @@ app.get('/api/leaderboard', (req, res) => {
 });
 
 // ==========================================
+// 4.6 DAILY 10-QUESTION MINI QUIZZES & QUESTION BANK
+// ==========================================
+
+// Helper: Parse questions from JSON or formatted plain text
+function parseQuizQuestions(data, format, defaultSubject) {
+  const questions = [];
+  const subjectName = (defaultSubject || 'General').trim();
+
+  if (format === 'json' || (typeof data === 'object')) {
+    let rawList = [];
+    if (typeof data === 'string') {
+      try {
+        const parsed = JSON.parse(data);
+        rawList = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.questions) ? parsed.questions : [parsed]);
+      } catch (e) {
+        throw new Error('Invalid JSON format: ' + e.message);
+      }
+    } else if (Array.isArray(data)) {
+      rawList = data;
+    } else if (data && Array.isArray(data.questions)) {
+      rawList = data.questions;
+    }
+
+    rawList.forEach((q, idx) => {
+      const qText = q.questionHTML || q.questionText || q.question || q.text || q.title || '';
+      if (!qText.trim()) return;
+
+      let opts = [];
+      if (Array.isArray(q.options)) {
+        opts = q.options.map((opt, oIdx) => {
+          if (typeof opt === 'string') {
+            const letter = String.fromCharCode(65 + oIdx);
+            return { letter, text: opt, html: opt };
+          }
+          const letter = opt.letter || String.fromCharCode(65 + oIdx);
+          const htmlContent = opt.html !== undefined ? opt.html : (opt.text || opt.title || `Option ${letter}`);
+          const txt = opt.text || opt.html || `Option ${letter}`;
+          return { letter, text: txt, html: htmlContent };
+        });
+      } else if (typeof q.options === 'object' && q.options !== null) {
+        opts = Object.entries(q.options).map(([key, val]) => {
+          const valStr = typeof val === 'object' && val !== null ? (val.html || val.text || JSON.stringify(val)) : String(val);
+          return {
+            letter: key.toUpperCase(),
+            text: valStr,
+            html: valStr
+          };
+        });
+      }
+
+      if (opts.length < 2) {
+        opts = [
+          { letter: 'A', text: 'Option A', html: 'Option A' },
+          { letter: 'B', text: 'Option B', html: 'Option B' },
+          { letter: 'C', text: 'Option C', html: 'Option C' },
+          { letter: 'D', text: 'Option D', html: 'Option D' }
+        ];
+      }
+
+      let correct = 'A';
+      if (typeof q.correctAnswer === 'string' && q.correctAnswer.trim()) {
+        correct = q.correctAnswer.trim().toUpperCase().charAt(0);
+      } else if (typeof q.correctIndex === 'number' && q.correctIndex >= 0 && q.correctIndex < opts.length) {
+        correct = opts[q.correctIndex].letter;
+      } else if (typeof q.answer === 'string') {
+        correct = q.answer.trim().toUpperCase().charAt(0);
+      }
+
+      questions.push({
+        id: `quiz-q-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 7)}`,
+        subject: (q.subject || subjectName).trim(),
+        questionText: qText.trim(),
+        passageHTML: q.passageHTML || q.passage || q.directions || '',
+        imageUrls: Array.isArray(q.imageUrls) ? q.imageUrls : (q.imageUrl ? [q.imageUrl] : []),
+        options: opts,
+        correctAnswer: correct,
+        explanationHTML: q.explanationHTML || q.explanation || q.solution || q.solutionHTML || '',
+        marks: Number(q.marks) || 1.0,
+        negativeMarks: Number(q.negativeMarks) || 0.25
+      });
+    });
+  } else {
+    // TEXT FORMAT PARSER
+    const text = String(data || '');
+    const qBlocks = text.split(/(?=(?:^|\n)\s*(?:Q(?:uestion)?\s*\d+[\.\:\)]|\d+[\.\)]\s+))/i);
+    qBlocks.forEach((block, idx) => {
+      const cleanBlock = block.trim();
+      if (!cleanBlock) return;
+
+      const lines = cleanBlock.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) return;
+
+      let qText = '';
+      let opts = [];
+      let correct = 'A';
+      let explanation = '';
+      let parsingOptions = false;
+      let parsingExplanation = false;
+
+      const firstLine = lines[0].replace(/^(?:Q(?:uestion)?\s*\d+[\.\:\)]|\d+[\.\)]\s*)/i, '').trim();
+      qText = firstLine;
+
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+
+        const ansMatch = line.match(/^(?:Answer|Ans|Correct(?:\s+Answer)?)\s*[\:\-\=]\s*\(?([A-Ea-e1-5])\)?/i);
+        if (ansMatch) {
+          const rawAns = ansMatch[1].toUpperCase();
+          if (['1', '2', '3', '4', '5'].includes(rawAns)) {
+            correct = String.fromCharCode(64 + parseInt(rawAns, 10));
+          } else {
+            correct = rawAns;
+          }
+          parsingOptions = false;
+          continue;
+        }
+
+        const expMatch = line.match(/^(?:Explanation|Solution|Soln|Exp)\s*[\:\-\=]\s*(.*)$/i);
+        if (expMatch) {
+          explanation = expMatch[1] || '';
+          parsingExplanation = true;
+          parsingOptions = false;
+          continue;
+        }
+
+        if (parsingExplanation) {
+          explanation += ' ' + line;
+          continue;
+        }
+
+        const optMatch = line.match(/^[\(\[]?([A-Ea-e])[\.\)\]]\s*(.*)$/i);
+        if (optMatch) {
+          parsingOptions = true;
+          const letter = optMatch[1].toUpperCase();
+          const optText = optMatch[2].trim();
+          opts.push({ letter, text: optText, html: optText });
+          continue;
+        }
+
+        if (parsingOptions && opts.length > 0) {
+          opts[opts.length - 1].text += ' ' + line;
+          opts[opts.length - 1].html += ' ' + line;
+        } else if (!parsingOptions && !parsingExplanation) {
+          qText += ' ' + line;
+        }
+      }
+
+      if (opts.length < 2) {
+        opts = [
+          { letter: 'A', text: 'Option A', html: 'Option A' },
+          { letter: 'B', text: 'Option B', html: 'Option B' },
+          { letter: 'C', text: 'Option C', html: 'Option C' },
+          { letter: 'D', text: 'Option D', html: 'Option D' }
+        ];
+      }
+
+      if (qText) {
+        questions.push({
+          id: `quiz-q-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 7)}`,
+          subject: subjectName,
+          questionText: qText.trim(),
+          passageHTML: '',
+          imageUrls: [],
+          options: opts,
+          correctAnswer: correct,
+          explanationHTML: explanation.trim(),
+          marks: 1.0,
+          negativeMarks: 0.25
+        });
+      }
+    });
+  }
+
+  return questions;
+}
+
+// GET /api/quizzes/subjects - List available subjects with question counts and user progress
+app.get('/api/quizzes/subjects', (req, res) => {
+  try {
+    const userId = req.query.userId || null;
+    const subjectMap = new Map();
+
+    // 1. Scan quiz_questions bank
+    const bankCounts = db.prepare('SELECT subject, COUNT(*) as count FROM quiz_questions GROUP BY subject').all();
+    bankCounts.forEach(row => {
+      const cleanSub = row.subject.trim();
+      subjectMap.set(cleanSub, {
+        subject: cleanSub,
+        bankCount: row.count,
+        totalQuestions: row.count,
+        solvedCount: 0
+      });
+    });
+
+    // 2. Scan sections from uploaded mock tests in tests table
+    const mockTests = db.prepare('SELECT test_data_json FROM tests').all();
+    mockTests.forEach(row => {
+      try {
+        const tData = JSON.parse(row.test_data_json || '{}');
+        if (Array.isArray(tData.sections)) {
+          tData.sections.forEach(sec => {
+            const title = (sec.title || '').trim();
+            if (title && sec.questions && sec.questions.length > 0) {
+              if (!subjectMap.has(title)) {
+                subjectMap.set(title, {
+                  subject: title,
+                  bankCount: 0,
+                  totalQuestions: sec.questions.length,
+                  solvedCount: 0
+                });
+              } else {
+                const cur = subjectMap.get(title);
+                cur.totalQuestions = Math.max(cur.totalQuestions, cur.bankCount + sec.questions.length);
+              }
+            }
+          });
+        }
+      } catch (e) {}
+    });
+
+    // 3. If userId provided, calculate isolated solved questions count for this candidate
+    if (userId) {
+      const solvedCounts = db.prepare(`
+        SELECT subject, COUNT(DISTINCT question_id) as solved_count
+        FROM candidate_quiz_history
+        WHERE user_id = ?
+        GROUP BY subject
+      `).all(userId);
+      solvedCounts.forEach(row => {
+        const cleanSub = row.subject.trim();
+        if (subjectMap.has(cleanSub)) {
+          subjectMap.get(cleanSub).solvedCount = row.solved_count;
+        } else {
+          subjectMap.set(cleanSub, {
+            subject: cleanSub,
+            bankCount: 0,
+            totalQuestions: Math.max(row.solved_count, 10),
+            solvedCount: row.solved_count
+          });
+        }
+      });
+    }
+
+    // Default subjects if database is fresh
+    const defaultSubjectNames = ['Reasoning Ability', 'Quantitative Aptitude', 'English Language', 'General Awareness'];
+    defaultSubjectNames.forEach(name => {
+      if (!subjectMap.has(name)) {
+        subjectMap.set(name, {
+          subject: name,
+          bankCount: 0,
+          totalQuestions: 15,
+          solvedCount: 0
+        });
+      }
+    });
+
+    const subjects = Array.from(subjectMap.values());
+
+    let userCoins = 300;
+    let userStreak = 1;
+    if (userId) {
+      const u = db.prepare('SELECT coins, streak_days FROM users WHERE id = ?').get(userId);
+      if (u) {
+        userCoins = u.coins !== undefined ? u.coins : 300;
+        userStreak = u.streak_days !== undefined ? u.streak_days : 1;
+      }
+    }
+
+    res.json({
+      success: true,
+      subjects,
+      userStreak,
+      userCoins
+    });
+  } catch (err) {
+    console.error('Failed to get quiz subjects:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/quizzes/generate - Generates a 10-Question, 10-Min Quiz with multi-candidate non-repeating isolation
+app.post('/api/quizzes/generate', (req, res) => {
+  try {
+    const { userId, subject } = req.body || {};
+    if (!userId || !subject) {
+      return res.status(400).json({ success: false, error: 'userId and subject are required' });
+    }
+
+    const cleanSubject = String(subject).trim();
+
+    // 1. Gather all questions available for this subject from quiz_questions table
+    let pool = db.prepare(`
+      SELECT id, subject, question_text, passage_html, image_urls_json, options_json, correct_answer, explanation_html, marks, negative_marks
+      FROM quiz_questions
+      WHERE LOWER(subject) = LOWER(?)
+    `).all(cleanSubject);
+
+    // Map quiz_questions rows to standard test question structure
+    let formattedPool = pool.map(row => {
+      let options = [];
+      let imageUrls = [];
+      try { options = JSON.parse(row.options_json); } catch (e) { options = []; }
+      try { imageUrls = JSON.parse(row.image_urls_json); } catch (e) { imageUrls = []; }
+      return {
+        id: row.id,
+        section: cleanSubject,
+        question: row.question_text,
+        questionText: row.question_text,
+        questionHTML: row.question_text,
+        passageHTML: row.passage_html || '',
+        hasPassage: Boolean(row.passage_html && row.passage_html.trim().length > 10),
+        imageUrls: Array.isArray(imageUrls) ? imageUrls : [],
+        options: options,
+        correctAnswer: row.correct_answer || 'A',
+        explanationHTML: row.explanation_html || '',
+        marksForCorrect: Number(row.marks) || 1.0,
+        negativeMarks: Number(row.negative_marks) || 0.25
+      };
+    });
+
+    // 2. If quiz_questions bank has < 10 questions for this subject, pull questions from tests table sections
+    if (formattedPool.length < 10) {
+      const mockTests = db.prepare('SELECT test_data_json FROM tests').all();
+      mockTests.forEach(row => {
+        try {
+          const tData = JSON.parse(row.test_data_json || '{}');
+          if (Array.isArray(tData.sections)) {
+            tData.sections.forEach(sec => {
+              const secTitle = (sec.title || '').trim().toLowerCase();
+              const targetTitle = cleanSubject.toLowerCase();
+              if (secTitle && (secTitle.includes(targetTitle) || targetTitle.includes(secTitle))) {
+                if (Array.isArray(sec.questions)) {
+                  sec.questions.forEach(q => {
+                    const qText = q.questionText || q.question || q.questionHTML || '';
+                    if (qText && !formattedPool.some(existing => (existing.questionText || existing.question || existing.questionHTML) === qText)) {
+                      formattedPool.push({
+                        ...q,
+                        id: q.id || `mock-q-${Math.random().toString(36).substring(2, 7)}`,
+                        section: cleanSubject,
+                        question: qText,
+                        questionText: qText,
+                        questionHTML: q.questionHTML || qText,
+                        options: Array.isArray(q.options) ? q.options : [],
+                        correctAnswer: q.correctAnswer || (typeof q.correctIndex === 'number' ? String.fromCharCode(65 + q.correctIndex) : 'A'),
+                        explanationHTML: q.explanationHTML || ''
+                      });
+                    }
+                  });
+                }
+              }
+            });
+          }
+        } catch (e) {}
+      });
+    }
+
+    if (formattedPool.length === 0) {
+      return res.status(404).json({ success: false, error: `No questions found for subject "${cleanSubject}". Please upload questions in /admin.` });
+    }
+
+    // 3. User-isolated non-repeat check
+    const solvedRows = db.prepare(`
+      SELECT question_id FROM candidate_quiz_history
+      WHERE user_id = ? AND LOWER(subject) = LOWER(?)
+    `).all(userId, cleanSubject);
+    const solvedSet = new Set(solvedRows.map(r => r.question_id));
+
+    let unsolved = formattedPool.filter(q => !solvedSet.has(q.id));
+
+    // "Only repeat when all of the questions of that section is solved by a candidate."
+    if (unsolved.length < 10) {
+      // Pool exhausted for this specific candidate: reset candidate's history for this subject
+      db.prepare('DELETE FROM candidate_quiz_history WHERE user_id = ? AND LOWER(subject) = LOWER(?)').run(userId, cleanSubject);
+      unsolved = [...formattedPool];
+      console.log(`[Quiz Engine] Reset solved history for user ${userId} on "${cleanSubject}" (All ${formattedPool.length} questions completed)`);
+    }
+
+    // 4. Randomly shuffle and select up to 10 questions
+    const shuffled = [...unsolved];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const selectedQuestions = shuffled.slice(0, Math.min(10, shuffled.length));
+
+    // 5. Record selected question IDs in candidate_quiz_history for this isolated user
+    const now = new Date().toISOString();
+    const insertHistoryStmt = db.prepare(`
+      INSERT OR IGNORE INTO candidate_quiz_history (user_id, subject, question_id, attempted_at)
+      VALUES (?, ?, ?, ?)
+    `);
+    selectedQuestions.forEach(q => {
+      insertHistoryStmt.run(userId, cleanSubject, q.id, now);
+    });
+
+    // 6. Format into an authentic 10-Question, 10-Minute Test Data object
+    const quizTestId = `quiz-${cleanSubject.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
+    selectedQuestions.forEach((q, idx) => {
+      q.globalIndex = idx + 1;
+      q.localIndex = idx + 1;
+      q.questionNumber = idx + 1;
+      q.section = cleanSubject;
+    });
+
+    const quizTestData = {
+      id: quizTestId,
+      examId: 'daily-quiz',
+      examName: 'Daily Mini Quiz',
+      type: 'daily-quiz',
+      title: `Daily Quiz: ${cleanSubject}`,
+      subtitle: `Daily Speed Drill • ${selectedQuestions.length} Questions • 10 Minutes`,
+      marks: selectedQuestions.length * 1.0,
+      questionsCount: selectedQuestions.length,
+      durationMinutes: 10,
+      totalDurationSeconds: 600,
+      marksPerCorrect: 1.0,
+      negativeMarks: 0.25,
+      isQuiz: true,
+      subject: cleanSubject,
+      sectionsSummary: [{
+        id: 'sec-quiz',
+        title: cleanSubject,
+        questionsCount: selectedQuestions.length,
+        maxMarks: selectedQuestions.length * 1.0,
+        durationMinutes: 10
+      }],
+      sections: [{
+        id: 'sec-quiz',
+        title: cleanSubject,
+        durationMinutes: 10,
+        durationSeconds: 600,
+        expectedQuestions: selectedQuestions.length,
+        maxMarks: selectedQuestions.length * 1.0,
+        questions: selectedQuestions
+      }]
+    };
+
+    // 7. Persist temporarily into tests table so testEngine & scorecard work seamlessly
+    db.prepare(`
+      INSERT INTO tests (
+        id, exam_id, exam_name, type, title, subtitle,
+        marks, questions_count, duration_minutes,
+        marks_per_correct, negative_marks, is_free,
+        sections_summary_json, test_data_json, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET test_data_json = excluded.test_data_json
+    `).run(
+      quizTestData.id,
+      quizTestData.examId,
+      quizTestData.examName,
+      quizTestData.type,
+      quizTestData.title,
+      quizTestData.subtitle,
+      quizTestData.marks,
+      quizTestData.questionsCount,
+      quizTestData.durationMinutes,
+      1.0,
+      0.25,
+      1,
+      JSON.stringify(quizTestData.sectionsSummary),
+      JSON.stringify(quizTestData),
+      now
+    );
+
+    res.json({
+      success: true,
+      test: quizTestData,
+      testId: quizTestData.id,
+      selectedCount: selectedQuestions.length,
+      unsolvedRemaining: Math.max(0, unsolved.length - selectedQuestions.length)
+    });
+  } catch (err) {
+    console.error('Failed to generate daily quiz:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/quizzes/import - Admin endpoint to push JSON or plain text questions for a subject
+app.post('/api/quizzes/import', requireAdmin, (req, res) => {
+  try {
+    const { subject, format, content } = req.body || {};
+    if (!subject || !subject.trim()) {
+      return res.status(400).json({ success: false, error: 'Subject is required.' });
+    }
+    if (!content) {
+      return res.status(400).json({ success: false, error: 'Question content (JSON or formatted text) is required.' });
+    }
+
+    const cleanSubject = subject.trim();
+    const questions = parseQuizQuestions(content, format || 'json', cleanSubject);
+
+    if (questions.length === 0) {
+      return res.status(400).json({ success: false, error: 'No valid questions could be parsed from the provided input.' });
+    }
+
+    const now = new Date().toISOString();
+    const insertStmt = db.prepare(`
+      INSERT INTO quiz_questions (
+        id, subject, question_text, passage_html, image_urls_json,
+        options_json, correct_answer, explanation_html, marks, negative_marks, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    let imported = 0;
+    for (const q of questions) {
+      insertStmt.run(
+        q.id,
+        cleanSubject,
+        q.questionText,
+        q.passageHTML || '',
+        JSON.stringify(q.imageUrls || []),
+        JSON.stringify(q.options || []),
+        q.correctAnswer || 'A',
+        q.explanationHTML || '',
+        q.marks || 1.0,
+        q.negativeMarks || 0.25,
+        now
+      );
+      imported++;
+    }
+
+    const totalInSubject = db.prepare('SELECT COUNT(*) as count FROM quiz_questions WHERE LOWER(subject) = LOWER(?)').get(cleanSubject).count;
+
+    db.prepare('INSERT INTO admin_audit_log (action, test_id, details_json, created_at) VALUES (?, ?, ?, ?)').run(
+      'import_quiz_questions', cleanSubject, JSON.stringify({ imported, totalInSubject, format }), now
+    );
+
+    res.json({
+      success: true,
+      message: `Successfully imported ${imported} questions for "${cleanSubject}".`,
+      importedCount: imported,
+      totalInSubject,
+      subject: cleanSubject
+    });
+  } catch (err) {
+    console.error('Failed to import quiz questions:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/quizzes/bank-summary - Admin summary of questions per subject
+app.get('/api/quizzes/bank-summary', (req, res) => {
+  try {
+    const summary = db.prepare(`
+      SELECT subject, COUNT(*) as count, MIN(created_at) as first_added, MAX(created_at) as last_added
+      FROM quiz_questions
+      GROUP BY subject
+      ORDER BY count DESC
+    `).all();
+    res.json({ success: true, summary });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/quizzes/clear-subject - Admin endpoint to clear questions for a subject
+app.post('/api/quizzes/clear-subject', requireAdmin, (req, res) => {
+  try {
+    const { subject } = req.body || {};
+    if (!subject) return res.status(400).json({ success: false, error: 'Subject is required' });
+    const cleanSubject = subject.trim();
+    db.prepare('DELETE FROM quiz_questions WHERE LOWER(subject) = LOWER(?)').run(cleanSubject);
+    db.prepare('DELETE FROM candidate_quiz_history WHERE LOWER(subject) = LOWER(?)').run(cleanSubject);
+    res.json({ success: true, message: `Cleared questions for "${cleanSubject}".` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Pre-seed initial quiz bank with quality questions if empty
+function seedQuizQuestionsIfEmpty() {
+  try {
+    const count = db.prepare('SELECT COUNT(*) as cnt FROM quiz_questions').get().cnt;
+    if (count === 0) {
+      console.log('Pre-seeding initial daily quiz questions bank...');
+      const seedData = [
+        // Reasoning
+        {
+          subject: 'Reasoning Ability',
+          question: 'In a certain code, "BANKING" is written as "OBKLMHJ". How is "PO" written in that code?',
+          options: ['QP', 'PQ', 'OP', 'QO'],
+          correctAnswer: 'A',
+          explanation: 'Each letter is shifted by +1.'
+        },
+        {
+          subject: 'Reasoning Ability',
+          question: 'Pointing to a photograph, a woman says, "He is the son of the only son of my grandfather." How is the man in photograph related to the woman?',
+          options: ['Brother', 'Uncle', 'Cousin', 'Father'],
+          correctAnswer: 'A',
+          explanation: 'Only son of grandfather = father. Son of father = brother.'
+        },
+        {
+          subject: 'Reasoning Ability',
+          question: 'Statements: All cats are dogs. All dogs are birds. Conclusions: I. All cats are birds. II. All birds are cats.',
+          options: ['Only I follows', 'Only II follows', 'Either I or II follows', 'Neither I nor II follows'],
+          correctAnswer: 'A',
+          explanation: 'Since Cats ⊂ Dogs ⊂ Birds, all cats are definitely birds.'
+        },
+        {
+          subject: 'Reasoning Ability',
+          question: 'Find the next term in the series: 4, 9, 19, 39, 79, ?',
+          options: ['159', '149', '169', '158'],
+          correctAnswer: 'A',
+          explanation: 'Pattern: x 2 + 1. 79 x 2 + 1 = 159.'
+        },
+        {
+          subject: 'Reasoning Ability',
+          question: 'If North becomes South-East, what will West become?',
+          options: ['North-East', 'South-West', 'North-West', 'East'],
+          correctAnswer: 'A',
+          explanation: 'North turns 135 degrees clockwise to become South-East. West turned 135 degrees clockwise becomes North-East.'
+        },
+        // Quantitative Aptitude
+        {
+          subject: 'Quantitative Aptitude',
+          question: 'A train 180 meters long is running at 54 km/hr. How much time does it take to pass an electric pole?',
+          options: ['12 seconds', '10 seconds', '15 seconds', '8 seconds'],
+          correctAnswer: 'A',
+          explanation: 'Speed = 54 x 5/18 = 15 m/s. Time = Distance / Speed = 180 / 15 = 12 seconds.'
+        },
+        {
+          subject: 'Quantitative Aptitude',
+          question: 'What is the compound interest on Rs 8,000 at 5% per annum for 2 years, compounded annually?',
+          options: ['Rs 820', 'Rs 800', 'Rs 840', 'Rs 810'],
+          correctAnswer: 'A',
+          explanation: 'Amount = 8000 x (1.05)^2 = 8000 x 1.1025 = 8820. CI = 8820 - 8000 = 820.'
+        },
+        {
+          subject: 'Quantitative Aptitude',
+          question: 'A shopkeeper marks an article 25% above cost price and allows a discount of 10%. Find the profit percentage.',
+          options: ['12.5%', '15%', '10%', '14%'],
+          correctAnswer: 'A',
+          explanation: 'CP = 100, MP = 125, SP = 125 x 0.90 = 112.5. Profit = 12.5%.'
+        },
+        {
+          subject: 'Quantitative Aptitude',
+          question: 'The average age of 24 students and their teacher is 15 years. If teacher is excluded, average decreases by 1. What is the teacher age?',
+          options: ['39 years', '40 years', '38 years', '42 years'],
+          correctAnswer: 'A',
+          explanation: 'Total with teacher = 25 x 15 = 375. Total without teacher = 24 x 14 = 336. Teacher age = 375 - 336 = 39 years.'
+        },
+        {
+          subject: 'Quantitative Aptitude',
+          question: 'Solve for x: (x / 7) + (x / 5) = 24',
+          options: ['70', '65', '75', '80'],
+          correctAnswer: 'A',
+          explanation: '(5x + 7x) / 35 = 24 => 12x = 24 x 35 => x = 70.'
+        },
+        // English Language
+        {
+          subject: 'English Language',
+          question: 'Choose the antonym of the word: DILIGENT',
+          options: ['Lazy', 'Industrious', 'Clever', 'Honest'],
+          correctAnswer: 'A',
+          explanation: 'Diligent means hard-working; its exact antonym is lazy.'
+        },
+        {
+          subject: 'English Language',
+          question: 'Fill in the blank: Neither the teacher nor the students ____ present yesterday.',
+          options: ['were', 'was', 'is', 'are'],
+          correctAnswer: 'A',
+          explanation: 'When subjects are connected by neither/nor, the verb agrees with the closer subject ("students" -> plural -> "were").'
+        },
+        {
+          subject: 'English Language',
+          question: 'Identify the correctly spelt word:',
+          options: ['Accommodate', 'Acommodate', 'Accomodate', 'Acomodate'],
+          correctAnswer: 'A',
+          explanation: 'Accommodate has double "c" and double "m".'
+        },
+        {
+          subject: 'English Language',
+          question: 'Select the meaning of the idiom: "To spill the beans"',
+          options: ['To reveal a secret prematurely', 'To drop food', 'To be clumsy', 'To cook a meal'],
+          correctAnswer: 'A',
+          explanation: '"Spill the beans" means to disclose secret information.'
+        },
+        {
+          subject: 'English Language',
+          question: 'Spot the error: "He is one of the tallest boy in the classroom."',
+          options: ['tallest boy', 'He is', 'one of the', 'in the classroom'],
+          correctAnswer: 'A',
+          explanation: '"One of the" is always followed by a plural noun ("tallest boys").'
+        }
+      ];
+
+      const now = new Date().toISOString();
+      const insertStmt = db.prepare(`
+        INSERT INTO quiz_questions (
+          id, subject, question_text, passage_html, image_urls_json,
+          options_json, correct_answer, explanation_html, marks, negative_marks, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      seedData.forEach((q, idx) => {
+        const opts = q.options.map((opt, oIdx) => ({
+          letter: String.fromCharCode(65 + oIdx),
+          text: opt,
+          html: opt
+        }));
+        insertStmt.run(
+          `seed-q-${idx + 1}`,
+          q.subject,
+          q.question,
+          '',
+          '[]',
+          JSON.stringify(opts),
+          q.correctAnswer,
+          q.explanation,
+          1.0,
+          0.25,
+          now
+        );
+      });
+      console.log(`Pre-seeded ${seedData.length} daily quiz questions across Reasoning, Quant, and English.`);
+    }
+  } catch (e) {
+    console.warn('Quiz questions seeding note:', e.message);
+  }
+}
+seedQuizQuestionsIfEmpty();
+
+// ==========================================
 // 5. MODEL CONTEXT PROTOCOL (MCP) SERVER
 // ==========================================
 const { mountMcpRoutes } = require('./mcp-server');
@@ -1752,3 +2704,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(` Multi-user isolation & permanent result storage ACTIVE`);
   console.log(`=======================================================`);
 });
+}

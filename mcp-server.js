@@ -6,21 +6,47 @@
  * 2. Streamable HTTP Transport & SSE Transport mounted in Express (`server.js` at `/mcp` and `/mcp/sse`)
  * 3. Direct JSON-RPC 2.0 & REST Introspection for the in-app MCP Inspector Console
  *
- * Backed 100% by the persistent SQLite Database (`database.sqlite`) and
+ * Backed by the shared Neon PostgreSQL pool and
  * Official Exam Notifications (`data/official_exam_notifications.json`).
  */
 
 const path = require('path');
 const fs = require('fs');
-const { DatabaseSync } = require('node:sqlite');
+require('dotenv').config();
+const { getPool, closePool, transaction } = require('./db/postgres');
 const { McpServer } = require('@modelcontextprotocol/sdk/server/mcp.js');
 const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
 const { SSEServerTransport } = require('@modelcontextprotocol/sdk/server/sse.js');
 const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/server/streamableHttp.js');
 const { z } = require('zod');
 
-const DB_PATH = path.join(__dirname, 'database.sqlite');
 const NOTIFICATIONS_PATH = path.join(__dirname, 'data', 'official_exam_notifications.json');
+
+function pgSql(sql) {
+  let index = 0;
+  return sql.replace(/\?/g, () => `$${++index}`);
+}
+
+function createPgAdapter(client = getPool()) {
+  const adapter = {
+    query: (sql, values = []) => client.query(pgSql(sql), values),
+    prepare(sql) {
+      const statement = pgSql(sql);
+      return {
+        all: async (...values) => (await client.query(statement, values)).rows,
+        get: async (...values) => (await client.query(statement, values)).rows[0],
+        run: async (...values) => {
+          const result = await client.query(statement, values);
+          return { changes: result.rowCount, lastInsertRowid: result.rows[0]?.id };
+        }
+      };
+    },
+    transaction(work) {
+      return transaction(async tx => work(createPgAdapter(tx)));
+    }
+  };
+  return adapter;
+}
 
 function getNotificationsData() {
   try {
@@ -56,7 +82,7 @@ function createToolHandlers(db) {
   return {
     list_exams: async ({ examId } = {}) => {
       const notif = getNotificationsData();
-      const testCounts = db.prepare(`
+      const testCounts = await db.prepare(`
         SELECT exam_id, COUNT(*) as count, SUM(questions_count) as total_questions
         FROM tests
         GROUP BY exam_id
@@ -105,11 +131,11 @@ function createToolHandlers(db) {
       }
       query += ' ORDER BY is_free DESC, id ASC';
 
-      const rows = db.prepare(query).all(...params);
+      const rows = await db.prepare(query).all(...params);
 
       let attemptsMap = {};
       if (userId) {
-        const attempts = db.prepare(`
+        const attempts = await db.prepare(`
           SELECT id as attempt_id, test_id, score, max_score, accuracy, percentile, estimated_air, completed_at
           FROM test_attempts
           WHERE user_id = ?
@@ -142,9 +168,9 @@ function createToolHandlers(db) {
 
     get_test_details: async ({ testId }) => {
       if (!testId) throw new Error('testId is required');
-      const row = db.prepare('SELECT * FROM tests WHERE id = ?').get(testId);
+      const row = await db.prepare('SELECT * FROM tests WHERE id = ?').get(testId);
       if (!row) {
-        throw new Error(`Test '${testId}' not found in SQLite database`);
+        throw new Error(`Test '${testId}' not found in PostgreSQL`);
       }
       const data = JSON.parse(row.test_data_json || '{}');
       const sections = (data.sections || []).map((sec, idx) => ({
@@ -181,9 +207,9 @@ function createToolHandlers(db) {
 
     get_test_questions: async ({ testId, section, limit = 10, offset = 0, search, includeSolutions = true }) => {
       if (!testId) throw new Error('testId is required');
-      const row = db.prepare('SELECT test_data_json, title FROM tests WHERE id = ?').get(testId);
+      const row = await db.prepare('SELECT test_data_json, title FROM tests WHERE id = ?').get(testId);
       if (!row) {
-        throw new Error(`Test '${testId}' not found in SQLite database`);
+        throw new Error(`Test '${testId}' not found in PostgreSQL`);
       }
       const data = JSON.parse(row.test_data_json || '{}');
       let allQuestions = [];
@@ -243,8 +269,9 @@ function createToolHandlers(db) {
     },
 
     list_candidates: async () => {
-      const users = db.prepare(`
-        SELECT u.*,
+      const users = await db.prepare(`
+        SELECT u.id, u.username, u.name, u.email, u.avatar, u.roll_no, u.target_exam, u.created_at,
+          u.coins, u.streak_days, u.last_quiz_date,
           (SELECT COUNT(*) FROM test_attempts a WHERE a.user_id = u.id) as attempts_count,
           (SELECT MAX(score) FROM test_attempts a WHERE a.user_id = u.id) as best_score
         FROM users u
@@ -267,27 +294,27 @@ function createToolHandlers(db) {
       const finalRollNo = rollNo || `OB-2026-${Math.floor(1000 + Math.random() * 9000)}`;
       const createdAt = new Date().toISOString();
 
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO users (id, username, name, email, avatar, roll_no, target_exam, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `).run(id, username, name.trim(), `${username}@oliveboard.test`, avatar, finalRollNo, targetExam, createdAt);
 
-      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+      const user = await db.prepare('SELECT id, username, name, email, avatar, roll_no, target_exam, created_at FROM users WHERE id = ?').get(id);
       return {
         created: true,
         candidate: user
       };
     },
 
-    submit_test_attempt: async ({ userId, testId, responses = {}, timeSpentSeconds = 1800 }) => {
+    submit_test_attempt: async ({ userId, testId, responses = {}, timeSpentSeconds = 1800, submissionKey }) => {
       if (!userId || !testId) {
         throw new Error('Both userId and testId are required');
       }
-      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+      const user = await db.prepare('SELECT id, username, name, email, avatar, roll_no, target_exam, coins, streak_days, last_quiz_date, created_at FROM users WHERE id = ?').get(userId);
       if (!user) {
         throw new Error(`Candidate '${userId}' not found`);
       }
-      const testRow = db.prepare('SELECT * FROM tests WHERE id = ?').get(testId);
+      const testRow = await db.prepare('SELECT * FROM tests WHERE id = ?').get(testId);
       if (!testRow) {
         throw new Error(`Test '${testId}' not found`);
       }
@@ -370,16 +397,22 @@ function createToolHandlers(db) {
       }));
 
       const attemptId = `att-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      const idempotencyKey = submissionKey || require('node:crypto').randomUUID();
       const now = new Date().toISOString();
 
-      db.prepare(`
+      const savedAttemptId = await db.transaction(async tx => {
+        const existing = await tx.prepare('SELECT id FROM test_attempts WHERE user_id = ? AND submission_key = ?').get(userId, idempotencyKey);
+        if (existing) return existing.id;
+        const inserted = await tx.prepare(`
         INSERT INTO test_attempts (
           id, user_id, test_id, test_title, total_questions,
           score, max_score, correct_count, wrong_count, unanswered_count,
           accuracy, percentile, estimated_air, time_spent_seconds,
-          section_breakdown_json, responses_json, started_at, completed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
+          section_breakdown_json, responses_json, started_at, completed_at, submission_key
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (user_id, submission_key) WHERE submission_key IS NOT NULL DO NOTHING
+        RETURNING id
+      `).get(
         attemptId,
         userId,
         testId,
@@ -397,11 +430,19 @@ function createToolHandlers(db) {
         JSON.stringify(sectionBreakdown),
         JSON.stringify(normalizedResponses),
         now,
-        now
+        now,
+        idempotencyKey
       );
+        if (inserted) {
+          await tx.prepare('DELETE FROM paused_attempts WHERE user_id = ? AND test_id = ?').run(userId, testId);
+          return inserted.id;
+        }
+        const retry = await tx.prepare('SELECT id FROM test_attempts WHERE user_id = ? AND submission_key = ?').get(userId, idempotencyKey);
+        return retry.id;
+      });
 
       return {
-        attemptId,
+        attemptId: savedAttemptId,
         candidate: { id: user.id, name: user.name, rollNo: user.roll_no },
         testId,
         testTitle: testRow.title,
@@ -419,10 +460,10 @@ function createToolHandlers(db) {
 
     get_candidate_analytics: async ({ userId }) => {
       if (!userId) throw new Error('userId is required');
-      const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+      const user = await db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
       if (!user) throw new Error(`Candidate '${userId}' not found`);
 
-      const attempts = db.prepare('SELECT * FROM test_attempts WHERE user_id = ? ORDER BY completed_at DESC').all(userId);
+      const attempts = await db.prepare('SELECT * FROM test_attempts WHERE user_id = ? ORDER BY completed_at DESC').all(userId);
       if (attempts.length === 0) {
         return {
           candidate: user,
@@ -492,10 +533,10 @@ function createToolHandlers(db) {
 
     get_attempt_scorecard: async ({ attemptId }) => {
       if (!attemptId) throw new Error('attemptId is required');
-      const row = db.prepare('SELECT * FROM test_attempts WHERE id = ?').get(attemptId);
+      const row = await db.prepare('SELECT * FROM test_attempts WHERE id = ?').get(attemptId);
       if (!row) throw new Error(`Attempt '${attemptId}' not found`);
 
-      const user = db.prepare('SELECT id, name, roll_no, target_exam FROM users WHERE id = ?').get(row.user_id);
+      const user = await db.prepare('SELECT id, name, roll_no, target_exam FROM users WHERE id = ?').get(row.user_id);
       return {
         attemptId: row.id,
         candidate: user || { id: row.user_id },
@@ -524,7 +565,7 @@ function createToolHandlers(db) {
 const MCP_TOOLS_CATALOG = [
   {
     name: 'list_exams',
-    description: 'List official Indian competitive exams (IBPS SO IT, SBI PO, IBPS PO, SSC CGL, RBI Grade B, RRB NTPC) with official stage patterns, sectional timings, marking schemes, and SQLite question counts.',
+    description: 'List official Indian competitive exams (IBPS SO IT, SBI PO, IBPS PO, SSC CGL, RBI Grade B, RRB NTPC) with official stage patterns, sectional timings, marking schemes, and PostgreSQL question counts.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -534,7 +575,7 @@ const MCP_TOOLS_CATALOG = [
   },
   {
     name: 'list_mock_tests',
-    description: 'Query all mock tests stored in the SQLite database with optional filtering by examId, test type, and isolated candidate userId.',
+    description: 'Query all mock tests stored in the PostgreSQL database with optional filtering by examId, test type, and isolated candidate userId.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -557,7 +598,7 @@ const MCP_TOOLS_CATALOG = [
   },
   {
     name: 'get_test_questions',
-    description: 'Fetch mock test questions, reading passages, options, correct answers, and official step-by-step explanations from SQLite.',
+    description: 'Fetch mock test questions, reading passages, options, correct answers, and official step-by-step explanations from PostgreSQL.',
     inputSchema: {
       type: 'object',
       required: ['testId'],
@@ -573,7 +614,7 @@ const MCP_TOOLS_CATALOG = [
   },
   {
     name: 'list_candidates',
-    description: 'List all isolated candidate profiles registered in SQLite with their roll numbers, target exams, and total attempts.',
+    description: 'List all isolated candidate profiles registered in PostgreSQL with their roll numbers, target exams, and total attempts.',
     inputSchema: {
       type: 'object',
       properties: {}
@@ -581,7 +622,7 @@ const MCP_TOOLS_CATALOG = [
   },
   {
     name: 'create_candidate',
-    description: 'Register a new candidate profile in SQLite for isolated mock test attempts and analytics.',
+    description: 'Register a new candidate profile in PostgreSQL for isolated mock test attempts and analytics.',
     inputSchema: {
       type: 'object',
       required: ['name'],
@@ -594,7 +635,7 @@ const MCP_TOOLS_CATALOG = [
   },
   {
     name: 'submit_test_attempt',
-    description: 'Evaluate and permanently save a candidate mock test attempt in SQLite using official marking (+1.00 / -0.25), calculating sectional breakdown, accuracy, percentile, and All India Rank.',
+    description: 'Evaluate and permanently save a candidate mock test attempt in PostgreSQL using official marking (+1.00 / -0.25), calculating sectional breakdown, accuracy, percentile, and All India Rank.',
     inputSchema: {
       type: 'object',
       required: ['userId', 'testId', 'responses'],
@@ -602,7 +643,8 @@ const MCP_TOOLS_CATALOG = [
         userId: { type: 'string', description: 'Candidate user ID (e.g., user-rahul)' },
         testId: { type: 'string', description: 'Test ID (e.g., ibps-so-it-mains-1 or sbi-po-pre-01)' },
         responses: { type: 'object', description: 'Map of questionId (or questionNumber) to selected option index (0-4) or letter (A-E)' },
-        timeSpentSeconds: { type: 'number', description: 'Total time spent in seconds (default 1800)' }
+        timeSpentSeconds: { type: 'number', description: 'Total time spent in seconds (default 1800)' },
+        submissionKey: { type: 'string', description: 'Stable key to make retries idempotent' }
       }
     }
   },
@@ -624,7 +666,7 @@ const MCP_TOOLS_CATALOG = [
       type: 'object',
       required: ['attemptId'],
       properties: {
-        attemptId: { type: 'string', description: 'Unique attempt ID from SQLite' }
+        attemptId: { type: 'string', description: 'Unique attempt ID from PostgreSQL' }
       }
     }
   }
@@ -639,19 +681,19 @@ const MCP_RESOURCES_CATALOG = [
   },
   {
     uri: 'oliveboard://tests/catalog',
-    name: 'SQLite Mock Test Catalog',
-    description: 'Live catalog of all seeded mock tests, question counts, marking schemes, and sectional summaries in SQLite.',
+    name: 'PostgreSQL Mock Test Catalog',
+    description: 'Live catalog of all seeded mock tests, question counts, marking schemes, and sectional summaries in PostgreSQL.',
     mimeType: 'application/json'
   },
   {
     uri: 'oliveboard://candidates/profiles',
     name: 'Registered Candidate Profiles',
-    description: 'All multi-user isolated candidate profiles and their attempt counts stored in SQLite.',
+    description: 'All multi-user isolated candidate profiles and their attempt counts stored in PostgreSQL.',
     mimeType: 'application/json'
   },
   {
     uri: 'oliveboard://database/schema',
-    name: 'SQLite Database Schema & Telemetry',
+    name: 'PostgreSQL Database Schema & Telemetry',
     description: 'Table definitions and live row counts for users, tests, and test_attempts.',
     mimeType: 'application/json'
   }
@@ -660,7 +702,7 @@ const MCP_RESOURCES_CATALOG = [
 const MCP_PROMPTS_CATALOG = [
   {
     name: 'analyze_candidate_weaknesses',
-    description: 'Generate a personalized exam study plan and weakness remediation strategy from a candidate\'s SQLite analytics.',
+    description: 'Generate a personalized exam study plan and weakness remediation strategy from a candidate\'s PostgreSQL analytics.',
     arguments: [
       { name: 'userId', description: 'Candidate user ID (e.g., user-rahul)', required: true }
     ]
@@ -678,33 +720,34 @@ const MCP_PROMPTS_CATALOG = [
 /**
  * Read an MCP Resource by URI
  */
-function readMcpResource(db, uri) {
+async function readMcpResource(db, uri) {
   if (uri === 'oliveboard://exams/notifications') {
     return getNotificationsData();
   }
   if (uri === 'oliveboard://tests/catalog') {
-    const tests = db.prepare(`
+    const tests = await db.prepare(`
       SELECT id, exam_id, exam_name, type, title, subtitle, marks, questions_count, duration_minutes, marks_per_correct, negative_marks, is_free, sections_summary_json
       FROM tests ORDER BY id ASC
     `).all();
     return { tests };
   }
   if (uri === 'oliveboard://candidates/profiles') {
-    const users = db.prepare(`
-      SELECT u.*, (SELECT COUNT(*) FROM test_attempts a WHERE a.user_id = u.id) as attempts_count
+    const users = await db.prepare(`
+      SELECT u.id, u.username, u.name, u.email, u.avatar, u.roll_no, u.target_exam, u.created_at,
+        u.coins, u.streak_days, u.last_quiz_date,
+        (SELECT COUNT(*) FROM test_attempts a WHERE a.user_id = u.id) as attempts_count
       FROM users u ORDER BY u.created_at ASC
     `).all();
     return { users };
   }
   if (uri === 'oliveboard://database/schema') {
-    const usersCount = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
-    const testsCount = db.prepare('SELECT COUNT(*) as c FROM tests').get().c;
-    const attemptsCount = db.prepare('SELECT COUNT(*) as c FROM test_attempts').get().c;
+    const usersCount = (await db.prepare('SELECT COUNT(*) as c FROM users').get()).c;
+    const testsCount = (await db.prepare('SELECT COUNT(*) as c FROM tests').get()).c;
+    const attemptsCount = (await db.prepare('SELECT COUNT(*) as c FROM test_attempts').get()).c;
     return {
-      engine: 'node:sqlite (WAL Mode)',
-      databasePath: DB_PATH,
+      engine: 'PostgreSQL (Neon)',
       counts: { users: usersCount, tests: testsCount, test_attempts: attemptsCount },
-      tables: ['users', 'tests', 'test_attempts']
+      tables: ['users', 'tests', 'test_attempts', 'paused_attempts', 'quiz_questions', 'candidate_quiz_history']
     };
   }
   throw new Error(`Unknown MCP resource URI: ${uri}`);
@@ -725,7 +768,7 @@ async function getMcpPrompt(db, name, args = {}) {
           role: 'user',
           content: {
             type: 'text',
-            text: `You are an expert Banking & Government Exam Mentor. Analyze the following real SQLite performance telemetry for candidate ${analytics.candidate.name} (Roll No: ${analytics.candidate.roll_no}, Target Exam: ${analytics.candidate.target_exam}) and provide a concrete 7-day sectional improvement plan:\n\n${JSON.stringify(analytics, null, 2)}`
+      text: `You are an expert Banking & Government Exam Mentor. Analyze the following PostgreSQL performance telemetry for candidate ${analytics.candidate.name} (Roll No: ${analytics.candidate.roll_no}, Target Exam: ${analytics.candidate.target_exam}) and provide a concrete 7-day sectional improvement plan:\n\n${JSON.stringify(analytics, null, 2)}`
           }
         }
       ]
@@ -758,7 +801,7 @@ async function getMcpPrompt(db, name, args = {}) {
 }
 
 /**
- * Build an official @modelcontextprotocol/sdk McpServer instance wired to SQLite
+ * Build an official @modelcontextprotocol/sdk McpServer instance wired to PostgreSQL
  */
 function createOliveboardMcpServer(db) {
   const server = new McpServer({
@@ -771,7 +814,7 @@ function createOliveboardMcpServer(db) {
   // Register Tools
   server.tool(
     'list_exams',
-    'List official Indian competitive exams with stage patterns, sectional timings, marking schemes, and SQLite question counts.',
+    'List official Indian competitive exams with stage patterns, sectional timings, marking schemes, and PostgreSQL question counts.',
     { examId: z.string().optional() },
     async (args) => ({
       content: [{ type: 'text', text: JSON.stringify(await handlers.list_exams(args), null, 2) }]
@@ -780,7 +823,7 @@ function createOliveboardMcpServer(db) {
 
   server.tool(
     'list_mock_tests',
-    'Query all mock tests stored in SQLite with optional filtering by examId, test type, and isolated candidate userId.',
+    'Query all mock tests stored in PostgreSQL with optional filtering by examId, test type, and isolated candidate userId.',
     {
       examId: z.string().optional(),
       type: z.string().optional(),
@@ -802,7 +845,7 @@ function createOliveboardMcpServer(db) {
 
   server.tool(
     'get_test_questions',
-    'Fetch mock test questions, reading passages, options, correct answers, and official explanations from SQLite.',
+    'Fetch mock test questions, reading passages, options, correct answers, and official explanations from PostgreSQL.',
     {
       testId: z.string(),
       section: z.string().optional(),
@@ -818,7 +861,7 @@ function createOliveboardMcpServer(db) {
 
   server.tool(
     'list_candidates',
-    'List all isolated candidate profiles registered in SQLite with their roll numbers, target exams, and total attempts.',
+    'List all isolated candidate profiles registered in PostgreSQL with their roll numbers, target exams, and total attempts.',
     {},
     async () => ({
       content: [{ type: 'text', text: JSON.stringify(await handlers.list_candidates(), null, 2) }]
@@ -827,7 +870,7 @@ function createOliveboardMcpServer(db) {
 
   server.tool(
     'create_candidate',
-    'Register a new candidate profile in SQLite for isolated mock test attempts and analytics.',
+    'Register a new candidate profile in PostgreSQL for isolated mock test attempts and analytics.',
     {
       name: z.string(),
       targetExam: z.string().optional(),
@@ -840,12 +883,13 @@ function createOliveboardMcpServer(db) {
 
   server.tool(
     'submit_test_attempt',
-    'Evaluate and permanently save a candidate mock test attempt in SQLite using official marking (+1.00 / -0.25).',
+    'Evaluate and permanently save a candidate mock test attempt in PostgreSQL using official marking (+1.00 / -0.25).',
     {
       userId: z.string(),
       testId: z.string(),
       responses: z.record(z.string(), z.any()),
-      timeSpentSeconds: z.number().optional()
+      timeSpentSeconds: z.number().optional(),
+      submissionKey: z.string().optional()
     },
     async (args) => ({
       content: [{ type: 'text', text: JSON.stringify(await handlers.submit_test_attempt(args), null, 2) }]
@@ -880,7 +924,7 @@ function createOliveboardMcpServer(db) {
         contents: [{
           uri: uri.href,
           mimeType: resMeta.mimeType,
-          text: JSON.stringify(readMcpResource(db, resMeta.uri), null, 2)
+          text: JSON.stringify(await readMcpResource(db, resMeta.uri), null, 2)
         }]
       })
     );
@@ -889,7 +933,7 @@ function createOliveboardMcpServer(db) {
   // Register Prompts
   server.prompt(
     'analyze_candidate_weaknesses',
-    'Generate a personalized exam study plan from a candidate\'s SQLite analytics.',
+    'Generate a personalized exam study plan from a candidate\'s PostgreSQL analytics.',
     { userId: z.string() },
     async (args) => getMcpPrompt(db, 'analyze_candidate_weaknesses', args)
   );
@@ -968,7 +1012,7 @@ async function handleMcpJsonRpc(db, body) {
         };
 
       case 'resources/read': {
-        const data = readMcpResource(db, params.uri);
+        const data = await readMcpResource(db, params.uri);
         return {
           jsonrpc,
           id,
@@ -1024,11 +1068,15 @@ async function handleMcpJsonRpc(db, body) {
  * Mount MCP endpoints onto the Express app (`/mcp`, `/mcp/sse`, `/mcp/messages`, `/api/mcp/*`)
  */
 function mountMcpRoutes(app, db) {
+  // The HTTP/SSE MCP surface has no candidate-bound auth contract today. Keep it
+  // completely absent in production until that contract is implemented.
+  if (process.env.NODE_ENV === 'production') return;
   const activeSseTransports = new Map();
+  const pgDb = createPgAdapter();
 
   // 1. MCP Server Discovery & Manifest Endpoint
-  app.get('/api/mcp/manifest', (req, res) => {
-    const schemaInfo = readMcpResource(db, 'oliveboard://database/schema');
+  app.get('/api/mcp/manifest', async (req, res) => {
+    const schemaInfo = await readMcpResource(pgDb, 'oliveboard://database/schema');
     res.json({
       success: true,
       server: {
@@ -1053,10 +1101,10 @@ function mountMcpRoutes(app, db) {
   app.post('/mcp', async (req, res) => {
     try {
       if (Array.isArray(req.body)) {
-        const results = await Promise.all(req.body.map(item => handleMcpJsonRpc(db, item)));
+        const results = await Promise.all(req.body.map(item => handleMcpJsonRpc(pgDb, item)));
         return res.json(results);
       }
-      const response = await handleMcpJsonRpc(db, req.body);
+      const response = await handleMcpJsonRpc(pgDb, req.body);
       res.json(response);
     } catch (err) {
       res.status(500).json({
@@ -1087,7 +1135,7 @@ function mountMcpRoutes(app, db) {
   // 3. Official MCP SDK SSE Transport (`/mcp/sse` + `/mcp/messages`)
   app.get('/mcp/sse', async (req, res) => {
     try {
-      const mcpServer = createOliveboardMcpServer(db);
+      const mcpServer = createOliveboardMcpServer(pgDb);
       const transport = new SSEServerTransport('/mcp/messages', res);
       activeSseTransports.set(transport.sessionId, { transport, mcpServer });
 
@@ -1120,14 +1168,18 @@ function mountMcpRoutes(app, db) {
 
 // If executed directly via CLI (`node mcp-server.js`), start StdioServerTransport
 if (require.main === module) {
-  const db = new DatabaseSync(DB_PATH);
-  db.exec('PRAGMA journal_mode = WAL;');
-  const server = createOliveboardMcpServer(db);
+  if (process.env.NODE_ENV === 'production') {
+    console.error('MCP stdio mode is disabled in production.');
+    process.exit(1);
+  }
+  const server = createOliveboardMcpServer(createPgAdapter());
   const transport = new StdioServerTransport();
   server.connect(transport).catch(err => {
-    console.error('Failed to start Oliveboard MCP Stdio Server:', err);
+    console.error('Failed to start Oliveboard MCP Stdio Server:', err.code || 'connection error');
     process.exit(1);
   });
+  process.once('SIGINT', () => closePool().finally(() => process.exit(0)));
+  process.once('SIGTERM', () => closePool().finally(() => process.exit(0)));
 }
 
 module.exports = {
@@ -1137,5 +1189,7 @@ module.exports = {
   mountMcpRoutes,
   MCP_TOOLS_CATALOG,
   MCP_RESOURCES_CATALOG,
-  MCP_PROMPTS_CATALOG
+  MCP_PROMPTS_CATALOG,
+  createPgAdapter,
+  pgSql
 };

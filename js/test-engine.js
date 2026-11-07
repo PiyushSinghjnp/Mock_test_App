@@ -24,6 +24,10 @@ class OliveboardTestEngine {
     this.userResponses = {};
     this.pendingSelectedIndex = null;
     this.timerInterval = null;
+    this.autosaveInterval = null;
+    this.autosaveDirty = false;
+    this.autosaveInFlight = false;
+    this.autosaveIndicator = null;
     this.completedSections = new Set();
     this.bookmarkedQuestions = {};
     this.isSectionAdvanceConfirm = false;
@@ -128,6 +132,13 @@ class OliveboardTestEngine {
     // Palette & Legend
     this.paletteMainScrollEl = document.getElementById('question-main-pallette');
     this.paletteGridEl = document.getElementById('palette-numbers-grid');
+    this.mobileTimerEl = document.getElementById('mobile-exam-timer');
+    this.mobilePaneSwitch = document.getElementById('mobile-pane-switch');
+    this.btnMobilePassage = document.getElementById('btn-mobile-passage');
+    this.btnMobileQuestion = document.getElementById('btn-mobile-question');
+    this.btnMobilePalette = document.getElementById('btn-mobile-palette');
+    this.btnMobilePaletteClose = document.getElementById('btn-mobile-palette-close');
+    this.paletteDrawerBackdrop = document.getElementById('palette-drawer-backdrop');
 
     // Pause Dialog (#calert & #dummy-black - Spec 4.1)
     this.btnPauseTest = document.getElementById('btn-pause-test');
@@ -333,6 +344,22 @@ class OliveboardTestEngine {
       }
     });
 
+    if (this.btnMobilePassage) {
+      this.btnMobilePassage.onclick = () => this.setMobileQuestionPane('passage');
+    }
+    if (this.btnMobileQuestion) {
+      this.btnMobileQuestion.onclick = () => this.setMobileQuestionPane('question');
+    }
+    if (this.btnMobilePalette) {
+      this.btnMobilePalette.onclick = () => this.openMobilePalette();
+    }
+    if (this.btnMobilePaletteClose) {
+      this.btnMobilePaletteClose.onclick = () => this.closeMobilePalette();
+    }
+    if (this.paletteDrawerBackdrop) {
+      this.paletteDrawerBackdrop.onclick = () => this.closeMobilePalette();
+    }
+
     // Question Bar Language Dropdown Toggle
     const btnLangDrop = document.getElementById('dropdownMenu2');
     const langMenu = document.getElementById('lang-dropdown-menu');
@@ -363,6 +390,14 @@ class OliveboardTestEngine {
         const btnToggle = document.getElementById('btn-screen-toggle');
         if (!document.fullscreenElement && btnToggle) {
           btnToggle.textContent = 'Enter Full Screen';
+        }
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          const activeEngine = window.currentTestEngine;
+          if (activeEngine?.rightContainerPost?.classList.contains('mobile-drawer-open')) {
+            activeEngine.closeMobilePalette();
+          }
         }
       });
     }
@@ -405,6 +440,31 @@ class OliveboardTestEngine {
     if (this.questionOuterPane) this.questionOuterPane.classList.remove('expanded-full-lower');
     const btnExpand = document.getElementById('btn-expand-sidebar');
     if (btnExpand) btnExpand.style.display = 'none';
+  }
+
+  setMobileQuestionPane(pane) {
+    const showPassage = pane === 'passage';
+    this.twoSidedWrapper?.classList.toggle('mobile-show-passage', showPassage);
+    this.btnMobilePassage?.classList.toggle('active', showPassage);
+    this.btnMobileQuestion?.classList.toggle('active', !showPassage);
+    this.btnMobilePassage?.setAttribute('aria-pressed', String(showPassage));
+    this.btnMobileQuestion?.setAttribute('aria-pressed', String(!showPassage));
+  }
+
+  openMobilePalette() {
+    if (!window.matchMedia('(max-width: 960px)').matches) return;
+    this.rightContainerPost?.classList.add('mobile-drawer-open');
+    this.paletteDrawerBackdrop?.classList.add('active');
+    this.btnMobilePalette?.setAttribute('aria-expanded', 'true');
+    this.btnMobilePaletteClose?.focus();
+  }
+
+  closeMobilePalette() {
+    const wasOpen = this.rightContainerPost?.classList.contains('mobile-drawer-open');
+    this.rightContainerPost?.classList.remove('mobile-drawer-open');
+    this.paletteDrawerBackdrop?.classList.remove('active');
+    this.btnMobilePalette?.setAttribute('aria-expanded', 'false');
+    if (wasOpen) this.btnMobilePalette?.focus();
   }
 
   /**
@@ -559,7 +619,26 @@ class OliveboardTestEngine {
    * Transition from #left-container/#right-container to #left-container-post/#right-container-post
    * Exact 1:1 with $('#start-test').click() in oliveboard_live_player.html lines 560-582
    */
-  startActiveExam(isResume = false) {
+  async startActiveExam(isResume = false) {
+    try {
+      const session = await window.obDataManager.startAttemptSession(this.testData.id);
+      const timing = session?.timing;
+      if (!timing || timing.state !== 'active') throw new Error(session?.error || 'The test session is unavailable.');
+      this.remainingSeconds = timing.remainingSeconds;
+      this.sectionRemainingSeconds = timing.sectionRemainingSeconds;
+      this.currentSectionIndex = timing.currentSectionIndex;
+      this.completedSections = new Set((timing.completedSections || []).map(Number));
+      this.serverTimingRevision = Number(timing.revision) || 0;
+    } catch (error) {
+      this._setAutosaveStatus('Unable to verify test timer');
+      console.error('Unable to start authoritative test session:', error.message);
+      if (/expired/i.test(error.message) && this.testData?.id) {
+        this.isExamActive = true;
+        this.startTime = Date.now();
+        await this.submitTest(); // Server accepts only the last snapshot saved before the trusted deadline.
+      }
+      return;
+    }
     this.isExamActive = true;
     this.isConfirmPaneOpen = false;
     this.isUtilityViewOpen = false;
@@ -568,6 +647,9 @@ class OliveboardTestEngine {
       this.sendDataTimeoutId = null;
     }
     this.startTime = Date.now();
+    this._setAutosaveStatus('Saved');
+    clearInterval(this.autosaveInterval);
+    this.autosaveInterval = setInterval(() => this._autosavePausedState(), 30_000);
     this.currentQuestionEntryTime = null;
 
     if (this.leftContainerPre) this.leftContainerPre.style.display = 'none';
@@ -577,7 +659,7 @@ class OliveboardTestEngine {
     if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
 
     if (this.leftContainerPost) {
-      this.leftContainerPost.style.setProperty('width', '80%', 'important');
+      this.leftContainerPost.style.removeProperty('width');
       this.leftContainerPost.style.display = 'block';
     }
     if (this.rightContainerPost) {
@@ -585,6 +667,10 @@ class OliveboardTestEngine {
       this.rightContainerPost.style.visibility = 'visible';
     }
     this.expandPaletteSidebar();
+
+    // The mobile instruction pane scrolls to the declaration/start control.
+    // Always return the exam workspace to its top before rendering question 1.
+    if (this.mainContainer) this.mainContainer.scrollTop = 0;
 
     // Ensure question view is restored (not utility views)
     this.getAllBack();
@@ -596,6 +682,13 @@ class OliveboardTestEngine {
     this.renderSectionTabs();
     this.loadQuestion(this.currentSectionIndex, this.currentQuestionIndex);
     this.renderPalette();
+    this._backupPausedStateLocal();
+    this._autosavePausedState(true);
+
+    if (this.btnStartTest) this.btnStartTest.blur();
+    requestAnimationFrame(() => {
+      if (this.mainContainer) this.mainContainer.scrollTop = 0;
+    });
   }
 
   /**
@@ -651,6 +744,7 @@ class OliveboardTestEngine {
 
       this.sectionRemainingSeconds--;
       this.remainingSeconds--;
+      this.autosaveDirty = true;
       this.updateTimerDisplay();
 
       if (this.sectionRemainingSeconds <= 0) {
@@ -658,6 +752,66 @@ class OliveboardTestEngine {
         this.handleSectionTimeout();
       }
     }, 1000);
+  }
+
+  _setAutosaveStatus(status) {
+    if (!this.autosaveIndicator) {
+      this.autosaveIndicator = document.createElement('span');
+      this.autosaveIndicator.id = 'test-autosave-status';
+      this.autosaveIndicator.setAttribute('role', 'status');
+      Object.assign(this.autosaveIndicator.style, { position: 'fixed', right: '12px', bottom: '12px', zIndex: '12000',
+        padding: '5px 9px', borderRadius: '12px', background: '#fff', color: '#415267', fontSize: '12px', boxShadow: '0 1px 5px #0002' });
+      document.body.appendChild(this.autosaveIndicator);
+    }
+    this.autosaveIndicator.textContent = status;
+    this.autosaveIndicator.dataset.state = status.toLowerCase();
+  }
+
+  _backupPausedStateLocal() {
+    if (!window.obDataManager || !this.testData?.id) return;
+    window.obDataManager.backupPausedAttemptLocal({ testId: this.testData.id, currentSectionIndex: this.currentSectionIndex,
+      currentQuestionIndex: this.currentQuestionIndex, sectionRemainingSeconds: this.sectionRemainingSeconds,
+      remainingSeconds: this.remainingSeconds, completedSections: Array.from(this.completedSections),
+      responses: this.userResponses, bookmarkedQuestions: this.bookmarkedQuestions });
+  }
+
+  async _autosavePausedState(force = false) {
+    if (!window.obDataManager || !this.testData?.id || this.autosaveInFlight || (!force && !this.autosaveDirty)) return false;
+    this._backupPausedStateLocal();
+    this.autosaveInFlight = true;
+    this.autosaveDirty = false;
+    this._setAutosaveStatus('Saving…');
+    try {
+      await window.obDataManager.savePausedAttempt({ testId: this.testData.id, currentSectionIndex: this.currentSectionIndex,
+        currentQuestionIndex: this.currentQuestionIndex, sectionRemainingSeconds: this.sectionRemainingSeconds,
+        remainingSeconds: this.remainingSeconds, completedSections: Array.from(this.completedSections),
+        responses: this.userResponses, bookmarkedQuestions: this.bookmarkedQuestions });
+      const serverTiming = window.obDataManager.lastAttemptTiming;
+      if (serverTiming) {
+        this.remainingSeconds = serverTiming.remainingSeconds;
+        this.sectionRemainingSeconds = serverTiming.sectionRemainingSeconds;
+        this.currentSectionIndex = serverTiming.currentSectionIndex;
+        this.completedSections = new Set(serverTiming.completedSections || []);
+        this.serverTimingRevision = Number(serverTiming.revision) || this.serverTimingRevision;
+        this.updateTimerDisplay();
+        if (serverTiming.state === 'expired' || this.remainingSeconds <= 0) {
+          clearInterval(this.timerInterval);
+          this.handleSectionTimeout();
+        } else if (this.sectionRemainingSeconds <= 0) {
+          clearInterval(this.timerInterval);
+          this.handleSectionTimeout();
+        }
+      }
+      const saved = window.obDataManager.lastPausedSaveSucceeded !== false;
+      if (!saved) this.autosaveDirty = true;
+      this._setAutosaveStatus(saved ? 'Saved' : 'Unsaved — retrying');
+      return saved;
+    } catch {
+      this._setAutosaveStatus('Unsaved — retrying');
+      return false;
+    } finally {
+      this.autosaveInFlight = false;
+    }
   }
 
   updateTimerDisplay() {
@@ -682,6 +836,11 @@ class OliveboardTestEngine {
     if (this.secsEl) this.secsEl.textContent = sStr;
     if (this.timerDisplayEl) {
       this.timerDisplayEl.textContent = `${hStr}:${String(mins).padStart(2, '0')}:${sStr}`;
+    }
+    if (this.mobileTimerEl) {
+      this.mobileTimerEl.textContent = hours > 0
+        ? `${hStr}:${String(mins).padStart(2, '0')}:${sStr}`
+        : `${mStr}:${sStr}`;
     }
 
     const secNameEl = document.getElementById('exam-sec-timer-name');
@@ -720,6 +879,8 @@ class OliveboardTestEngine {
       this._recordCurrentQuestionTime();
       this.currentQuestionEntryTime = null;
       this.completedSections.add(this.currentSectionIndex);
+      this.autosaveDirty = true;
+      this._autosavePausedState(true);
       this.switchSection(this.currentSectionIndex + 1);
     } else {
       this.submitTest();
@@ -729,17 +890,46 @@ class OliveboardTestEngine {
   /**
    * Pause Test (#calert & #dummy-black - Spec 4.1 & oliveboard_live_player.html lines 1231-1288)
    */
-  pauseTest() {
+  async pauseTest() {
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = null;
     this.isPaused = true;
+    try {
+      const timing = await window.obDataManager.pauseAttemptSession(this.testData.id, {
+        currentQuestionIndex: this.currentQuestionIndex, lastQuestionNumber: this.currentQuestionIndex + 1,
+        responses: this.userResponses, bookmarkedQuestions: this.bookmarkedQuestions,
+        revision: (window.obDataManager.pauseRevisions.get(this.testData.id) || 0) + 1
+      });
+      if (timing?.timing) {
+        this.remainingSeconds = timing.timing.remainingSeconds;
+        this.sectionRemainingSeconds = timing.timing.sectionRemainingSeconds;
+        this.updateTimerDisplay();
+      }
+      clearInterval(this.timerInterval);
+    } catch (error) {
+      this.isPaused = false;
+      console.error('Could not pause test session:', error.message);
+      return;
+    }
     if (this.questionInnerPane) this.questionInnerPane.style.opacity = '0.1';
     if (this.mainContainer) this.mainContainer.style.opacity = '0.3';
     if (this.pauseModal) this.pauseModal.style.display = 'block';
     if (this.dummyBlack) this.dummyBlack.style.display = 'block';
   }
 
-  resumeTest() {
+  async resumeTest() {
+    try {
+      const data = await window.obDataManager.resumeAttemptSession(this.testData.id);
+      if (!data?.timing || data.timing.state !== 'active') throw new Error(data?.error || 'The test session has expired.');
+      this.remainingSeconds = data.timing.remainingSeconds;
+      this.sectionRemainingSeconds = data.timing.sectionRemainingSeconds;
+      this.currentSectionIndex = data.timing.currentSectionIndex;
+      this.completedSections = new Set(data.timing.completedSections || []);
+    } catch (error) {
+      this._setAutosaveStatus('Test timer expired');
+      console.error('Could not resume test session:', error.message);
+      return;
+    }
     this.isPaused = false;
     if (this.isExamActive && !this.isConfirmPaneOpen && !this.isUtilityViewOpen) {
       this.currentQuestionEntryTime = Date.now();
@@ -748,6 +938,7 @@ class OliveboardTestEngine {
     if (this.mainContainer) this.mainContainer.style.opacity = '1';
     if (this.pauseModal) this.pauseModal.style.display = 'none';
     if (this.dummyBlack) this.dummyBlack.style.display = 'none';
+    this.startTimer();
   }
 
   async savePausedStateAndExit() {
@@ -760,18 +951,13 @@ class OliveboardTestEngine {
     if (this.pauseModal) this.pauseModal.style.display = 'none';
     if (this.dummyBlack) this.dummyBlack.style.display = 'none';
 
-    if (window.obDataManager) {
-      await window.obDataManager.savePausedAttempt({
-        testId: this.testData.id,
-        currentSectionIndex: this.currentSectionIndex,
-        currentQuestionIndex: this.currentQuestionIndex,
-        sectionRemainingSeconds: this.sectionRemainingSeconds,
-        remainingSeconds: this.remainingSeconds,
-        completedSections: Array.from(this.completedSections),
-        responses: this.userResponses,
-        bookmarkedQuestions: this.bookmarkedQuestions
-      });
-    }
+    await this._autosavePausedState(true);
+    try {
+      await window.obDataManager.pauseAttemptSession(this.testData.id, { currentQuestionIndex: this.currentQuestionIndex,
+        lastQuestionNumber: this.currentQuestionIndex + 1, responses: this.userResponses, bookmarkedQuestions: this.bookmarkedQuestions,
+        revision: (window.obDataManager.pauseRevisions.get(this.testData.id) || 0) + 1 });
+    } catch (error) { console.warn('Pause was not confirmed; server timer continues during disconnect:', error.message); }
+    clearInterval(this.autosaveInterval);
 
     this.exitTest();
   }
@@ -892,8 +1078,23 @@ class OliveboardTestEngine {
     });
   }
 
-  switchSection(sectionIndex, resetSectionTimer = true) {
+  async switchSection(sectionIndex, resetSectionTimer = true) {
     if (this.completedSections.has(sectionIndex)) return;
+    try {
+      const data = await window.obDataManager.transitionAttemptSection(this.testData.id, sectionIndex, {
+        currentQuestionIndex: this.currentQuestionIndex, lastQuestionNumber: this.currentQuestionIndex + 1,
+        responses: this.userResponses, bookmarkedQuestions: this.bookmarkedQuestions,
+        revision: (window.obDataManager.pauseRevisions.get(this.testData.id) || 0) + 1
+      });
+      if (!data?.timing || data.timing.state !== 'active') throw new Error(data?.error || 'The test section could not be changed.');
+      this.remainingSeconds = data.timing.remainingSeconds;
+      this.sectionRemainingSeconds = data.timing.sectionRemainingSeconds;
+      this.currentSectionIndex = data.timing.currentSectionIndex;
+      this.completedSections = new Set(data.timing.completedSections || []);
+    } catch (error) {
+      console.error('Section transition rejected by server:', error.message);
+      return;
+    }
     // Record time spent on the current section's active question BEFORE changing currentSectionIndex
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = null;
@@ -980,8 +1181,8 @@ class OliveboardTestEngine {
       this.marksInfoEl.innerHTML = `Marks for correct answer: <strong class="pos">+${posMarks}</strong> | Negative mark: <strong class="neg">-${negMarks}</strong>`;
     }
 
-    const rawPassage = question.passageHTML || question.passage_text || '';
-    const rawQuestion = question.questionHTML || question.question_text || '';
+    const rawPassage = question.passageHTML || question.passage_text || question.passage || '';
+    const rawQuestion = question.questionHTML || question.question_text || question.question || question.text || '';
 
     const hasPassage = Boolean(
       (question.hasPassage && rawPassage && rawPassage.trim().length > 10) ||
@@ -990,6 +1191,9 @@ class OliveboardTestEngine {
 
     const formattedPassage = this._formatContentHTML(rawPassage);
     const formattedQuestion = this._formatContentHTML(rawQuestion);
+
+    if (this.mobilePaneSwitch) this.mobilePaneSwitch.hidden = !hasPassage;
+    this.setMobileQuestionPane('question');
 
     const imgs = question.imageUrls || question.image_urls || [];
     let imageHtml = '';
@@ -1061,7 +1265,7 @@ class OliveboardTestEngine {
 
   _formatContentHTML(html) {
     if (!html) return '';
-    let formatted = String(html).trim();
+    let formatted = this._normalizeDisplayText(html).trim();
     formatted = formatted.replace(/src=["']oliveimg\/([^"']+)["']/g, 'src="/oliveimg/$1"');
     formatted = formatted.replace(/src=["'](?:\.\/)?images\/([^"']+)["']/g, 'src="/images/$1"');
     if (!/<(?:p|table|div|ol|ul|h[1-6]|tbody|blockquote)/i.test(formatted)) {
@@ -1092,7 +1296,7 @@ class OliveboardTestEngine {
         ${optionsList.map((opt, idx) => {
           const isSelected = selectedIndex === idx;
           const letterStr = (opt.letter || String.fromCharCode(65 + idx)).toLowerCase();
-          let optHTML = opt.html !== undefined ? opt.html : (opt.text || '');
+          let optHTML = this._normalizeDisplayText(opt.html !== undefined ? opt.html : (opt.text || ''));
 
           if (typeof optHTML === 'string') {
             optHTML = optHTML.replace(/src=["']oliveimg\/([^"']+)["']/g, 'src="/oliveimg/$1"');
@@ -1101,7 +1305,7 @@ class OliveboardTestEngine {
           return `
             <tr class="vtop ${isSelected ? 'selected' : ''}" data-opt-idx="${idx}">
               <td style="width: 25px;">
-                <input type="radio" name="opt_choice_${question.id}" value="${idx}" id="radio_${question.id}_${idx}" ${isSelected ? 'checked' : ''} style="cursor: pointer;">
+                <input type="radio" name="opt_choice_${question.id}" value="${idx}" id="radio_${question.id}_${idx}" aria-label="Option ${letterStr.toUpperCase()}" ${isSelected ? 'checked' : ''} style="cursor: pointer;">
               </td>
               <td style="width: 25px;">
                 <span class="optcl">${letterStr}) </span>
@@ -1114,6 +1318,22 @@ class OliveboardTestEngine {
         }).join('')}
       </tbody>
     `;
+  }
+
+  _normalizeDisplayText(value) {
+    return String(value || '')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+      .replace(/ï¿½|Ã¯Â¿Â½|�/g, '')
+      .replace(/â€¢/g, '•')
+      .replace(/â€“/g, '–')
+      .replace(/â€”/g, '—')
+      .replace(/â€™/g, '’')
+      .replace(/â€œ/g, '“')
+      .replace(/â€/g, '”')
+      .replace(/âœ“/g, '✓')
+      .replace(/âœ•/g, '✕')
+      .replace(/Â·/g, '·')
+      .replace(/Â/g, '');
   }
 
   /**
@@ -1140,6 +1360,8 @@ class OliveboardTestEngine {
   toggleOrSelectOption(questionId, optionIndex) {
     const response = this.userResponses[questionId];
     if (!response) return;
+    this.autosaveDirty = true;
+    this._backupPausedStateLocal();
 
     if (this.pendingSelectedIndex === optionIndex) {
       // Deselect already-chosen option (clearme behavior in oliveboard_live_player.html lines 1106-1118)
@@ -1188,6 +1410,8 @@ class OliveboardTestEngine {
     const response = this.userResponses[question.id];
 
     response.selectedIndex = this.pendingSelectedIndex;
+    this.autosaveDirty = true;
+    this._backupPausedStateLocal();
     response.draftSelectedIndex = this.pendingSelectedIndex;
     if (response.selectedIndex !== null && response.selectedIndex !== undefined) {
       response.status = 'stic-answered';
@@ -1218,6 +1442,8 @@ class OliveboardTestEngine {
     const response = this.userResponses[question.id];
 
     response.selectedIndex = this.pendingSelectedIndex;
+    this.autosaveDirty = true;
+    this._backupPausedStateLocal();
     response.draftSelectedIndex = this.pendingSelectedIndex;
     if (response.selectedIndex !== null && response.selectedIndex !== undefined) {
       response.status = 'stic-answered-marked';
@@ -1305,8 +1531,8 @@ class OliveboardTestEngine {
       let lastPassageSnippet = '';
       const itemsHtml = curSec.questions.map((q, idx) => {
         const qNum = q.localIndex || (idx + 1);
-        const qText = this._formatContentHTML(q.questionHTML || q.question_text || '');
-        const rawPass = (q.passageHTML || q.passage_text || '').trim();
+        const qText = this._formatContentHTML(q.questionHTML || q.question_text || q.question || q.text || '');
+        const rawPass = (q.passageHTML || q.passage_text || q.passage || '').trim();
         let passageHeader = '';
         if (rawPass.length > 25) {
           const snippetKey = rawPass.slice(0, 120);
@@ -1436,6 +1662,7 @@ class OliveboardTestEngine {
     if (!section) return;
     const question = section.questions[this.currentQuestionIndex];
     if (!question) return;
+    this.autosaveDirty = true;
 
     if (window.obDataManager && typeof window.obDataManager.toggleBookmark === 'function') {
       const nowSaved = window.obDataManager.toggleBookmark(question, this.testData, section.title);
@@ -1461,6 +1688,7 @@ class OliveboardTestEngine {
 
     this.updateBookmarkButtonState(question.id);
     this.renderPalette();
+    this._backupPausedStateLocal();
   }
 
   updateBookmarkButtonState(questionId) {
@@ -1528,6 +1756,7 @@ class OliveboardTestEngine {
         e.preventDefault();
         const qIdx = parseInt(btn.dataset.qIdx, 10);
         this.loadQuestion(this.currentSectionIndex, qIdx);
+        this.closeMobilePalette();
       });
     });
 
@@ -1848,9 +2077,9 @@ class OliveboardTestEngine {
       }
     });
 
-    const maxScore = this.testData.marks || Math.round(computedMaxScore) || 100;
-    const accuracy = correct + wrong > 0 ? ((correct / (correct + wrong)) * 100).toFixed(1) : '0.0';
-    const rankData = this._computeRankAndPercentile({
+    let maxScore = this.testData.marks || Math.round(computedMaxScore) || 100;
+    let accuracy = correct + wrong > 0 ? ((correct / (correct + wrong)) * 100).toFixed(1) : '0.0';
+    let rankData = this._computeRankAndPercentile({
       testId: this.testData.id,
       testTitle: this.testData.title,
       testType: this.testData.type,
@@ -1863,11 +2092,11 @@ class OliveboardTestEngine {
       accuracy: parseFloat(accuracy),
       activeUsers: this.testData.activeUsers
     });
-    const percentile = rankData.percentile.toFixed(1);
-    const estimatedAIR = rankData.estimatedAIR;
-    const totalCandidates = rankData.totalCandidates;
+    let percentile = rankData.percentile.toFixed(1);
+    let estimatedAIR = rankData.estimatedAIR;
+    let totalCandidates = rankData.totalCandidates;
 
-    const sectionBreakdownArr = Object.entries(sectionBreakdown).map(([name, data]) => ({
+    let sectionBreakdownArr = Object.entries(sectionBreakdown).map(([name, data]) => ({
       sectionName: name,
       ...data,
       accuracy: data.correct + data.wrong > 0 ? ((data.correct / (data.correct + data.wrong)) * 100).toFixed(1) : '0'
@@ -1902,6 +2131,30 @@ class OliveboardTestEngine {
     let savedAttempt = null;
     if (window.obDataManager) {
       savedAttempt = await window.obDataManager.saveResult(resultObj);
+      if (savedAttempt && savedAttempt.authoritative && savedAttempt.score) {
+        totalScore = Number(savedAttempt.score.netScore ?? savedAttempt.score.total ?? 0);
+        correct = Number(savedAttempt.score.correct) || 0;
+        wrong = Number(savedAttempt.score.wrong) || 0;
+        unanswered = Number(savedAttempt.score.unanswered) || 0;
+        maxScore = Number(savedAttempt.score.maxScore) || maxScore;
+        accuracy = Number(savedAttempt.score.accuracy || 0).toFixed(1);
+        percentile = Number(savedAttempt.score.percentile || 0).toFixed(1);
+        estimatedAIR = Number(savedAttempt.score.estimatedAIR) || estimatedAIR;
+        rankData = { ...rankData, percentile: Number(percentile), estimatedAIR };
+        sectionBreakdownArr = savedAttempt.sectionBreakdown || sectionBreakdownArr;
+        resultObj.score = savedAttempt.score;
+        resultObj.sectionBreakdown = sectionBreakdownArr;
+        resultObj.responses = savedAttempt.responses || resultObj.responses;
+        if (savedAttempt.testData) this.testData = savedAttempt.testData;
+      }
+      if (savedAttempt && savedAttempt.streakReward && window.appController) {
+        const rew = savedAttempt.streakReward;
+        window.appController.showToast(`⚡ Quiz Complete! +🎯 ${rew.coinsAwarded} Coins Earned! Streak: 🔥 ${rew.streakDays} Day${rew.streakDays > 1 ? 's' : ''}`, 'success');
+        const coinsEl = document.getElementById('header-user-coins');
+        if (coinsEl) coinsEl.textContent = rew.totalCoins;
+        const streakEl = document.getElementById('header-user-streak');
+        if (streakEl) streakEl.textContent = `${rew.streakDays}d`;
+      }
     }
 
     const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
@@ -1916,6 +2169,7 @@ class OliveboardTestEngine {
     setEl('metric-time', this._formatTime(totalTimeSeconds));
 
     this._renderScorecardSectionalTable(sectionBreakdownArr, totalTimeSeconds);
+    this._renderScorecardInsights(sectionBreakdownArr);
     this._renderScorecardTopicBreakdown(sectionBreakdownArr, allQuestions);
     this._renderTopperComparisonModule(totalScore, maxScore, parseFloat(accuracy), totalTimeSeconds, allQuestions.length, sectionBreakdownArr, rankData);
 
@@ -1947,6 +2201,14 @@ class OliveboardTestEngine {
         if (window.openOliveboardSolutions) {
           window.openOliveboardSolutions(resultObj, this.testData);
         }
+      };
+    }
+    const btnReviewMistakes = document.getElementById('btn-scorecard-review-mistakes');
+    if (btnReviewMistakes) {
+      btnReviewMistakes.onclick = () => {
+        this.scorecardOverlay?.classList.remove('active');
+        window.openOliveboardSolutions?.(resultObj, this.testData);
+        setTimeout(() => document.getElementById('btn-review-mistakes')?.click(), 0);
       };
     }
 
@@ -2070,6 +2332,7 @@ class OliveboardTestEngine {
       });
     }
     this._renderScorecardSectionalTable(breakdown, timeSpent);
+    this._renderScorecardInsights(breakdown);
 
     const breakdownEl = document.getElementById('scorecard-section-breakdown');
     if (breakdownEl) {
@@ -2112,6 +2375,14 @@ class OliveboardTestEngine {
         }
       };
     }
+    const btnReviewMistakes = document.getElementById('btn-scorecard-review-mistakes');
+    if (btnReviewMistakes) {
+      btnReviewMistakes.onclick = () => {
+        this.scorecardOverlay?.classList.remove('active');
+        window.openOliveboardSolutions?.(attempt, testData);
+        setTimeout(() => document.getElementById('btn-review-mistakes')?.click(), 0);
+      };
+    }
   }
 
   _renderScorecardSectionalTable(sectionBreakdownArr, totalTimeSeconds) {
@@ -2149,6 +2420,17 @@ class OliveboardTestEngine {
         </tr>
       `;
     }).join('');
+  }
+
+  _renderScorecardInsights(sectionBreakdownArr) {
+    if (!Array.isArray(sectionBreakdownArr) || sectionBreakdownArr.length === 0) return;
+    const sorted = [...sectionBreakdownArr].sort((a, b) => Number(b.accuracy || 0) - Number(a.accuracy || 0));
+    const strongest = sorted[0];
+    const weakest = sorted[sorted.length - 1];
+    const strengthEl = document.getElementById('scorecard-strength');
+    const weaknessEl = document.getElementById('scorecard-weakness');
+    if (strengthEl) strengthEl.textContent = `${strongest.sectionName} · ${Number(strongest.accuracy || 0).toFixed(1)}% accuracy`;
+    if (weaknessEl) weaknessEl.textContent = `${weakest.sectionName} · ${Number(weakest.accuracy || 0).toFixed(1)}% accuracy`;
   }
 
   _renderScorecardTopicBreakdown(sectionBreakdownArr, allQuestions) {
@@ -2383,6 +2665,7 @@ class OliveboardTestEngine {
 
   _doExitTest(skipRefresh = false) {
     clearInterval(this.timerInterval);
+    clearInterval(this.autosaveInterval);
     this.isExamActive = false;
     this.isPaused = false;
     if (this.questionInnerPane) this.questionInnerPane.style.opacity = '1';

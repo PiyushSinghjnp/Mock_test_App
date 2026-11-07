@@ -15,18 +15,72 @@ class OBTestDataManager {
     this.STORAGE_KEY_ACTIVE_USER = 'ob_active_user_id';
     this.activeUser = null;
     this.users = [];
+    this.backendAvailable = true;
+    this.lastBackendError = null;
+    this.csrfToken = '';
+    this.pauseRevisions = new Map();
+  }
+
+  apiFetch(path, options = {}) {
+    const headers = new Headers(options.headers || {});
+    const method = String(options.method || 'GET').toUpperCase();
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && this.csrfToken) {
+      headers.set('X-CSRF-Token', this.csrfToken);
+    }
+    return fetch(`${this.API_BASE}${path}`, { ...options, headers, credentials: 'same-origin' });
+  }
+
+  async requestJson(path, options = {}) {
+    const controller = new AbortController();
+    const timeoutMs = Number(options.timeoutMs) || 8000;
+    const requestOptions = { ...options };
+    delete requestOptions.timeoutMs;
+    if (!requestOptions.signal) requestOptions.signal = controller.signal;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await this.apiFetch(path, requestOptions);
+      const raw = await response.text();
+      let data = null;
+
+      if (raw.trim()) {
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          throw new Error(`The server returned an invalid response (${response.status}).`);
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(data?.error || `Request failed (${response.status}).`);
+      }
+
+      this.backendAvailable = true;
+      this.lastBackendError = null;
+      return data || {};
+    } catch (error) {
+      this.backendAvailable = false;
+      this.lastBackendError = error?.name === 'AbortError'
+        ? new Error('The server took too long to respond.')
+        : (error instanceof Error ? error : new Error('Unable to reach the server.'));
+      throw this.lastBackendError;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   async init() {
-    await this.loadUsers();
-    // Retrieve saved user ID from localStorage ONLY if authenticated with token
-    const savedUserId = localStorage.getItem(this.STORAGE_KEY_ACTIVE_USER);
-    const authToken = localStorage.getItem('ob_auth_token');
-
-    if (savedUserId && authToken && this.users.find(u => u.id === savedUserId)) {
-      this.activeUser = this.users.find(u => u.id === savedUserId);
-    } else {
+    try {
+      const session = await this.requestJson('/api/auth/me');
+      this.csrfToken = session.csrfToken || '';
+      this.activeUser = session.authenticated ? session.user : null;
+      this.users = this.activeUser ? [this.activeUser] : [];
+      if (this.activeUser) localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, this.activeUser.id);
+      else localStorage.removeItem(this.STORAGE_KEY_ACTIVE_USER);
+      localStorage.removeItem('ob_auth_token');
+    } catch {
       this.activeUser = null;
+      this.users = [];
     }
     return this.activeUser;
   }
@@ -36,7 +90,8 @@ class OBTestDataManager {
   }
 
   getActiveUserId() {
-    return this.activeUser ? this.activeUser.id : (this.users[0] ? this.users[0].id : 'user-rahul');
+    // Signed-out browsing must never borrow another candidate's identity.
+    return this.activeUser ? this.activeUser.id : null;
   }
 
   setActiveUser(userId) {
@@ -50,47 +105,44 @@ class OBTestDataManager {
   }
 
   async login(username, password) {
-    const res = await fetch(`${this.API_BASE}/api/auth/login`, {
+    const data = await this.requestJson('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
-    const data = await res.json();
-    if (!res.ok || !data.success) {
+    if (!data.success) {
       throw new Error(data.error || 'Login failed');
     }
     this.activeUser = data.user;
     localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, data.user.id);
     localStorage.removeItem('ob_explicit_logout');
-    if (data.token) {
-      localStorage.setItem('ob_auth_token', data.token);
-    }
+    this.csrfToken = data.csrfToken || '';
     await this.loadUsers();
     return data.user;
   }
 
   async register(username, password, name, target_exam) {
-    const res = await fetch(`${this.API_BASE}/api/auth/register`, {
+    const data = await this.requestJson('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, name, target_exam })
     });
-    const data = await res.json();
-    if (!res.ok || !data.success) {
+    if (!data.success) {
       throw new Error(data.error || 'Registration failed');
     }
     this.activeUser = data.user;
     localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, data.user.id);
     localStorage.removeItem('ob_explicit_logout');
-    if (data.token) {
-      localStorage.setItem('ob_auth_token', data.token);
-    }
+    this.csrfToken = data.csrfToken || '';
     await this.loadUsers();
     return data.user;
   }
 
   logout() {
+    if (this.csrfToken) this.apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     this.activeUser = null;
+    this.users = [];
+    this.csrfToken = '';
     localStorage.removeItem(this.STORAGE_KEY_ACTIVE_USER);
     localStorage.removeItem('ob_auth_token');
     localStorage.setItem('ob_explicit_logout', 'true');
@@ -102,8 +154,7 @@ class OBTestDataManager {
 
   async loadUsers() {
     try {
-      const res = await fetch(`${this.API_BASE}/api/users`);
-      const data = await res.json();
+      const data = await this.requestJson('/api/users');
       if (data.success) {
         this.users = data.users;
         if (this.activeUser) {
@@ -127,12 +178,11 @@ class OBTestDataManager {
 
   async createUser(candidateData) {
     try {
-      const res = await fetch(`${this.API_BASE}/api/users`, {
+      const data = await this.requestJson('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(candidateData)
       });
-      const data = await res.json();
       if (data.success) {
         await this.loadUsers();
         this.setActiveUser(data.user.id);
@@ -151,12 +201,11 @@ class OBTestDataManager {
     if (!active) return null;
     active.target_exam = examId;
     try {
-      const res = await fetch(`${this.API_BASE}/api/users/${encodeURIComponent(active.id)}`, {
+      const data = await this.requestJson(`/api/users/${encodeURIComponent(active.id)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_exam: examId })
       });
-      const data = await res.json();
       if (data && data.success && data.user) {
         const idx = this.users.findIndex(u => u.id === active.id);
         if (idx !== -1) this.users[idx] = data.user;
@@ -176,9 +225,9 @@ class OBTestDataManager {
   async getTestsList(examId = 'all') {
     const userId = this.getActiveUserId();
     try {
-      const url = `${this.API_BASE}/api/tests?examId=${encodeURIComponent(examId)}&userId=${encodeURIComponent(userId)}`;
-      const res = await fetch(url);
-      const data = await res.json();
+      const userParam = userId ? `&userId=${encodeURIComponent(userId)}` : '';
+      const url = `${this.API_BASE}/api/tests?examId=${encodeURIComponent(examId)}${userParam}`;
+      const data = await this.requestJson(url.replace(this.API_BASE, ''));
       if (data.success) {
         return data.tests;
       }
@@ -188,10 +237,10 @@ class OBTestDataManager {
     return [];
   }
 
-  async getTestById(testId) {
+  async getTestById(testId, attemptId = null) {
     try {
-      const res = await fetch(`${this.API_BASE}/api/tests/${encodeURIComponent(testId)}`);
-      const data = await res.json();
+      const suffix = attemptId ? `?attemptId=${encodeURIComponent(attemptId)}` : '';
+      const data = await this.requestJson(`/api/tests/${encodeURIComponent(testId)}${suffix}`);
       if (data.success) {
         return data.test;
       }
@@ -201,13 +250,22 @@ class OBTestDataManager {
     return null;
   }
 
+  _submissionKey(testId) {
+    const key = `ob_submission_${testId}`;
+    let value = sessionStorage.getItem(key);
+    if (!value) {
+      value = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+      sessionStorage.setItem(key, value);
+    }
+    return value;
+  }
+
   async get2026ExamPatterns() {
     if (window.OB_EXAM_PATTERNS_2026 && window.OB_EXAM_PATTERNS_2026.EXAM_PATTERNS_2026) {
       return window.OB_EXAM_PATTERNS_2026.EXAM_PATTERNS_2026;
     }
     try {
-      const res = await fetch(`${this.API_BASE}/api/exam-patterns-2026`);
-      const data = await res.json();
+      const data = await this.requestJson('/api/exam-patterns-2026');
       if (data.success) return data.patterns || data.exams || {};
     } catch (e) {
       console.warn('Failed to fetch 2026 exam patterns:', e);
@@ -216,7 +274,7 @@ class OBTestDataManager {
   }
 
   async uploadQuestionPaperJson({ rawPaper, examId, stage, customTitle, customTestId, title, testId, subtitle, filename }) {
-    const res = await fetch(`${this.API_BASE}/api/tests/upload-json`, {
+    const res = await this.apiFetch('/api/tests/upload-json', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -262,21 +320,34 @@ class OBTestDataManager {
       sectionBreakdown: result.sectionBreakdown || [],
       responses: result.responses || {},
       startedAt: result.timing.startedAt,
-      completedAt: result.timing.completedAt
+      completedAt: result.timing.completedAt,
+      submissionKey: result.submissionKey || this._submissionKey(result.testId)
     };
 
     try {
-      const res = await fetch(`${this.API_BASE}/api/attempts`, {
+      const res = await this.apiFetch('/api/attempts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const data = await res.json();
-      if (data.success) {
-        console.log(`[Permanent DB] Test result saved successfully in SQLite: ${data.attemptId}`);
+      if (res.ok && data.success) {
+        console.log(`[Permanent DB] Test result saved successfully: ${data.attemptId}`);
         result.attemptId = data.attemptId;
+        result.streakReward = data.streakReward || null;
+        if (data.authoritative) {
+          result.authoritative = true;
+          result.score = { ...result.score, total: data.score, netScore: data.score, maxScore: data.maxScore,
+            correct: data.correctCount, wrong: data.wrongCount, unanswered: data.unansweredCount,
+            accuracy: data.accuracy, percentile: data.percentile, estimatedAIR: data.estimatedAir };
+          result.timing.totalTimeSeconds = data.timeSpentSeconds;
+          result.sectionBreakdown = data.sectionBreakdown || result.sectionBreakdown;
+          const official = await this.getTestById(result.testId, result.attemptId);
+          if (official) result.testData = official;
+          sessionStorage.removeItem(`ob_submission_${result.testId}`);
+        }
         await this.loadUsers();
-      }
+      } else throw new Error(data.error || `Request failed (${res.status}).`);
     } catch (e) {
       console.error('Failed to save result to backend DB, saving to localStorage as fallback:', e);
       const key = `ob_attempts_${activeUserId}`;
@@ -312,16 +383,30 @@ class OBTestDataManager {
       bookmarkedQuestions: pausedState.bookmarkedQuestions || {}
     };
 
+    const current = Math.max(this.pauseRevisions.get(pausedState.testId) || 0, Number(pausedState.revision) || 0);
+    payload.revision = current + 1;
+    this.pauseRevisions.set(pausedState.testId, payload.revision);
     localStorage.setItem(`ob_paused_${activeUserId}_${pausedState.testId}`, JSON.stringify(payload));
-
-    try {
-      await fetch(`${this.API_BASE}/api/paused-attempts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (e) {
-      console.warn('Saved paused state to localStorage fallback:', e);
+    this.lastPausedSaveSucceeded = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const response = await this.apiFetch('/api/paused-attempts', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          const currentRevision = Number(data.revision) || payload.revision;
+          this.pauseRevisions.set(pausedState.testId, Math.max(this.pauseRevisions.get(pausedState.testId) || 0, currentRevision));
+          this.lastPausedSaveSucceeded = Boolean(data.saved || currentRevision >= payload.revision);
+          this.lastAttemptTiming = data.timing || null;
+          return payload;
+        }
+        this.lastAttemptTiming = data.timing || this.lastAttemptTiming || null;
+        if (response.status < 500) break;
+      } catch (e) {
+        if (attempt === 2) console.warn('Saved paused state to localStorage fallback:', e);
+      }
+      if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 300 * (2 ** attempt)));
     }
     return payload;
   }
@@ -329,10 +414,22 @@ class OBTestDataManager {
   async getPausedAttempt(testId) {
     const activeUserId = this.getActiveUserId();
     try {
-      const res = await fetch(`${this.API_BASE}/api/paused-attempts?userId=${encodeURIComponent(activeUserId)}&testId=${encodeURIComponent(testId)}`);
+      const res = await this.apiFetch(`${this.API_BASE}/api/paused-attempts?testId=${encodeURIComponent(testId)}`);
       const data = await res.json();
       if (data.success && data.pausedAttempt) {
-        return data.pausedAttempt;
+        const localRaw = localStorage.getItem(`ob_paused_${activeUserId}_${testId}`);
+        const local = localRaw ? JSON.parse(localRaw) : null;
+        const saved = Number(data.pausedAttempt.revision) || 0;
+        const localRevision = Number(local?.revision) || 0;
+        this.pauseRevisions.set(testId, Math.max(saved, localRevision));
+        const recovered = local && localRevision > saved ? local : data.pausedAttempt;
+        return data.pausedAttempt.timerState ? { ...recovered,
+          currentSectionIndex: data.pausedAttempt.currentSectionIndex,
+          sectionRemainingSeconds: data.pausedAttempt.sectionRemainingSeconds,
+          remainingSeconds: data.pausedAttempt.remainingSeconds,
+          completedSections: data.pausedAttempt.completedSections,
+          timerState: data.pausedAttempt.timerState, serverTime: data.pausedAttempt.serverTime
+        } : recovered;
       }
     } catch (e) {
       // fallback to localStorage
@@ -345,12 +442,41 @@ class OBTestDataManager {
     const activeUserId = this.getActiveUserId();
     localStorage.removeItem(`ob_paused_${activeUserId}_${testId}`);
     try {
-      await fetch(`${this.API_BASE}/api/paused-attempts?userId=${encodeURIComponent(activeUserId)}&testId=${encodeURIComponent(testId)}`, {
+      await this.apiFetch(`${this.API_BASE}/api/paused-attempts?testId=${encodeURIComponent(testId)}`, {
         method: 'DELETE'
       });
     } catch (e) {
       // ignore
     }
+  }
+
+  async startAttemptSession(testId) {
+    return this.requestJson('/api/attempts/session/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ testId }) });
+  }
+
+  async pauseAttemptSession(testId, snapshot = {}) {
+    return this.requestJson('/api/attempts/session/pause', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ testId, ...snapshot }) });
+  }
+
+  async resumeAttemptSession(testId) {
+    return this.requestJson('/api/attempts/session/resume', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ testId }) });
+  }
+
+  async transitionAttemptSection(testId, targetSectionIndex, snapshot = {}) {
+    return this.requestJson('/api/attempts/session/section', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ testId, targetSectionIndex, ...snapshot }) });
+  }
+
+  backupPausedAttemptLocal(pausedState) {
+    const activeUserId = this.getActiveUserId();
+    if (!activeUserId || !pausedState?.testId) return null;
+    const storageKey = `ob_paused_${activeUserId}_${pausedState.testId}`;
+    let previous = {};
+    try { previous = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch {}
+    const current = Math.max(this.pauseRevisions.get(pausedState.testId) || 0, Number(previous.revision) || 0, Number(pausedState.revision) || 0);
+    const payload = { ...pausedState, revision: current + 1 };
+    this.pauseRevisions.set(pausedState.testId, payload.revision);
+    localStorage.setItem(storageKey, JSON.stringify(payload));
+    return payload;
   }
 
   // ===============================================
@@ -360,7 +486,7 @@ class OBTestDataManager {
   async getUserAttempts(userId = null) {
     const uId = userId || this.getActiveUserId();
     try {
-      const res = await fetch(`${this.API_BASE}/api/attempts?userId=${encodeURIComponent(uId)}`);
+      const res = await this.apiFetch('/api/attempts');
       const data = await res.json();
       if (data.success) {
         return data.attempts;
@@ -381,8 +507,7 @@ class OBTestDataManager {
 
   async getLeaderboard(examId = 'all') {
     try {
-      const res = await fetch(`${this.API_BASE}/api/leaderboard?examId=${encodeURIComponent(examId)}`);
-      const data = await res.json();
+      const data = await this.requestJson(`/api/leaderboard?examId=${encodeURIComponent(examId)}`);
       if (data && data.success && Array.isArray(data.entries)) {
         return data.entries;
       }
@@ -394,9 +519,19 @@ class OBTestDataManager {
 
   async getUserAnalytics(userId = null) {
     const uId = userId || this.getActiveUserId();
+    if (!uId) {
+      return {
+        testsAttempted: 0,
+        avgScore: '0 / 0',
+        avgAccuracy: '0.0%',
+        overallPercentile: '0.0%ile',
+        predictedAIR: '#--',
+        streakDays: 0,
+        sectionBreakdowns: []
+      };
+    }
     try {
-      const res = await fetch(`${this.API_BASE}/api/analytics?userId=${encodeURIComponent(uId)}`);
-      const data = await res.json();
+      const data = await this.requestJson(`/api/analytics?userId=${encodeURIComponent(uId)}`);
       if (data.success) {
         return data.stats;
       }

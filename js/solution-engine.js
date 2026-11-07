@@ -153,16 +153,6 @@ class OliveboardSolutionEngine {
         this.filterReviewTable();
       };
     }
-    const chkWrongSpan = document.getElementById('chkwrong');
-    if (chkWrongSpan && this.chkWrongCb) {
-      chkWrongSpan.onclick = (e) => {
-        if (e.target !== this.chkWrongCb) {
-          this.chkWrongCb.checked = !this.chkWrongCb.checked;
-          if (this.chkWrongCb.checked && this.chkUnatCb) this.chkUnatCb.checked = false;
-          this.filterReviewTable();
-        }
-      };
-    }
 
     if (this.chkUnatCb) {
       this.chkUnatCb.onchange = () => {
@@ -170,14 +160,14 @@ class OliveboardSolutionEngine {
         this.filterReviewTable();
       };
     }
-    const chkUnatSpan = document.getElementById('chkunat');
-    if (chkUnatSpan && this.chkUnatCb) {
-      chkUnatSpan.onclick = (e) => {
-        if (e.target !== this.chkUnatCb) {
-          this.chkUnatCb.checked = !this.chkUnatCb.checked;
-          if (this.chkUnatCb.checked && this.chkWrongCb) this.chkWrongCb.checked = false;
-          this.filterReviewTable();
-        }
+    const reviewMistakesButton = document.getElementById('btn-review-mistakes');
+    if (reviewMistakesButton) {
+      reviewMistakesButton.onclick = () => {
+        if (this.chkWrongCb) this.chkWrongCb.checked = true;
+        if (this.chkUnatCb) this.chkUnatCb.checked = false;
+        this.filterReviewTable();
+        const firstMistake = this.reviewRowsContainer?.querySelector('.reviewq-wrong');
+        firstMistake?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       };
     }
 
@@ -210,6 +200,54 @@ class OliveboardSolutionEngine {
     }
     if (this.btnLangToggle) {
       this.btnLangToggle.onclick = (e) => { e.preventDefault(); this.toggleLanguage(); };
+    }
+
+    if (this.overlay) {
+      this.overlay.addEventListener('click', (e) => {
+        const retryOption = e.target.closest('.opt[data-global-idx][data-correct-idx]');
+        if (retryOption && this.isReattemptMode && retryOption.getAttribute('role') === 'button') {
+          this.attemptOption(
+            Number(retryOption.dataset.correctIdx),
+            Number(retryOption.dataset.optIdx),
+            Number(retryOption.dataset.globalIdx)
+          );
+          return;
+        }
+        const solutionLink = e.target.closest('.btn-viewsol[data-global-idx]');
+        if (solutionLink) {
+          e.preventDefault();
+          this.viewsolution(Number(solutionLink.dataset.globalIdx));
+          return;
+        }
+        const reviewRow = e.target.closest('.review-row[data-global-idx]');
+        if (reviewRow) {
+          this.goToQuestion(Number(reviewRow.dataset.globalIdx));
+          return;
+        }
+        const mapQuestion = e.target.closest('.map-qno[data-global-idx]');
+        if (mapQuestion) {
+          this.goToQuestion(Number(mapQuestion.dataset.globalIdx));
+          return;
+        }
+        const sectionItem = e.target.closest('[data-sec-idx]');
+        if (sectionItem) {
+          this.switchSectionFromDropdown(Number(sectionItem.dataset.secIdx));
+        }
+      });
+
+      this.overlay.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const target = e.target.closest('.review-row[data-global-idx], .map-qno[data-global-idx], [data-sec-idx]');
+        const retryOption = e.target.closest('.opt[role="button"][data-global-idx]');
+        if (retryOption && this.isReattemptMode) {
+          e.preventDefault();
+          retryOption.click();
+          return;
+        }
+        if (!target) return;
+        e.preventDefault();
+        target.click();
+      });
     }
 
     // Keyboard Navigation
@@ -273,10 +311,26 @@ class OliveboardSolutionEngine {
 
   _formatContent(html) {
     if (!html) return '';
-    let s = String(html).trim();
+    let s = this._normalizeDisplayText(html).trim();
     s = s.replace(/src=["']oliveimg\/([^"']+)["']/g, 'src="/oliveimg/$1"');
     s = s.replace(/src=["'](?:\.\/)?images\/([^"']+)["']/g, 'src="/images/$1"');
     return s;
+  }
+
+  _normalizeDisplayText(value) {
+    return String(value || '')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+      .replace(/ï¿½|Ã¯Â¿Â½|�/g, '')
+      .replace(/â€¢/g, '•')
+      .replace(/â€“/g, '–')
+      .replace(/â€”/g, '—')
+      .replace(/â€™/g, '’')
+      .replace(/â€œ/g, '“')
+      .replace(/â€/g, '”')
+      .replace(/âœ“/g, '✓')
+      .replace(/âœ•/g, '✕')
+      .replace(/Â·/g, '·')
+      .replace(/Â/g, '');
   }
 
   // ==========================================
@@ -516,7 +570,7 @@ class OliveboardSolutionEngine {
       const timeSpentSec = this._formatQuestionTimeSpent(q);
 
       html += `
-        <div class="review-row ${rowClass}" id="sol-review-row-${idx}" onclick="window.obSolutionEngine.goToQuestion(${idx})">
+        <div class="review-row ${rowClass}" id="sol-review-row-${idx}" data-global-idx="${idx}" role="button" tabindex="0">
           <div class="reviewcol-group" style="width: 55%; display: flex;">
             <div class="review-col" style="width: 60px;">
               <p class="mobcard headingtxt hide-heading borbot">No.</p>
@@ -699,7 +753,7 @@ class OliveboardSolutionEngine {
         if (promptContainer) {
           promptContainer.innerHTML = `
             <span>Select an option below to re-attempt, or </span>
-            <a href="javascript:void(0)" class="btn-viewsol" id="btn-sol-toggle-mode" onclick="window.obSolutionEngine.viewsolution(${globalQIdx})" style="font-weight: 700; color: #0958d9; text-decoration: underline;">View Solution</a>
+            <a href="#" class="btn-viewsol" id="btn-sol-toggle-mode" data-global-idx="${globalQIdx}" role="button" style="font-weight: 700; color: #0958d9; text-decoration: underline;">View Solution</a>
           `;
         }
         this.modeIndicator.textContent = 'Re-attempt Mode: Click an Option';
@@ -763,13 +817,11 @@ class OliveboardSolutionEngine {
 
     return opts.map((opt, optIdx) => {
       let stateClass = '';
-      let onclickAttr = '';
       let badgeHtml = '';
 
       if (this.isReattemptMode && !retryAttempt) {
         // Unanswered in retry mode: clickable option with radio tick ring
         stateClass = 'cursorst';
-        onclickAttr = `onclick="window.obSolutionEngine.attemptOption(${corIdx}, ${optIdx}, ${q.globalIndex})"`;
         badgeHtml = `<span class="opt-tick-badge opt-tick-idle" aria-hidden="true"></span>`;
       } else if (this.isReattemptMode && retryAttempt) {
         // User answered this question during retry mode
@@ -794,7 +846,7 @@ class OliveboardSolutionEngine {
       }
 
       return `
-        <div id="opt-${q.globalIndex}-${optIdx}" class="opt ${stateClass}" data-opt-idx="${optIdx}" ${onclickAttr}>
+        <div id="opt-${q.globalIndex}-${optIdx}" class="opt ${stateClass}" data-opt-idx="${optIdx}" data-global-idx="${q.globalIndex}" data-correct-idx="${corIdx}" role="${this.isReattemptMode && !retryAttempt ? 'button' : 'presentation'}" tabindex="${this.isReattemptMode && !retryAttempt ? '0' : '-1'}">
           <div class="left">${opt.letter}</div>
           <div class="right">
             <div class="rightopt">${this._formatContent(opt.html || opt.text)}</div>
@@ -969,9 +1021,7 @@ class OliveboardSolutionEngine {
     const sections = this.testData.sections || [];
 
     this.secDropdownList.innerHTML = sections.map((sec, idx) => `
-      <li data-sec-idx="${idx}" style="padding: 8px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; color: #1e293b;"
-          onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background='transparent'"
-          onclick="window.obSolutionEngine.switchSectionFromDropdown(${idx})">
+      <li data-sec-idx="${idx}" role="button" tabindex="0" style="padding: 8px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; color: #1e293b;">
         <span>${sec.title}</span> <span style="font-size: 11px; color: #64748b; font-weight: 400;">(${sec.questions ? sec.questions.length : 0} Qs)</span>
       </li>
     `).join('');
@@ -1015,9 +1065,9 @@ class OliveboardSolutionEngine {
               }
 
               return `
-                <span class="map-qno q-${q.globalIndex} ${statusClass}" data-global-idx="${q.globalIndex}" 
+                <span class="map-qno q-${q.globalIndex} ${statusClass}" data-global-idx="${q.globalIndex}" role="button" tabindex="0"
                       style="${bgStyle} border-radius: 4px; padding: 6px 0; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.06);"
-                      onclick="window.obSolutionEngine.goToQuestion(${q.globalIndex})">
+                      >
                   ${q.localIndex}
                 </span>
               `;
