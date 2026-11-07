@@ -755,16 +755,8 @@ class OliveboardTestEngine {
   }
 
   _setAutosaveStatus(status) {
-    if (!this.autosaveIndicator) {
-      this.autosaveIndicator = document.createElement('span');
-      this.autosaveIndicator.id = 'test-autosave-status';
-      this.autosaveIndicator.setAttribute('role', 'status');
-      Object.assign(this.autosaveIndicator.style, { position: 'fixed', right: '12px', bottom: '12px', zIndex: '12000',
-        padding: '5px 9px', borderRadius: '12px', background: '#fff', color: '#415267', fontSize: '12px', boxShadow: '0 1px 5px #0002' });
-      document.body.appendChild(this.autosaveIndicator);
-    }
-    this.autosaveIndicator.textContent = status;
-    this.autosaveIndicator.dataset.state = status.toLowerCase();
+    this.autosaveStatus = status;
+    document.getElementById('test-autosave-status')?.remove();
   }
 
   _backupPausedStateLocal() {
@@ -1078,7 +1070,7 @@ class OliveboardTestEngine {
     });
   }
 
-  async switchSection(sectionIndex, resetSectionTimer = true) {
+  async switchSection(sectionIndex, resetSectionTimer = true, returnFromSummary = false) {
     if (this.completedSections.has(sectionIndex)) return;
     try {
       const data = await window.obDataManager.transitionAttemptSection(this.testData.id, sectionIndex, {
@@ -1093,11 +1085,22 @@ class OliveboardTestEngine {
       this.completedSections = new Set(data.timing.completedSections || []);
     } catch (error) {
       console.error('Section transition rejected by server:', error.message);
+      if (returnFromSummary) {
+        this.completedSections.delete(this.currentSectionIndex);
+        this.targetSectionIndexForAdvance = sectionIndex;
+        this.isConfirmPaneOpen = true;
+        if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
+        if (this.sureBox) this.sureBox.style.display = 'block';
+      }
       return;
     }
     // Record time spent on the current section's active question BEFORE changing currentSectionIndex
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = null;
+
+    // Keep the summary visible while the server confirms this transition, then
+    // reveal the question pane only after the new section is ready.
+    if (returnFromSummary) this.sBack();
 
     this.currentSectionIndex = sectionIndex;
     this.currentQuestionIndex = 0;
@@ -1956,7 +1959,6 @@ class OliveboardTestEngine {
     this.sendDataTimeoutId = setTimeout(() => {
       this.sendDataTimeoutId = null;
       if (!this.isExamActive) return;
-      if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
       if (this.isSectionAdvanceConfirm) {
         // Strict TCS iON rule: clear uncommitted draft on the section being exited
         const curSec = this.testData.sections && this.testData.sections[this.currentSectionIndex];
@@ -1975,9 +1977,8 @@ class OliveboardTestEngine {
           ? this.targetSectionIndexForAdvance
           : (this.currentSectionIndex + 1);
         this.targetSectionIndexForAdvance = undefined;
-        this.sBack();
         if (nextSecIdx < this.testData.sections.length) {
-          this.switchSection(nextSecIdx, true);
+          this.switchSection(nextSecIdx, true, true);
         } else {
           this.submitTest();
         }
@@ -2196,23 +2197,17 @@ class OliveboardTestEngine {
 
     const btnLaunchSol = document.getElementById('btn-scorecard-launch-solutions');
     if (btnLaunchSol) {
-      btnLaunchSol.onclick = () => {
-        if (this.scorecardOverlay) this.scorecardOverlay.classList.remove('active');
+      btnLaunchSol.onclick = async () => {
         const attemptId = resultObj?.attemptId || resultObj?.attempt_id || resultObj?.id;
-        if (attemptId && window.appController?.viewSolutions) {
-          window.appController.viewSolutions(attemptId, this.testData.id);
-        }
+        await this._openScorecardSolutions(attemptId, this.testData.id);
       };
     }
     const btnReviewMistakes = document.getElementById('btn-scorecard-review-mistakes');
     if (btnReviewMistakes) {
       btnReviewMistakes.onclick = async () => {
-        this.scorecardOverlay?.classList.remove('active');
         const attemptId = resultObj?.attemptId || resultObj?.attempt_id || resultObj?.id;
-        if (attemptId && window.appController?.viewSolutions) {
-          await window.appController.viewSolutions(attemptId, this.testData.id);
-          document.getElementById('btn-review-mistakes')?.click();
-        }
+        const opened = await this._openScorecardSolutions(attemptId, this.testData.id);
+        if (opened) document.getElementById('btn-review-mistakes')?.click();
       };
     }
 
@@ -2253,6 +2248,17 @@ class OliveboardTestEngine {
       topperScore: Number((maxScore * 0.89).toFixed(2)),
       cutoffScore: Number((maxScore * 0.55).toFixed(2))
     };
+  }
+
+  async _openScorecardSolutions(attemptId, testId) {
+    this.scorecardOverlay?.classList.remove('active');
+
+    // Analytics can be opened on top of the solution console. Dismissing that
+    // scorecard should reveal the current review instead of navigating away.
+    if (window.obSolutionEngine?.isOpen) return true;
+    if (!attemptId || !window.appController?.viewSolutions) return false;
+    await window.appController.viewSolutions(attemptId, testId);
+    return Boolean(window.obSolutionEngine?.isOpen);
   }
 
   showScorecardForAttempt(attempt, testData) {
@@ -2372,23 +2378,17 @@ class OliveboardTestEngine {
 
     const btnLaunchSol = document.getElementById('btn-scorecard-launch-solutions');
     if (btnLaunchSol) {
-      btnLaunchSol.onclick = () => {
-        if (this.scorecardOverlay) this.scorecardOverlay.classList.remove('active');
+      btnLaunchSol.onclick = async () => {
         const attemptId = attempt?.id || attempt?.attempt_id;
-        if (attemptId && window.appController?.viewSolutions) {
-          window.appController.viewSolutions(attemptId, testData.id);
-        }
+        await this._openScorecardSolutions(attemptId, testData.id);
       };
     }
     const btnReviewMistakes = document.getElementById('btn-scorecard-review-mistakes');
     if (btnReviewMistakes) {
       btnReviewMistakes.onclick = async () => {
-        this.scorecardOverlay?.classList.remove('active');
         const attemptId = attempt?.id || attempt?.attempt_id;
-        if (attemptId && window.appController?.viewSolutions) {
-          await window.appController.viewSolutions(attemptId, testData.id);
-          document.getElementById('btn-review-mistakes')?.click();
-        }
+        const opened = await this._openScorecardSolutions(attemptId, testData.id);
+        if (opened) document.getElementById('btn-review-mistakes')?.click();
       };
     }
   }

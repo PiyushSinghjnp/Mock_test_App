@@ -16,8 +16,8 @@ test('solution loading fetches the completed attempt paper and scorecard buttons
   const app = read('js/app.js');
   const engine = read('js/test-engine.js');
   assert.match(app, /getTestById\(testId,\s*attemptId\s*\|\|\s*attemptObj\.id\s*\|\|\s*attemptObj\.attempt_id\)/);
-  assert.equal((engine.match(/appController\.viewSolutions\(attemptId, (?:this\.testData|testData)\.id\)/g) || []).length, 4);
-  assert.equal((engine.match(/await window\.appController\.viewSolutions\(attemptId, (?:this\.testData|testData)\.id\)/g) || []).length, 2);
+  assert.equal((engine.match(/await this\._openScorecardSolutions\(attemptId, (?:this\.testData|testData)\.id\)/g) || []).length, 4);
+  assert.match(engine, /await window\.appController\.viewSolutions\(attemptId, testId\)/);
 });
 
 test('stale autosaves return the persisted snapshot revision and remain visibly unsaved', () => {
