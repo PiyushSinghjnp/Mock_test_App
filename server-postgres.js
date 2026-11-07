@@ -372,7 +372,7 @@ function createApp() {
   });
 
   app.get('/api/tests', async (req, res) => {
-    const examId = req.query.examId || req.query.exam || null;
+    const requestedExamId = req.query.examId || req.query.exam || null;
     const rawToken = readCookie(req, SESSION_COOKIE);
     const userId = rawToken ? (await loadSession(pool, rawToken))?.user_id || null : null;
     const result = await pool.query(`SELECT t.id,t.exam_id,t.exam_name,t.type,t.title,t.subtitle,t.marks,t.questions_count,t.duration_minutes,
@@ -385,7 +385,7 @@ function createApp() {
       LEFT JOIN LATERAL (SELECT id,score,max_score,accuracy,percentile,estimated_air,completed_at FROM test_attempts
         WHERE user_id=$2 AND test_id=t.id ORDER BY completed_at DESC LIMIT 1) a ON TRUE
       LEFT JOIN paused_attempts p ON p.user_id=$2 AND p.test_id=t.id
-      WHERE ($1::text IS NULL OR $1='all' OR t.exam_id=$1) ORDER BY t.is_free DESC,t.id`, [examId, userId]);
+      WHERE ($1::text IS NULL OR $1='all' OR t.exam_id=$1) ORDER BY t.is_free DESC,t.id`, [requestedExamId, userId]);
     const tests = result.rows.map(row => ({
       id: row.id, examId: row.exam_id, examName: row.exam_name, type: row.type, title: row.title,
       subtitle: row.subtitle, marks: Number(row.marks), questionsCount: row.questions_count,

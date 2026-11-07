@@ -16,6 +16,20 @@ test('primary UI scripts use module loading and no javascript URLs remain', () =
   assert.match(html, /<script\s+type="module"[^>]+app\.js/);
 });
 
+test('registration does not assign a single exam and exam categories remain switchable', () => {
+  const html = fs.readFileSync(path.join(projectRoot, 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(projectRoot, 'js/app.js'), 'utf8');
+  const dataManager = fs.readFileSync(path.join(projectRoot, 'js/data-manager.js'), 'utf8');
+  const server = fs.readFileSync(path.join(projectRoot, 'server-postgres.js'), 'utf8');
+
+  assert.doesNotMatch(html, /id="register-target-exam"|id="new-user-exam"/);
+  assert.match(html, /id="exam-switcher-modal"/);
+  assert.match(app, /selectExam\(examId\)/);
+  assert.match(dataManager, /async register\(username, password, name\)/);
+  assert.match(server, /WHERE \(\$1::text IS NULL OR \$1='all' OR t\.exam_id=\$1\)/);
+  assert.doesNotMatch(server, /requireAssignedExam/);
+});
+
 test('users API never exposes password hashes', async (t) => {
   const port = String(32000 + (process.pid % 1000));
   const child = spawn(process.execPath, ['server.js'], {

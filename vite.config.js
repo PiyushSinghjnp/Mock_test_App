@@ -30,6 +30,8 @@ module.exports = defineConfig({
     viteStaticCopy({
       targets: [
         { src: 'css', dest: '' },
+        { src: 'js/test-engine.js', dest: '' },
+        { src: 'js/solution-engine.js', dest: '' },
         { src: 'img', dest: '' },
         { src: 'images', dest: '' },
         { src: 'lib', dest: '' },

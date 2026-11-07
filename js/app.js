@@ -901,7 +901,6 @@ class OliveboardAppController {
     const tabLogin = document.getElementById('tab-login-mode');
     const tabRegister = document.getElementById('tab-register-mode');
     const groupName = document.getElementById('group-register-name');
-    const groupExam = document.getElementById('group-register-exam');
     const metaRow = document.getElementById('login-meta-row');
     const submitBtn = document.getElementById('btn-login-submit');
     const demoHint = document.getElementById('login-demo-hint');
@@ -921,7 +920,6 @@ class OliveboardAppController {
       if (tabLogin) tabLogin.setAttribute('aria-selected', 'false');
       if (tabRegister) tabRegister.setAttribute('aria-selected', 'true');
       if (groupName) groupName.style.display = 'block';
-      if (groupExam) groupExam.style.display = 'block';
       if (metaRow) metaRow.style.display = 'none';
       if (demoHint) demoHint.style.display = 'none';
       if (submitBtn) submitBtn.textContent = 'Create Candidate Account';
@@ -933,7 +931,6 @@ class OliveboardAppController {
       if (tabLogin) tabLogin.setAttribute('aria-selected', 'true');
       if (tabRegister) tabRegister.setAttribute('aria-selected', 'false');
       if (groupName) groupName.style.display = 'none';
-      if (groupExam) groupExam.style.display = 'none';
       if (metaRow) metaRow.style.display = 'flex';
       if (demoHint) demoHint.style.display = 'block';
       if (submitBtn) submitBtn.textContent = 'Sign In';
@@ -1105,11 +1102,10 @@ class OliveboardAppController {
     this.showToast(`Switched active candidate to ${switchedUser ? switchedUser.name : 'candidate'}`, 'success');
   }
 
-  async handleCreateCandidate(name, targetExam, rollNo) {
+  async handleCreateCandidate(name, rollNo) {
     try {
       await window.obDataManager.createUser({
         name: name,
-        target_exam: targetExam,
         roll_no: rollNo
       });
       const formEl = document.getElementById('form-create-user');
@@ -1147,8 +1143,8 @@ class OliveboardAppController {
       btnSelector.title = `Active Exam: ${exam.name} (Click to switch)`;
       btnSelector.innerHTML = `
         <span class="exam-category-current-label" id="active-exam-title">💻 ${exam.name}</span>
-        <i class="fa-solid fa-chevron-down exam-category-chevron"></i>
       `;
+      btnSelector.insertAdjacentHTML('beforeend', '<i class="fa-solid fa-chevron-down exam-category-chevron"></i>');
     }
     const catName = document.getElementById('current-category-name');
     if (catName) {
@@ -2790,8 +2786,7 @@ class OliveboardAppController {
           let user;
           if (isRegister) {
             const name = (document.getElementById('register-fullname')?.value || '').trim();
-            const targetExam = document.getElementById('register-target-exam')?.value || 'sbi-po';
-            user = await window.obDataManager.register(username, password, name, targetExam);
+            user = await window.obDataManager.register(username, password, name);
             this.showToast(`Account created! Welcome, ${user.name}!`, 'success');
           } else {
             user = await window.obDataManager.login(username, password);
@@ -2920,9 +2915,8 @@ class OliveboardAppController {
       formCreateUser.addEventListener('submit', (e) => {
         e.preventDefault();
         const name = document.getElementById('new-user-name').value;
-        const targetExam = document.getElementById('new-user-exam').value;
         const rollNo = document.getElementById('new-user-roll').value;
-        this.handleCreateCandidate(name, targetExam, rollNo);
+        this.handleCreateCandidate(name, rollNo);
       });
     }
 

@@ -121,11 +121,11 @@ class OBTestDataManager {
     return data.user;
   }
 
-  async register(username, password, name, target_exam) {
+  async register(username, password, name) {
     const data = await this.requestJson('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, name, target_exam })
+      body: JSON.stringify({ username, password, name })
     });
     if (!data.success) {
       throw new Error(data.error || 'Registration failed');

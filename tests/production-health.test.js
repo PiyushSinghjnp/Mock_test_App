@@ -21,6 +21,14 @@ test('production liveness serves built assets, does not wake Neon, and leaves MC
   });
   const base = `http://127.0.0.1:${server.address().port}`;
   for (const path of ['/health', '/', '/admin']) assert.equal((await fetch(base + path)).status, 200, path);
+  for (const [path, expected] of [
+    ['/js/test-engine.js?v=test', /class OliveboardTestEngine/],
+    ['/js/solution-engine.js?v=test', /obSolutionEngine|SolutionEngine/]
+  ]) {
+    const response = await fetch(base + path);
+    assert.equal(response.status, 200, path);
+    assert.match(await response.text(), expected, `${path} must serve its lazy-loaded script`);
+  }
   for (const path of ['/api/mcp/manifest', '/mcp']) assert.equal((await fetch(base + path)).status, 404, path);
   for (const path of ['/.env', '/database.sqlite']) {
     const response = await fetch(base + path);

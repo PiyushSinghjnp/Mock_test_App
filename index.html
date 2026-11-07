@@ -49,7 +49,7 @@
 
     <!-- EXAM SELECTOR DROPDOWN (Pill trigger) -->
     <div id="exam-category-selector">
-      <button type="button" class="exam-category-trigger" id="btn-active-exam-selector" title="Switch Target Exam" aria-haspopup="dialog" aria-expanded="false">
+      <button type="button" class="exam-category-trigger" id="btn-active-exam-selector" title="Switch Exam Category" aria-haspopup="dialog" aria-expanded="false">
         <span class="exam-category-current-label" id="active-exam-title">💻 IBPS SO IT Officer</span>
         <i class="fa-solid fa-chevron-down exam-category-chevron"></i>
       </button>
@@ -491,16 +491,6 @@
             </div>
           </div>
 
-          <div class="login-field-group" id="group-register-exam" style="display: none;">
-            <label for="register-target-exam">Target Exam</label>
-            <select id="register-target-exam" style="padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;">
-              <option value="sbi-po">SBI PO 2026</option>
-              <option value="ibps-so">IBPS SO IT Officer</option>
-              <option value="ssc-cgl">SSC CGL</option>
-              <option value="ibps-po">IBPS PO</option>
-            </select>
-          </div>
-
           <div class="login-meta-row" id="login-meta-row">
             <label class="remember-label">
               <input type="checkbox" id="login-remember-me" checked>
@@ -511,7 +501,7 @@
           <button type="submit" class="btn-login-submit" id="btn-login-submit">Sign In</button>
 
           <div class="login-demo-hint" id="login-demo-hint">
-            <span>Demo accounts: <b>rahul</b>, <b>priya</b>, or <b>vikram</b> / Password: <b>password123</b></span>
+            <span>Sign in with the private credentials assigned to your account.</span>
           </div>
         </form>
       </div>
@@ -549,15 +539,7 @@
           <h4 style="font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px;">➕ Register New Candidate Profile</h4>
           <form id="form-create-user" style="display: flex; flex-direction: column; gap: 10px;">
             <input type="text" id="new-user-name" placeholder="Candidate Full Name (e.g. Ananya Sen)" required style="padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
-            <div style="display: flex; gap: 8px;">
-              <select id="new-user-exam" style="flex: 1; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
-                <option value="ibps-so">IBPS SO IT Officer</option>
-                <option value="sbi-po">SBI PO 2026</option>
-                <option value="ssc-cgl">SSC CGL</option>
-                <option value="ibps-po">IBPS PO</option>
-              </select>
-              <input type="text" id="new-user-roll" placeholder="Roll No (optional)" style="flex: 1; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
-            </div>
+            <input type="text" id="new-user-roll" placeholder="Roll No (optional)" style="padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
             <button type="submit" style="padding: 10px; background: #008479; color: #ffffff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px;">Create Candidate Profile</button>
           </form>
         </div>
@@ -566,18 +548,14 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       MODAL 1: EXAM SWITCHER POPUP
-       ======================================================== -->
+  <!-- Exam category chooser; candidates can switch categories after signing in. -->
   <div class="exam-modal-overlay" id="exam-switcher-modal">
     <div class="exam-modal-dialog">
       <div class="exam-modal-header">
-        <h3>Select Target Exam (2026 Official Pattern)</h3>
+        <h3>Select Exam Category</h3>
         <button class="btn-close-exam-modal" id="btn-close-exam-switcher" title="Close">✕</button>
       </div>
-      <div class="exam-modal-list" id="exam-switcher-list">
-        <!-- Rendered dynamically by OliveboardAppController.renderExamSwitcherList() -->
-      </div>
+      <div class="exam-modal-list" id="exam-switcher-list"></div>
     </div>
   </div>
 
