@@ -1192,18 +1192,34 @@ class OliveboardTestEngine {
       (rawPassage && rawPassage.trim().length > 25)
     );
 
+    const normalizeImageSource = source => {
+      const normalized = String(source || '').replace(/\\/g, '/').split(/[?#]/, 1)[0].toLowerCase();
+      const chartRef = normalized.match(/(?:^|[/_])(p\d+)[/_](image\d+\.[a-z0-9]+)$/i);
+      return chartRef ? chartRef[1].toLowerCase() + '/' + chartRef[2].toLowerCase() : normalized;
+    };
+    const passageImageSources = new Set(
+      [...rawPassage.matchAll(/<img\b[^>]*>/gi)]
+        .map(tag => tag.match(/\bsrc\s*=\s*["']?([^"'\s>]+)/i)?.[1])
+        .filter(Boolean)
+        .map(normalizeImageSource)
+    );
+    const cleanedQuestion = rawQuestion.replace(/<img\b[^>]*>/gi, tag => {
+      const source = tag.match(/\bsrc\s*=\s*["']?([^"'\s>]+)/i)?.[1];
+      return source && passageImageSources.has(normalizeImageSource(source)) ? '' : tag;
+    });
     const formattedPassage = this._formatContentHTML(rawPassage);
-    const formattedQuestion = this._formatContentHTML(rawQuestion);
+    const formattedQuestion = this._formatContentHTML(cleanedQuestion);
 
     if (this.mobilePaneSwitch) this.mobilePaneSwitch.hidden = !hasPassage;
     this.setMobileQuestionPane('question');
 
     const imgs = question.imageUrls || question.image_urls || [];
     let imageHtml = '';
-    if (imgs.length > 0 && !rawQuestion.includes('<img')) {
-      imageHtml = imgs.map(url => {
+    const uniqueImageUrls = imgs.filter(url => !passageImageSources.has(normalizeImageSource(url)));
+    if (uniqueImageUrls.length > 0 && !/<img\b/i.test(cleanedQuestion)) {
+      imageHtml = uniqueImageUrls.map(url => {
         const cleanUrl = url.replace(/^[a-zA-Z]:\\.*\\images\\/i, '/images/').replace(/\\/g, '/');
-        return `<img src="${cleanUrl}" style="max-width: 100%; border: 1px solid #ccc; margin: 8px 0; display: block;" onerror="this.style.display='none'">`;
+        return '<img src="' + cleanUrl + '" style="max-width: 100%; border: 1px solid #ccc; margin: 8px 0; display: block;" onerror="this.style.display=\'none\'">';
       }).join('');
     }
 
