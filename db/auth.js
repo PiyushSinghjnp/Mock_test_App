@@ -10,6 +10,11 @@ function digest(value) {
   return crypto.createHmac('sha256', pepper).update(value).digest('hex');
 }
 
+function csrfTokenForSession(sessionToken) {
+  const pepper = process.env.SESSION_SECRET || 'oliveboard-development-only-session-hash';
+  return crypto.createHmac('sha256', pepper).update('csrf:').update(String(sessionToken)).digest('base64url');
+}
+
 function constantTimeHexEqual(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string' || !/^[a-f0-9]{64}$/i.test(a) || !/^[a-f0-9]{64}$/i.test(b)) return false;
   return crypto.timingSafeEqual(Buffer.from(a, 'hex'), Buffer.from(b, 'hex'));
@@ -27,7 +32,7 @@ function readCookie(req, name = SESSION_COOKIE) {
 
 async function createSession(client, userId) {
   const token = crypto.randomBytes(32).toString('base64url');
-  const csrfToken = crypto.randomBytes(32).toString('base64url');
+  const csrfToken = csrfTokenForSession(token);
   await client.query(
     'INSERT INTO auth_sessions(session_hash, csrf_hash, user_id, expires_at) VALUES($1, $2, $3, NOW() + ($4 * INTERVAL \'1 second\'))',
     [digest(token), digest(csrfToken), userId, SESSION_TTL_SECONDS]
@@ -86,6 +91,7 @@ module.exports = {
   SESSION_COOKIE,
   SESSION_TTL_SECONDS,
   digest,
+  csrfTokenForSession,
   readCookie,
   createSession,
   loadSession,

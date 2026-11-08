@@ -339,7 +339,7 @@ class OliveboardSolutionEngine {
 
   /**
    * Launch Oliveboard Solution & Review Console
-   * @param {Object} attempt - SQLite attempt row or client test result
+   * @param {Object} attempt - database attempt row or client test result
    * @param {Object} testData - Test specification with sections & questions
    */
   open(attempt, testData) {
@@ -1128,3 +1128,4 @@ window.openOliveboardSolutions = function(attempt, testData) {
   }
   window.obSolutionEngine.open(attempt, testData);
 };
+

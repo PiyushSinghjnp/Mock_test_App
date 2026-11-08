@@ -22,10 +22,9 @@ Available tests, sections, question content, marking rules, and explanations dep
 - HTML, CSS, and browser JavaScript
 - Vite for frontend development and production builds
 - PostgreSQL through the `pg` driver; production configuration is prepared for Neon pooled connections
-- SQLite compatibility for local development and existing local data
 - Render Blueprint configuration for a Free web service
 
-In development, `server.js` uses the local SQLite path. When `NODE_ENV=production`, it starts the PostgreSQL backend and requires a pooled `DATABASE_URL`. The direct PostgreSQL URL is reserved for explicit database administration and migration commands; it is not needed by the Render web service. Production startup does not import SQLite data or run schema migrations.
+server.js, npm start, and npm run dev use the PostgreSQL backend in every environment and require DATABASE_URL. The direct PostgreSQL URL is reserved for explicit database administration commands; it is not needed by the Render web service. Application startup does not import data or run schema migrations.
 
 ## Requirements
 
@@ -41,34 +40,21 @@ cd Mock_test_App
 npm ci
 ```
 
-### SQLite development
+### PostgreSQL development
 
-The existing local development setup starts the Vite frontend and the SQLite-backed Express server:
+Copy .env.example to .env, set DATABASE_URL to the pooled PostgreSQL URL, and configure unique session and administrator secrets. Keep .env private and out of source control.
 
-```bash
-npm run dev
-```
+Run npm run dev to start Vite with the PostgreSQL backend. Open the Vite address printed in the terminal (normally http://localhost:3000); Vite proxies API requests to PostgreSQL. npm start starts the backend without Vite and also requires DATABASE_URL.
 
-Open the Vite address printed in the terminal (normally `http://localhost:3000`). The frontend proxies API requests to the local backend. `npm start` starts the backend without Vite.
-
-### PostgreSQL-backed local run
-
-Copy `.env.example` to `.env`, then set `DATABASE_URL` to the pooled PostgreSQL URL and set unique, random session and administrator secrets using the variable names shown in `.env.example`. Keep `.env` private and out of source control. To run the production PostgreSQL application locally:
-
-```bash
-# Set NODE_ENV=production in .env, then:
-npm start
-```
-
-The server listens on `PORT` when provided, otherwise on its default backend port. The direct URL is only needed when explicitly running an approved database administration command. Do not run SQLite import or schema migration commands against a database containing live data without first reviewing the migration procedure and taking a backup.
+The server listens on PORT when provided, otherwise on its default backend port. Database migrations and legacy import utilities are explicit maintenance operations; application startup does not modify the database.
 
 ## npm commands
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Run Vite and the local SQLite-backed server for development |
-| `npm run dev:frontend` | Run only the Vite development server |
-| `npm run dev:backend` | Run the backend server |
+| npm run dev | Run Vite and the PostgreSQL-backed server for development |
+| npm run dev | Run Vite and the PostgreSQL-backed server for development |
+| npm run dev | Run Vite and the PostgreSQL-backed server for development |
 | `npm start` | Start the backend; production mode uses PostgreSQL |
 | `npm test` | Run automated tests and JavaScript syntax checks |
 | `npm run build` | Build frontend assets and check server scripts |
@@ -77,7 +63,7 @@ The server listens on `PORT` when provided, otherwise on its default backend por
 | `npm run test:postgres` | Run PostgreSQL integration tests when explicitly enabled with `RUN_POSTGRES_INTEGRATION=1` |
 | `npm run test:load` | Run the PostgreSQL runtime load test when explicitly enabled with `RUN_POSTGRES_LOAD=1` |
 
-The repository also contains explicit SQLite backup and PostgreSQL migration utilities. They are maintenance operations, not application startup steps.
+Legacy SQLite import utilities remain only for explicit archival migration work. The application itself uses PostgreSQL exclusively; no SQLite database or fallback is part of startup.
 
 ## Render deployment configuration
 

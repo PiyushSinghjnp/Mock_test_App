@@ -1,7 +1,13 @@
 /**
  * Oliveboard Mock Test App - Controller v2.6
- * Full-Stack SQLite Backend, Multi-User Isolation & 2026 Official Exam Auto-Pattern Upload Engine
+ * Full-Stack PostgreSQL Backend, Multi-User Isolation & 2026 Official Exam Auto-Pattern Upload Engine
  */
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[character]);
+}
 
 class OliveboardAppController {
   constructor() {
@@ -1017,11 +1023,11 @@ class OliveboardAppController {
     activeBox.innerHTML = `
       <div style="display: flex; align-items: center; gap: 12px;">
         <div style="width: 44px; height: 44px; border-radius: 50%; background: #008479; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px;">
-          ${activeUser.avatar || activeUser.name.charAt(0)}
+          ${escapeHtml(activeUser.avatar || activeUser.name.charAt(0))}
         </div>
         <div>
-          <div style="font-size: 15px; font-weight: 800; color: #0f172a;">${activeUser.name} <span style="font-size: 10px; background: #008479; color: #ffffff; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">ACTIVE CANDIDATE</span></div>
-          <div style="font-size: 12px; color: #64748b;">${activeUser.roll_no} • Target: ${(activeUser.target_exam || 'ibps-so').toUpperCase()}</div>
+          <div style="font-size: 15px; font-weight: 800; color: #0f172a;">${escapeHtml(activeUser.name)} <span style="font-size: 10px; background: #008479; color: #ffffff; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">ACTIVE CANDIDATE</span></div>
+          <div style="font-size: 12px; color: #64748b;">${escapeHtml(activeUser.roll_no)} • Target: ${escapeHtml((activeUser.target_exam || 'ibps-so').toUpperCase())}</div>
         </div>
       </div>
     `;
@@ -1031,11 +1037,11 @@ class OliveboardAppController {
       <button type="button" class="user-item-card ${u.id === activeUser.id ? 'selected' : ''}" data-app-action="switch-candidate" data-user-id="${u.id}">
         <div style="display: flex; align-items: center; gap: 12px;">
           <div style="width: 34px; height: 34px; border-radius: 50%; background: ${u.id === activeUser.id ? '#008479' : '#e2e8f0'}; color: ${u.id === activeUser.id ? '#ffffff' : '#475569'}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">
-            ${u.avatar || u.name.charAt(0)}
+            ${escapeHtml(u.avatar || u.name.charAt(0))}
           </div>
           <div>
-            <div style="font-size: 13px; font-weight: 700; color: #1e293b;">${u.name}</div>
-            <div style="font-size: 11px; color: #64748b;">${u.roll_no} • ${(u.target_exam || 'ibps-so').toUpperCase()}</div>
+            <div style="font-size: 13px; font-weight: 700; color: #1e293b;">${escapeHtml(u.name)}</div>
+            <div style="font-size: 11px; color: #64748b;">${escapeHtml(u.roll_no)} • ${escapeHtml((u.target_exam || 'ibps-so').toUpperCase())}</div>
           </div>
         </div>
         <div style="text-align: right;">
@@ -1654,7 +1660,7 @@ class OliveboardAppController {
     const activeUser = window.obDataManager ? window.obDataManager.getActiveUser() : null;
     const activeUserId = activeUser ? activeUser.id : null;
 
-    // Fetch real multi-user attempts from SQLite across all registered candidates
+    // Fetch real multi-user attempts from PostgreSQL across all registered candidates
     const dbEntries = window.obDataManager && typeof window.obDataManager.getLeaderboard === 'function'
       ? await window.obDataManager.getLeaderboard('all')
       : [];
@@ -1717,7 +1723,7 @@ class OliveboardAppController {
         <div class="leaderboard-identity">
           <div class="leaderboard-rank rank-${Math.min(u.rank, 4)}">${u.rank}</div>
           <div>
-            <div class="leaderboard-name">${u.name}</div>
+            <div class="leaderboard-name">${escapeHtml(u.name)}</div>
             <div class="leaderboard-time">Time taken: ${u.time}</div>
           </div>
         </div>
@@ -3522,3 +3528,4 @@ class OliveboardAppController {
 document.addEventListener('DOMContentLoaded', () => {
   window.appController = new OliveboardAppController();
 });
+

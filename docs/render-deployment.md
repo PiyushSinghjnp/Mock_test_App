@@ -47,7 +47,7 @@ No deployment has been performed by this migration work.
 ### 1. Prepare GitHub
 
 1. Review `git status` and the complete diff. Keep unrelated local edits out of the deployment branch.
-2. Confirm `.env`, SQLite files, `backups/`, migration reports, passwords, and generated secrets are not staged. Do not force-add ignored files.
+2. Confirm .env, database credentials, migration reports, passwords, and generated secrets are not staged. Do not force-add ignored files.
 3. Run `npm test` and `npm run build` locally. Commit and push the reviewed app files to the existing GitHub repository only after approving that external change.
 
 ### 2. Create the Render service
@@ -80,10 +80,8 @@ Check Render memory, outbound transfer, restarts, and cold starts, plus Neon com
 
 ### 7. Roll back safely
 
-If no production attempts were submitted, use Render's rollback to the previous deployment and continue the local SQLite app. Keep the SQLite database and backup untouched. If PostgreSQL accepted candidate activity, do not copy the old SQLite snapshot over it; first export and reconcile the newer PostgreSQL records under a separately reviewed recovery procedure.
+Roll back the application deployment to the last known-good version while keeping the PostgreSQL database unchanged. Do not restore or switch to a stale SQLite snapshot; it cannot contain production writes made after the migration.
 
 ## Rollback
 
-If deployment fails before candidates submit production attempts, disable/rollback the Render deploy and continue using the local SQLite app with `npm start` or `npm run dev`. The original `database.sqlite`, its WAL/SHM files, and the separately created backup remain in place.
-
-If PostgreSQL has accepted new production writes, do not copy the old SQLite backup over the local database. It cannot contain those writes. Export and reconcile the newer PostgreSQL data in a separately reviewed recovery operation before returning candidates to SQLite.
+A Render rollback changes application code, not the PostgreSQL database. Keep candidates on the PostgreSQL-backed application and use a separately reviewed PostgreSQL recovery procedure if data repair is required.

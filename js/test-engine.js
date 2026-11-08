@@ -12,7 +12,7 @@
  * - Partial Right-Sidebar Collapse (.darr-rightslide / .darr-leftslide) keeping Candidate Info, Timer & Pause visible at top-right
  * - In-Pane Question Paper (#b1), Instructions (#b2), Profile (#b3), and Submit Summary (#submit-pane & #sure)
  * - First-scroll Mousewheel Warning Banner (.scrolltooltip) & Opacity-Dimmed Pause Modal (#calert)
- * - 2026 Official Exam Marking Scheme & Sectional Timing support + SQLite Persistence
+ * - 2026 Official Exam Marking Scheme & Sectional Timing support + PostgreSQL persistence
  */
 
 class OliveboardTestEngine {
@@ -2693,3 +2693,4 @@ class OliveboardTestEngine {
 window.initTestEngine = function (testData) {
   return new OliveboardTestEngine(testData);
 };
+

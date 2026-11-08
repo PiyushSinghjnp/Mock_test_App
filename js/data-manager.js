@@ -1,9 +1,9 @@
 /**
- * Oliveboard Mock Test App - Full-Stack Data Manager & SQLite Client
+ * Oliveboard Mock Test App - Full-Stack Data Manager & PostgreSQL Client
  * 
  * Responsibilities:
  * 1. Multi-User Isolation: Manages active candidate profile & guarantees data isolation
- * 2. Permanent Result Storage: Saves test attempts to backend SQLite DB (/api/attempts)
+ * 2. Permanent Result Storage: Saves test attempts to PostgreSQL backend (/api/attempts)
  * 3. Dynamic Test Loading: Fetches 150-question IBPS SO IT Mains & other tests from DB
  * 4. User-Isolated Analytics: Fetches individual candidate stats & heatmaps
  * 5. Question Paper JSON Upload: Uploads JSON and auto-applies 2026 official marking scheme & sectional timings
@@ -398,7 +398,7 @@ class OBTestDataManager {
           const currentRevision = Number(data.revision) || payload.revision;
           this.pauseRevisions.set(pausedState.testId, Math.max(this.pauseRevisions.get(pausedState.testId) || 0, currentRevision));
           // A PostgreSQL stale-write response is successful at the HTTP level but
-          // explicitly says this payload was not persisted. Legacy SQLite has no
+          // explicitly says this payload was not persisted. Legacy backend has no
           // `saved` field, so preserve its success behavior.
           this.lastPausedSaveSucceeded = data.saved === undefined ? true : data.saved === true;
           this.lastAttemptTiming = data.timing || null;
@@ -1045,5 +1045,6 @@ class OBTestDataManager {
 // Instantiate globally
 window.OBTestDataManager = OBTestDataManager;
 window.obDataManager = new OBTestDataManager();
+
 
 

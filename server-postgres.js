@@ -9,7 +9,7 @@ const { promisify } = require('node:util');
 const { performance } = require('node:perf_hooks');
 const { getPool, query, transaction, closePool, requestMetrics } = require('./db/postgres');
 const {
-  SESSION_COOKIE, digest, readCookie, createSession, loadSession, verifyCsrf,
+  SESSION_COOKIE, digest, readCookie, createSession, loadSession, verifyCsrf, csrfTokenForSession,
   setSessionCookie, clearSessionCookie
 } = require('./db/auth');
 const examPatterns = require('./js/exam-patterns-2026');
@@ -36,7 +36,17 @@ function sameOrigin(req, res, next) {
   const origin = req.get('origin');
   if (!origin) return next();
   try {
-    if (new URL(origin).host !== req.get('host')) return res.status(403).json({ success: false, error: 'Cross-origin request rejected.' });
+    const originUrl = new URL(origin);
+    const requestHost = req.get('host');
+    if (originUrl.host !== requestHost) {
+      const requestHostname = new URL('http://' + requestHost).hostname;
+      const localHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
+      const isLocalDevProxy = process.env.NODE_ENV !== 'production'
+        && originUrl.protocol === 'http:'
+        && localHosts.has(originUrl.hostname)
+        && originUrl.hostname === requestHostname;
+      if (!isLocalDevProxy) return res.status(403).json({ success: false, error: 'Cross-origin request rejected.' });
+    }
   } catch {
     return res.status(403).json({ success: false, error: 'Invalid request origin.' });
   }
@@ -65,8 +75,8 @@ function requireSession(pool) {
 function requireAdmin(req, res, next) {
   const expected = String(process.env.OLIVEBOARD_ADMIN_TOKEN || '');
   const supplied = String(req.get('x-admin-token') || '');
-  if (process.env.NODE_ENV !== 'production' && !expected) return next();
-  if (!expected || supplied.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) {
+  if (!expected) return res.status(503).json({ success: false, error: 'Administrator authorization is not configured.' });
+  if (supplied.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) {
     return res.status(401).json({ success: false, error: 'Administrator authorization required.' });
   }
   next();
@@ -343,8 +353,9 @@ function createApp() {
     if (!raw) return res.json({ success: true, authenticated: false, user: null });
     const session = await loadSession(pool, raw);
     if (!session) return res.json({ success: true, authenticated: false, user: null });
-    const csrfToken = crypto.randomBytes(32).toString('base64url');
-    await pool.query('UPDATE auth_sessions SET csrf_hash=$1,last_seen_at=NOW() WHERE session_hash=$2', [digest(csrfToken), session.session_hash]);
+    const csrfToken = csrfTokenForSession(raw);
+    const csrfHash = digest(csrfToken);
+    await pool.query('UPDATE auth_sessions SET csrf_hash=$1,last_seen_at=NOW() WHERE session_hash=$2 AND csrf_hash<>$1', [csrfHash, session.session_hash]);
     setCsrfHeader(res, csrfToken);
     res.json({ success: true, authenticated: true, csrfToken, user: publicUser(session) });
   });
@@ -1033,4 +1044,4 @@ function start() {
 
 if (require.main === module) start();
 
-module.exports = { createApp, start, scorePaper, scrubSolutions, verifyPassword, hashPassword };
+module.exports = { createApp, start, scorePaper, scrubSolutions, verifyPassword, hashPassword, publicUser };
