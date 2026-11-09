@@ -19,6 +19,37 @@ test('authoritative scoring preserves negative marks, section totals and unanswe
   assert.deepEqual(result.sectionBreakdown.map(section => section.score), [1.5, 0]);
 });
 
+test('authoritative scoring normalizes answer formats and clamps invalid time values', () => {
+  const testRow = { marks: 4, marks_per_correct: 2, negative_marks: 0.5, test_data_json: JSON.stringify({
+    sections: [{ title: 'Mixed', questions: [
+      { id: 'letter', correctAnswer: 'B', options: ['a', 'b', 'c'] },
+      { id: 'index', correctIndex: 2, options: ['a', 'b', 'c'] },
+      { id: 'number', correctAnswer: '0', options: ['a', 'b', 'c'] }
+    ] }]
+  }) };
+  const result = scorePaper(testRow, {
+    letter: { selectedIndex: 1, timeSpentSeconds: -20 },
+    index: '2',
+    number: { answerIndex: 2, timeSpentSeconds: 100_000 }
+  });
+  assert.deepEqual(result.counts, { correct: 2, wrong: 1, unanswered: 0 });
+  assert.equal(result.score, 3.5);
+  assert.deepEqual(result.normalizedResponses.letter, { selectedIndex: 1, status: 'stic-answered', timeSpentSeconds: 0 });
+  assert.equal(result.normalizedResponses.index.timeSpentSeconds, 0);
+  assert.equal(result.normalizedResponses.number.timeSpentSeconds, 86400);
+});
+
+test('authoritative scoring rejects out-of-range answers and invalid trusted answer keys', () => {
+  const base = { marks: 1, marks_per_correct: 1, negative_marks: 0, test_data_json: JSON.stringify({
+    sections: [{ questions: [{ id: 'q1', correctIndex: 0, options: ['a', 'b'] }] }]
+  }) };
+  assert.throws(() => scorePaper(base, { q1: 2 }), /outside the trusted question options/);
+  const invalidKey = { ...base, test_data_json: JSON.stringify({ sections: [{ questions: [
+    { id: 'q1', correctAnswer: 'Z', options: ['a', 'b'] }
+  ] }] }) };
+  assert.throws(() => scorePaper(invalidKey, { q1: 0 }), /Trusted test answer data is invalid/);
+});
+
 test('unsubmitted papers omit correct answers and explanations recursively', () => {
   const paper = { sections: [{ questions: [{ correctAnswer: 'B', explanationHTML: 'private', options: ['a', 'b'] }] }] };
   const hidden = scrubSolutions(paper);

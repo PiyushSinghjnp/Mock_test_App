@@ -217,11 +217,14 @@ async function selectTimer(client, userId, testId, lock = false) {
 }
 
 function timerResponse(row, timing) {
+  const totalDeadlineMs = row.total_deadline_at ? new Date(row.total_deadline_at).getTime() : null;
+  const sectionDeadlineMs = row.section_deadline_at ? new Date(row.section_deadline_at).getTime() : null;
   return { state: timing.state, remainingSeconds: timing.remainingSeconds,
     sectionRemainingSeconds: timing.sectionRemainingSeconds, currentSectionIndex: timing.currentSectionIndex,
     completedSections: timing.completedSections, revision: timing.revision, startedAt: timing.startedAt,
     totalExpired: timing.totalExpired, sectionExpired: timing.sectionExpired,
-    submissionKey: row.submission_key, serverTime: row.evaluated_at };
+    submissionKey: row.submission_key, serverTime: row.evaluated_at,
+    totalDeadlineAt: totalDeadlineMs, sectionDeadlineAt: sectionDeadlineMs };
 }
 
 function boundedLegacySeconds(value, max, fallback) {

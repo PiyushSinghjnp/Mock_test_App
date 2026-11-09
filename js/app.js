@@ -244,10 +244,6 @@ class OliveboardAppController {
       return { view: 'tests', modal: 'user-profile' };
     }
 
-    if (hash === '#live-browser') {
-      return { view: 'tests', modal: 'live-browser' };
-    }
-
     return { view: 'tests' };
   }
 
@@ -367,17 +363,6 @@ class OliveboardAppController {
       } else {
         if (loginModal && loginModal.classList.contains('active')) {
           this.closeLoginModal(false);
-        }
-      }
-
-      const obLiveModal = document.getElementById('ob-live-browser-modal');
-      if (targetModal === 'live-browser') {
-        if (obLiveModal && obLiveModal.style.display !== 'flex') {
-          this.openOliveboardLiveBrowser(false);
-        }
-      } else {
-        if (obLiveModal && obLiveModal.style.display === 'flex') {
-          this.closeOliveboardLiveBrowser(false);
         }
       }
 
@@ -510,7 +495,6 @@ class OliveboardAppController {
 
   hasAnyModalOrOverlayOpen() {
     const loginModal = document.getElementById('login-modal-overlay');
-    const obLiveModal = document.getElementById('ob-live-browser-modal');
     const userModal = document.getElementById('user-profile-modal');
     const examModal = document.getElementById('exam-switcher-modal');
     const scorecardModal = document.getElementById('scorecard-modal-overlay');
@@ -519,7 +503,6 @@ class OliveboardAppController {
 
     return Boolean(
       (loginModal && (loginModal.classList.contains('active') || loginModal.style.display === 'flex' || loginModal.style.display === 'block')) ||
-      (obLiveModal && obLiveModal.style.display === 'flex') ||
       (userModal && userModal.classList.contains('active')) ||
       (examModal && examModal.classList.contains('active')) ||
       (scorecardModal && scorecardModal.classList.contains('active')) ||
@@ -541,11 +524,6 @@ class OliveboardAppController {
       profileDropdown.style.display = 'none';
       profileDropdown.style.visibility = 'hidden';
       profileDropdown.style.opacity = '0';
-    }
-
-    const obLiveModal = document.getElementById('ob-live-browser-modal');
-    if (obLiveModal) {
-      this.closeOliveboardLiveBrowser(false);
     }
 
     const userModal = document.getElementById('user-profile-modal');
@@ -578,7 +556,6 @@ class OliveboardAppController {
       return;
     }
 
-    const obLiveModal = document.getElementById('ob-live-browser-modal');
     const userModal = document.getElementById('user-profile-modal');
     const examModal = document.getElementById('exam-switcher-modal');
     const scorecardModal = document.getElementById('scorecard-modal-overlay');
@@ -610,7 +587,6 @@ class OliveboardAppController {
     }
 
     const hasModalOpen = (loginModal && (loginModal.classList.contains('active') || loginModal.style.display === 'flex' || loginModal.style.display === 'block')) ||
-                         (obLiveModal && obLiveModal.style.display === 'flex') ||
                          (userModal && userModal.classList.contains('active')) ||
                          (examModal && examModal.classList.contains('active')) ||
                          (scorecardModal && scorecardModal.classList.contains('active'));
@@ -3002,316 +2978,16 @@ class OliveboardAppController {
         return;
       }
       if (e.key === 'Escape') {
-        const obLiveModal = document.getElementById('ob-live-browser-modal');
         const scorecardModal = document.getElementById('scorecard-modal-overlay');
+        const examModal = document.getElementById('exam-switcher-modal');
+        const userModal = document.getElementById('user-profile-modal');
         if ((examModal && examModal.classList.contains('active')) ||
             (userModal && userModal.classList.contains('active')) ||
-            (scorecardModal && scorecardModal.classList.contains('active')) ||
-            (obLiveModal && obLiveModal.style.display === 'flex')) {
+            (scorecardModal && scorecardModal.classList.contains('active'))) {
           this.goBack();
         }
       }
     });
-
-    // Bind Interactive Oliveboard Live Browser & RE Engine
-    this.bindOliveboardLiveBrowserEvents();
-  }
-
-  // ==========================================
-  // INTERACTIVE OLIVEBOARD LIVE BROWSER & RE
-  // ==========================================
-
-  bindOliveboardLiveBrowserEvents() {
-    if (this._obEventsBound) return;
-    this._obEventsBound = true;
-    const on = (id, event, handler) => document.getElementById(id)?.addEventListener(event, handler);
-    on('btn-open-ob-live-browser', 'click', () => this.openOliveboardLiveBrowser());
-    on('btn-close-ob-live-browser', 'click', () => this.closeOliveboardLiveBrowser());
-    on('btn-ob-nav-go', 'click', () => this.navigateLiveOliveboard(document.getElementById('ob-live-url-input').value));
-    on('ob-live-url-input', 'keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); this.navigateLiveOliveboard(e.target.value); }
-    });
-    on('btn-ob-nav-back', 'click', () => this.sendObBrowserInput({ action: 'goBack' }));
-    on('btn-ob-nav-reload', 'click', () => this.sendObBrowserInput({ action: 'reload' }));
-    on('btn-ob-bring-front', 'click', () => this.sendObBrowserInput({ action: 'bringToFront' }));
-    on('btn-ob-scrape-now', 'click', () => this.scrapeOliveboardLivePage());
-    const sendText = () => {
-      const input = document.getElementById('ob-live-type-input');
-      if (!input?.value) return;
-      const text = input.value;
-      input.value = '';
-      this.sendObBrowserInput({ action: 'typeText', text });
-    };
-    on('btn-ob-send-text', 'click', sendText);
-    on('ob-live-type-input', 'keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); sendText(); }
-    });
-    for (const [id, key] of [['btn-ob-press-enter', 'Enter'], ['btn-ob-press-backspace', 'Backspace'], ['btn-ob-press-tab', 'Tab']]) {
-      on(id, 'click', () => this.sendObBrowserInput({ action: 'key', key }));
-    }
-    const screen = document.getElementById('ob-live-screen-img');
-    screen?.addEventListener('click', e => {
-      const point = this._obPointFromEvent(e, screen);
-      if (point) {
-        document.getElementById('ob-live-viewport-wrapper')?.focus();
-        this.sendObBrowserInput({ action: 'click', ...point });
-      }
-    });
-    screen?.addEventListener('wheel', e => {
-      const point = this._obPointFromEvent(e, screen);
-      if (!point) return;
-      e.preventDefault();
-      const multiplier = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? this._obViewport?.height || 720 : 1);
-      this._obScrollDelta = (this._obScrollDelta || 0) + e.deltaY * multiplier;
-      clearTimeout(this._obScrollTimer);
-      this._obScrollTimer = setTimeout(() => {
-        const deltaY = Math.max(-2000, Math.min(2000, this._obScrollDelta || 0));
-        this._obScrollDelta = 0;
-        if (this._obBrowserActive) this.sendObBrowserInput({ action: 'scroll', ...point, deltaY });
-      }, 100);
-    }, { passive: false });
-    on('ob-live-viewport-wrapper', 'keydown', e => {
-      if (e.ctrlKey || e.altKey || e.metaKey || e.key === 'Escape') return;
-      if (['Enter', 'Backspace', 'Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {
-        e.preventDefault();
-        this.sendObBrowserInput({ action: 'key', key: e.key });
-      }
-    });
-  }
-
-  _obPointFromEvent(event, image) {
-    if (!image?.naturalWidth || !image.naturalHeight) return null;
-    const rect = image.getBoundingClientRect();
-    const scale = Math.min(rect.width / image.naturalWidth, rect.height / image.naturalHeight);
-    if (!Number.isFinite(scale) || scale <= 0) return null;
-    const width = image.naturalWidth * scale;
-    const height = image.naturalHeight * scale;
-    const x = event.clientX - rect.left - (rect.width - width) / 2;
-    const y = event.clientY - rect.top - (rect.height - height) / 2;
-    if (x < 0 || y < 0 || x >= width || y >= height) return null;
-    return {
-      x: Math.floor(x / width * (this._obViewport?.width || image.naturalWidth)),
-      y: Math.floor(y / height * (this._obViewport?.height || image.naturalHeight))
-    };
-  }
-
-  async _obRequest(endpoint, payload, timeout = 20000) {
-    const response = await fetch('/api/ob-browser/' + endpoint, {
-      method: payload === undefined ? 'GET' : 'POST',
-      credentials: 'same-origin',
-      ...(payload === undefined ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }),
-      signal: AbortSignal.timeout(timeout)
-    });
-    let data;
-    try { data = await response.json(); } catch (_) { throw new Error('The live browser returned an invalid response.'); }
-    if (!response.ok || !data.success) throw new Error(data.error || `Live browser request failed (${response.status}).`);
-    return data;
-  }
-
-  _setObStatus(message) {
-    const status = document.getElementById('ob-live-status-msg');
-    if (status) status.textContent = message;
-  }
-
-  _applyObBrowserFrameData(data) {
-    if (!data?.success) return;
-    this._obActiveTargetId = data.activeTargetId || null;
-    this._obViewport = data.viewport || this._obViewport;
-    const image = document.getElementById('ob-live-screen-img');
-    if (image && typeof data.imageBase64 === 'string' && data.imageBase64) {
-      image.src = data.imageBase64.startsWith('data:image/') ? data.imageBase64 : 'data:image/png;base64,' + data.imageBase64;
-      image.style.display = 'block';
-      document.getElementById('ob-live-empty-state')?.setAttribute('hidden', '');
-    }
-    const input = document.getElementById('ob-live-url-input');
-    if (input && data.url && document.activeElement !== input) input.value = data.url;
-    const badge = document.getElementById('ob-live-stage-badge');
-    if (badge) badge.textContent = data.stage?.label || data.title || 'Browser connected';
-    this._renderObBrowserTabs(data.tabs || [], data.activeTargetId);
-  }
-
-  async openOliveboardLiveBrowser(pushHistory = true) {
-    const modal = document.getElementById('ob-live-browser-modal');
-    if (!modal || this._obOpening) return;
-    this._obOpening = true;
-    modal.style.display = 'flex';
-    this._obBrowserActive = true;
-    const epoch = this._obEpoch = (this._obEpoch || 0) + 1;
-    if (pushHistory) this.pushNavState({ modal: 'live-browser', view: this.currentViewTab }, '#live-browser');
-    this._setObStatus('Opening the original Oliveboard browser?');
-    try {
-      const data = await this._obRequest('start', {}, 60000);
-      if (epoch !== this._obEpoch || !this._obBrowserActive) return;
-      this._applyObBrowserFrameData(data);
-      this._setObStatus('Sign in and open the tests or solutions in the real browser. Capture saves all open Oliveboard tabs.');
-      this._scheduleObFrame();
-    } catch (error) {
-      if (epoch === this._obEpoch) this._setObStatus(error.message);
-      this.showToast(error.message, 'error');
-    } finally { this._obOpening = false; }
-  }
-
-  closeOliveboardLiveBrowser(popHistory = true) {
-    const modal = document.getElementById('ob-live-browser-modal');
-    if (modal) modal.style.display = 'none';
-    this._obBrowserActive = false;
-    this._obEpoch = (this._obEpoch || 0) + 1;
-    clearTimeout(this._obFrameTimer);
-    clearTimeout(this._obScrollTimer);
-    this._obScrollDelta = 0;
-    if (popHistory) this.goBack();
-  }
-
-  _scheduleObFrame() {
-    clearTimeout(this._obFrameTimer);
-    if (this._obBrowserActive) this._obFrameTimer = setTimeout(() => this._pollObBrowserFrame(), 1500);
-  }
-
-  async _pollObBrowserFrame() {
-    if (!this._obBrowserActive) return;
-    if (this._obPolling || this._obInputPending || this._obScraping || document.hidden) {
-      this._scheduleObFrame();
-      return;
-    }
-    this._obPolling = true;
-    const epoch = this._obEpoch;
-    const revision = this._obInputRevision || 0;
-    try {
-      const data = await this._obRequest('frame');
-      if (epoch === this._obEpoch && this._obBrowserActive && revision === (this._obInputRevision || 0)) this._applyObBrowserFrameData(data);
-    } catch (error) {
-      if (epoch === this._obEpoch && this._obBrowserActive) this._setObStatus('Preview unavailable: ' + error.message);
-    } finally {
-      this._obPolling = false;
-      this._scheduleObFrame();
-    }
-  }
-
-  _renderObBrowserTabs(tabs, activeTargetId) {
-    const bar = document.getElementById('ob-live-tabs-bar');
-    if (!bar) return;
-    const key = JSON.stringify([activeTargetId, tabs.map(t => [t.id, t.title, t.url, t.active])]);
-    if (this._lastTabsKey === key) return;
-    this._lastTabsKey = key;
-    bar.replaceChildren();
-    const label = document.createElement('span');
-    label.textContent = 'Open Oliveboard tabs:';
-    bar.append(label);
-    for (const tab of tabs) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = (tab.title || tab.url || 'Untitled').slice(0, 60);
-      button.title = tab.url || '';
-      button.style.cssText = `padding:5px 9px;border:1px solid #475569;border-radius:4px;color:#fff;cursor:pointer;background:${tab.id === activeTargetId || tab.active ? '#0284c7' : '#1e293b'}`;
-      button.addEventListener('click', () => this.sendObBrowserInput({ action: 'switchTab', targetId: tab.id }));
-      bar.append(button);
-      if (tabs.length > 1) {
-        const close = document.createElement('button');
-        close.type = 'button';
-        close.textContent = '?';
-        close.title = 'Close ' + (tab.title || 'tab');
-        close.setAttribute('aria-label', close.title);
-        close.style.cssText = 'border:0;background:transparent;color:#fca5a5;cursor:pointer';
-        close.addEventListener('click', () => this.sendObBrowserInput({ action: 'closeTab', targetId: tab.id }));
-        bar.append(close);
-      }
-    }
-  }
-
-  async navigateLiveOliveboard(rawUrl) {
-    try {
-      const url = new URL(/^https?:\/\//i.test(rawUrl) ? rawUrl : 'https://' + rawUrl);
-      if (url.protocol !== 'https:' || !(url.hostname === 'oliveboard.in' || url.hostname.endsWith('.oliveboard.in'))) {
-        throw new Error('Enter an HTTPS Oliveboard address.');
-      }
-      await this.sendObBrowserInput({ action: 'navigate', url: url.href });
-    } catch (error) { this.showToast(error.message, 'error'); }
-  }
-
-  sendObBrowserInput(payload) {
-    const epoch = this._obEpoch;
-    const request = { ...payload, targetId: payload.targetId || this._obActiveTargetId };
-    this._obInputPending = (this._obInputPending || 0) + 1;
-    this._obInputRevision = (this._obInputRevision || 0) + 1;
-    this._obInputQueue = (this._obInputQueue || Promise.resolve()).then(async () => {
-      if (epoch !== this._obEpoch || !this._obBrowserActive) return;
-      try {
-        const data = await this._obRequest('input', request);
-        if (epoch === this._obEpoch && this._obBrowserActive) this._applyObBrowserFrameData(data);
-      } catch (error) {
-        if (epoch === this._obEpoch) {
-          this._setObStatus(error.message);
-          this.showToast(error.message, 'error');
-        }
-      }
-    }).finally(() => {
-      this._obInputPending--;
-      this._scheduleObFrame();
-    });
-    return this._obInputQueue;
-  }
-
-  _obArtifactUrl(value) {
-    if (!value || typeof value !== 'string') return null;
-    try {
-      const url = new URL(value, window.location.origin);
-      return url.origin === window.location.origin && url.pathname.startsWith('/api/ob-browser/artifacts/') ? url.href : null;
-    } catch (_) { return null; }
-  }
-
-  async scrapeOliveboardLivePage() {
-    if (this._obScraping || !this._obBrowserActive) return;
-    this._obScraping = true;
-    const button = document.getElementById('btn-ob-scrape-now');
-    const summary = document.getElementById('ob-live-scrape-summary');
-    if (button) { button.disabled = true; button.textContent = 'Capturing?'; }
-    if (summary) summary.textContent = 'Capturing open Oliveboard tabs and checking completeness?';
-    this._setObStatus('Collecting page content and actual REA screenshot evidence. Keep the source tabs open.');
-    try {
-      await (this._obInputQueue || Promise.resolve());
-      const data = await this._obRequest('scrape', { targetId: this._obActiveTargetId, allTabs: true }, 180000);
-      const result = data.result;
-      if (!result || typeof result !== 'object') throw new Error('The capture returned no report.');
-      const imported = Array.isArray(result.importedTests) ? result.importedTests : (result.ingestedTestId ? [result.ingestedTestId] : []);
-      const warnings = Array.isArray(result.warnings) ? result.warnings : [];
-      const pages = Array.isArray(result.capturedPages) ? result.capturedPages.length : (Number(result.capturedPages) || 1);
-      const message = `Captured ${pages} page(s), ${Number(result.decryptedQuestionsCount) || 0} questions, ${Number(result.extractedSolutionsCount) || 0} answers. ${imported.length ? `Applied ${imported.length} validated test(s).` : 'No tests applied; capture saved for review.'}`;
-      if (summary) summary.textContent = message;
-      this._setObStatus(warnings.length ? warnings.map(w => typeof w === 'string' ? w : w.message || JSON.stringify(w)).join(' ? ') : message);
-      const bar = document.getElementById('ob-live-snapshot-bar');
-      if (bar) bar.style.display = 'flex';
-      const screenshot = this._obArtifactUrl(result.screenshotUrl);
-      const report = this._obArtifactUrl(result.specFile);
-      const thumb = document.getElementById('ob-snapshot-thumb');
-      if (thumb) { thumb.hidden = !screenshot; if (screenshot) thumb.src = screenshot; }
-      for (const [id, href] of [['ob-snapshot-link', screenshot], ['btn-view-snapshot-full', screenshot], ['btn-view-report-json', report]]) {
-        const link = document.getElementById(id);
-        if (link) { link.hidden = !href; if (href) link.href = href; else link.removeAttribute('href'); }
-      }
-      const info = document.getElementById('ob-snapshot-info');
-      if (info) info.textContent = result.title || result.url || 'Capture saved';
-      const badges = document.getElementById('ob-snapshot-badges');
-      if (badges) {
-        badges.replaceChildren();
-        const values = [result.reaEvidenceId ? `REA evidence: ${result.reaEvidenceId}` : 'No REA evidence returned', result.complete ? 'Complete capture' : 'Partial capture', `${Number(result.modalsDetectedCount) || 0} dialogs`, `${Number(result.tablesDetectedCount) || 0} tables`];
-        for (const text of values) {
-          const badge = document.createElement('span');
-          badge.textContent = text;
-          badge.style.cssText = 'padding:3px 7px;border:1px solid #475569;border-radius:4px;color:#e2e8f0;overflow-wrap:anywhere';
-          badges.append(badge);
-        }
-      }
-      this.showToast(message, warnings.length || !imported.length ? 'info' : 'success');
-      if (imported.length) await this.loadAndRenderMockCards();
-    } catch (error) {
-      this._setObStatus('Capture failed: ' + error.message);
-      if (summary) summary.textContent = 'Capture failed. No successful import was confirmed.';
-      this.showToast('Capture failed: ' + error.message, 'error');
-    } finally {
-      this._obScraping = false;
-      if (button) { button.disabled = false; button.textContent = 'Capture & apply complete tests'; }
-      this._scheduleObFrame();
-    }
   }
 
   renderExamSwitcherList() {
@@ -3359,12 +3035,6 @@ class OliveboardAppController {
       return;
     }
 
-    // If live browser modal was open, close it cleanly so it never obstructs the mock test engine
-    const liveModal = document.getElementById('ob-live-browser-modal');
-    if (liveModal && (liveModal.style.display === 'flex' || liveModal.style.display === 'block')) {
-      this.closeOliveboardLiveBrowser(false);
-    }
-
     this.lastActiveTestId = testId;
     this.savedTestsScrollY = window.scrollY;
 
@@ -3404,12 +3074,6 @@ class OliveboardAppController {
       this.showToast('Please sign in to resume this mock test.', 'info');
       this.openLoginModal();
       return;
-    }
-
-    // If live browser modal was open, close it cleanly so it never obstructs the mock test engine
-    const liveModal = document.getElementById('ob-live-browser-modal');
-    if (liveModal && (liveModal.style.display === 'flex' || liveModal.style.display === 'block')) {
-      this.closeOliveboardLiveBrowser(false);
     }
 
     this.lastActiveTestId = testId;

@@ -43,6 +43,13 @@ class OliveboardTestEngine {
     this.isExamActive = false;
     this.isPaused = false;
     this.startTime = null;
+    // Server-authoritative timer deadlines (epoch ms)
+    this.totalDeadlineAt = null;
+    this.sectionDeadlineAt = null;
+    this.totalMonotonicDeadline = null;
+    this.sectionMonotonicDeadline = null;
+    this.monotonicClockOffset = null;
+    this.timerAnimationFrame = null;
 
     this.initDOM();
   }
@@ -405,6 +412,11 @@ class OliveboardTestEngine {
     // Scorecard Close Button
     if (this.btnCloseScorecard) {
       this.btnCloseScorecard.onclick = () => {
+        // If solution console is open underneath, just close scorecard to reveal solution console
+        if (window.obSolutionEngine?.isOpen) {
+          this.scorecardOverlay.classList.remove('active');
+          return;
+        }
         if (window.appController) {
           window.appController.goBack();
         } else {
@@ -624,11 +636,15 @@ class OliveboardTestEngine {
       const session = await window.obDataManager.startAttemptSession(this.testData.id);
       const timing = session?.timing;
       if (!timing || timing.state !== 'active') throw new Error(session?.error || 'The test session is unavailable.');
+      this.monotonicClockOffset = null;
       this.remainingSeconds = timing.remainingSeconds;
       this.sectionRemainingSeconds = timing.sectionRemainingSeconds;
       this.currentSectionIndex = timing.currentSectionIndex;
       this.completedSections = new Set((timing.completedSections || []).map(Number));
       this.serverTimingRevision = Number(timing.revision) || 0;
+      // Store server deadlines for authoritative timer
+      if (timing.totalDeadlineAt) this.totalDeadlineAt = timing.totalDeadlineAt;
+      if (timing.sectionDeadlineAt) this.sectionDeadlineAt = timing.sectionDeadlineAt;
     } catch (error) {
       this._setAutosaveStatus('Unable to verify test timer');
       console.error('Unable to start authoritative test session:', error.message);
@@ -736,22 +752,106 @@ class OliveboardTestEngine {
   }
 
   startTimer() {
-    clearInterval(this.timerInterval);
+    this.stopTimer();
+
+    // If we have server deadlines, use them; otherwise fall back to local remainingSeconds
+    // The server should provide total_deadline_at and section_deadline_at
+    if (this.totalDeadlineAt && this.sectionDeadlineAt) {
+      // Convert wall-clock deadlines to monotonic deadlines once per timer start.
+      // Later system clock changes cannot extend or shorten an active countdown.
+      if (this.monotonicClockOffset === null) {
+        this.monotonicClockOffset = performance.now() - Date.now();
+      }
+      this.totalMonotonicDeadline = this.totalDeadlineAt + this.monotonicClockOffset;
+      this.sectionMonotonicDeadline = this.sectionDeadlineAt + this.monotonicClockOffset;
+      this._startTimerFromDeadlines();
+    } else {
+      // Fallback: use remainingSeconds as local countdown but with setTimeout for better precision
+      this._startLocalCountdownTimer();
+    }
     this.updateTimerDisplay();
+  }
 
-    this.timerInterval = setInterval(() => {
-      if (this.isPaused) return;
+  _startTimerFromDeadlines() {
+    const tick = () => {
+      if (!this.isExamActive || this.isPaused) return;
+      const now = performance.now();
 
-      this.sectionRemainingSeconds--;
-      this.remainingSeconds--;
+      // Calculate remaining from absolute deadlines
+      const totalRemaining = Math.max(0, Math.ceil((this.totalMonotonicDeadline - now) / 1000));
+      const sectionRemaining = Math.max(0, Math.ceil((this.sectionMonotonicDeadline - now) / 1000));
+
+      this.remainingSeconds = totalRemaining;
+      this.sectionRemainingSeconds = sectionRemaining;
+
+      this.updateTimerDisplay();
+      this.autosaveDirty = true;
+
+      // Check for timeout
+      if (sectionRemaining <= 0) {
+        this.handleSectionTimeout();
+        return;
+      }
+      if (totalRemaining <= 0) {
+        this.handleSectionTimeout(); // total expired triggers same handler
+        return;
+      }
+
+      // Schedule next tick (aim for ~1s updates, but aligned to second boundaries)
+      const delay = 1000 - (now % 1000); // Update at next second boundary
+      this.timerAnimationFrame = setTimeout(tick, delay);
+    };
+    tick();
+  }
+
+  _startLocalCountdownTimer() {
+    const tick = () => {
+      if (!this.isExamActive || this.isPaused) {
+        // Reschedule if paused, stop if exam ended
+        if (this.isExamActive && this.isPaused) {
+          this.timerAnimationFrame = setTimeout(tick, 500);
+        }
+        return;
+      }
+
+      this.sectionRemainingSeconds = Math.max(0, this.sectionRemainingSeconds - 1);
+      this.remainingSeconds = Math.max(0, this.remainingSeconds - 1);
       this.autosaveDirty = true;
       this.updateTimerDisplay();
 
       if (this.sectionRemainingSeconds <= 0) {
-        clearInterval(this.timerInterval);
         this.handleSectionTimeout();
+        return;
       }
-    }, 1000);
+      if (this.remainingSeconds <= 0) {
+        this.handleSectionTimeout();
+        return;
+      }
+
+      this.timerAnimationFrame = setTimeout(tick, 1000);
+    };
+    tick();
+  }
+
+  setServerDeadlines(totalDeadlineAt, sectionDeadlineAt) {
+    this.totalDeadlineAt = totalDeadlineAt;
+    this.sectionDeadlineAt = sectionDeadlineAt;
+    // If timer is already running, restart with new deadlines
+    if (this.isExamActive) {
+      this.startTimer();
+    }
+  }
+
+  stopTimer() {
+    if (this.timerAnimationFrame) {
+      clearTimeout(this.timerAnimationFrame);
+      cancelAnimationFrame(this.timerAnimationFrame);
+      this.timerAnimationFrame = null;
+    }
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
   }
 
   _setAutosaveStatus(status) {
@@ -787,10 +887,10 @@ class OliveboardTestEngine {
         this.serverTimingRevision = Number(serverTiming.revision) || this.serverTimingRevision;
         this.updateTimerDisplay();
         if (serverTiming.state === 'expired' || this.remainingSeconds <= 0) {
-          clearInterval(this.timerInterval);
+          this.stopTimer();
           this.handleSectionTimeout();
         } else if (this.sectionRemainingSeconds <= 0) {
-          clearInterval(this.timerInterval);
+          this.stopTimer();
           this.handleSectionTimeout();
         }
       }
@@ -897,9 +997,13 @@ class OliveboardTestEngine {
         this.sectionRemainingSeconds = timing.timing.sectionRemainingSeconds;
         this.updateTimerDisplay();
       }
-      clearInterval(this.timerInterval);
+      this.stopTimer();
     } catch (error) {
       this.isPaused = false;
+      if (this.isExamActive && !this.isConfirmPaneOpen && !this.isUtilityViewOpen) {
+        this.currentQuestionEntryTime = Date.now();
+      }
+      this.startTimer();
       console.error('Could not pause test session:', error.message);
       return;
     }
@@ -913,10 +1017,14 @@ class OliveboardTestEngine {
     try {
       const data = await window.obDataManager.resumeAttemptSession(this.testData.id);
       if (!data?.timing || data.timing.state !== 'active') throw new Error(data?.error || 'The test session has expired.');
+      this.monotonicClockOffset = null;
       this.remainingSeconds = data.timing.remainingSeconds;
       this.sectionRemainingSeconds = data.timing.sectionRemainingSeconds;
       this.currentSectionIndex = data.timing.currentSectionIndex;
       this.completedSections = new Set(data.timing.completedSections || []);
+      // Store server deadlines for authoritative timer
+      if (data.timing.totalDeadlineAt) this.totalDeadlineAt = data.timing.totalDeadlineAt;
+      if (data.timing.sectionDeadlineAt) this.sectionDeadlineAt = data.timing.sectionDeadlineAt;
     } catch (error) {
       this._setAutosaveStatus('Test timer expired');
       console.error('Could not resume test session:', error.message);
@@ -1083,6 +1191,9 @@ class OliveboardTestEngine {
       this.sectionRemainingSeconds = data.timing.sectionRemainingSeconds;
       this.currentSectionIndex = data.timing.currentSectionIndex;
       this.completedSections = new Set(data.timing.completedSections || []);
+      // Store server deadlines for authoritative timer
+      if (data.timing.totalDeadlineAt) this.totalDeadlineAt = data.timing.totalDeadlineAt;
+      if (data.timing.sectionDeadlineAt) this.sectionDeadlineAt = data.timing.sectionDeadlineAt;
     } catch (error) {
       console.error('Section transition rejected by server:', error.message);
       if (returnFromSummary) {
@@ -2009,7 +2120,7 @@ class OliveboardTestEngine {
     if (!this.isExamActive) return;
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = null;
-    clearInterval(this.timerInterval);
+    this.stopTimer();
     if (this.sendDataTimeoutId) {
       clearTimeout(this.sendDataTimeoutId);
       this.sendDataTimeoutId = null;
@@ -2688,7 +2799,7 @@ class OliveboardTestEngine {
   }
 
   _doExitTest(skipRefresh = false) {
-    clearInterval(this.timerInterval);
+    this.stopTimer();
     clearInterval(this.autosaveInterval);
     this.isExamActive = false;
     this.isPaused = false;
