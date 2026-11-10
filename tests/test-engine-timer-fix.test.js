@@ -24,6 +24,14 @@ test('test-engine uses deadline-based timer instead of setInterval countdown', (
 test('test-engine has stopTimer method for centralized cleanup', () => {
   assert.match(testEngineSource, /stopTimer\(\) \{[\s\S]*?clearTimeout\(this\.timerAnimationFrame\);[\s\S]*?cancelAnimationFrame\(this\.timerAnimationFrame\);/);
   assert.match(testEngineSource, /clearInterval\(this\.timerInterval\);/);
+
+  const { OliveboardTestEngine } = require('../js/test-engine');
+  const engine = new OliveboardTestEngine({ totalDurationSeconds: 1200, sections: [{ durationSeconds: 1200 }] });
+  engine.timerAnimationFrame = setTimeout(() => {}, 10000);
+  engine.timerInterval = setInterval(() => {}, 10000);
+  engine.stopTimer();
+  assert.equal(engine.timerAnimationFrame, null);
+  assert.equal(engine.timerInterval, null);
 });
 
 test('test-engine has setServerDeadlines method', () => {
@@ -77,9 +85,43 @@ test('switchSection stores server deadlines', () => {
   assert.match(testEngineSource, /if \(data\.timing\.sectionDeadlineAt\) this\.sectionDeadlineAt = data\.timing\.sectionDeadlineAt;/);
 });
 
-test('pauseTest and submitTest call stopTimer', () => {
+test('pauseTest and submitTest call stopTimer', async () => {
   assert.match(testEngineSource, /pauseTest\(\) \{[\s\S]*?this\.stopTimer\(\);/);
   assert.match(testEngineSource, /async submitTest\(\) \{[\s\S]*?this\.stopTimer\(\);/);
+
+  const { OliveboardTestEngine } = require('../js/test-engine');
+  const engine = new OliveboardTestEngine({ id: 'test-1', totalDurationSeconds: 1200, sections: [{ durationSeconds: 1200 }] });
+  engine.isExamActive = true;
+  engine.timerAnimationFrame = setTimeout(() => {}, 10000);
+
+  // Verify handleSectionTimeout does not trigger while paused
+  engine.isPaused = true;
+  let sectionSwitched = false;
+  engine.switchSection = () => { sectionSwitched = true; };
+  engine.handleSectionTimeout();
+  assert.equal(sectionSwitched, false, 'handleSectionTimeout must abort when paused');
+
+  // Verify pauseTest recovers on server error
+  global.window = {
+    obDataManager: {
+      pauseAttemptSession: async () => { throw new Error('Simulated network failure'); },
+      pauseRevisions: new Map()
+    },
+    appController: {
+      showToast: (msg, type) => { engine.lastToast = { msg, type }; }
+    }
+  };
+  global.document = {
+    getElementById: () => null
+  };
+  await engine.pauseTest();
+  assert.equal(engine.isPaused, false);
+  assert.equal(engine.autosaveStatus, 'Unable to pause test');
+  assert.ok(engine.lastToast);
+  assert.equal(engine.lastToast.type, 'error');
+  engine.stopTimer();
+  delete global.document;
+  delete global.window;
 });
 
 test('_doExitTest calls stopTimer', () => {

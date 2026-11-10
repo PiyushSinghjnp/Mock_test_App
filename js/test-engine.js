@@ -55,6 +55,7 @@ class OliveboardTestEngine {
   }
 
   initDOM() {
+    if (typeof document === 'undefined') return;
     this.modalOverlay = document.getElementById('test-modal-overlay');
     this.mainContainer = document.getElementById('main-container');
     this.examTitleEl = document.getElementById('exam-title-display');
@@ -845,7 +846,9 @@ class OliveboardTestEngine {
   stopTimer() {
     if (this.timerAnimationFrame) {
       clearTimeout(this.timerAnimationFrame);
-      cancelAnimationFrame(this.timerAnimationFrame);
+      if (typeof cancelAnimationFrame === 'function') {
+        cancelAnimationFrame(this.timerAnimationFrame);
+      }
       this.timerAnimationFrame = null;
     }
     if (this.timerInterval) {
@@ -935,7 +938,7 @@ class OliveboardTestEngine {
         : `${mStr}:${sStr}`;
     }
 
-    const secNameEl = document.getElementById('exam-sec-timer-name');
+    const secNameEl = typeof document !== 'undefined' ? document.getElementById('exam-sec-timer-name') : null;
     const curSec = this.testData.sections && this.testData.sections[this.currentSectionIndex];
     if (secNameEl && curSec) {
       secNameEl.textContent = this.testData.hasSectionalTiming === false
@@ -945,7 +948,7 @@ class OliveboardTestEngine {
   }
 
   handleSectionTimeout() {
-    if (!this.isExamActive) return;
+    if (!this.isExamActive || this.isPaused) return;
     if (this.sendDataTimeoutId) {
       clearTimeout(this.sendDataTimeoutId);
       this.sendDataTimeoutId = null;
@@ -1004,6 +1007,10 @@ class OliveboardTestEngine {
         this.currentQuestionEntryTime = Date.now();
       }
       this.startTimer();
+      this._setAutosaveStatus('Unable to pause test');
+      if (window.appController && typeof window.appController.showToast === 'function') {
+        window.appController.showToast('Unable to pause test: ' + (error?.message || 'Network error'), 'error');
+      }
       console.error('Could not pause test session:', error.message);
       return;
     }
@@ -2817,7 +2824,13 @@ class OliveboardTestEngine {
 }
 
 // Global initialization
-window.initTestEngine = function (testData) {
-  return new OliveboardTestEngine(testData);
-};
+if (typeof window !== 'undefined') {
+  window.initTestEngine = function (testData) {
+    return new OliveboardTestEngine(testData);
+  };
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { OliveboardTestEngine };
+}
 
