@@ -2529,13 +2529,55 @@ cursor:pointer;
 @media screen and (max-width: 767px) {
   #solution-console-overlay #soln-header-top {
     padding: 6px 10px !important;
-    flex-wrap: wrap !important;
-    gap: 6px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+  }
+
+  #solution-console-overlay #soln-header-top > .main-title-container,
+  #solution-console-overlay #soln-header-top .header-right-tools {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+  }
+
+  #solution-console-overlay #soln-header-top > .main-title-container > h2 {
+    min-width: 0 !important;
+    max-width: none !important;
+    flex: 1 1 auto !important;
+  }
+
+  #solution-console-overlay #soln-header-top .header-right-tools {
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 2px;
+  }
+
+  #solution-console-overlay #soln-header-top .header-right-tools > button {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    padding: 5px 8px !important;
+    font-size: 11px !important;
+  }
+
+  #solution-console-overlay #btn-exit-soln-console {
+    display: none !important;
+  }
+
+  #solution-console-overlay #sec-reviewtable .reviewtable .review-row .reviewcol-group {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    min-width: 0 !important;
   }
 
   #solution-console-overlay #soln-title-display {
     font-size: 13px !important;
-    max-width: 180px !important;
+    max-width: none !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 
   #solution-console-overlay #sec-summary .summary .summary-row {

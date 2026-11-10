@@ -152,7 +152,7 @@ class OliveboardAppController {
   async ensureTestEngineLoaded(includeSolutions = false) {
     await this.loadScriptOnce('js/test-engine.js?v=20261103_5');
     if (includeSolutions) {
-      await this.loadStylesheetOnce('css/style4.css?v=20261026_1');
+      await this.loadStylesheetOnce('css/style4.css?v=20261110_1');
       await this.loadScriptOnce('js/solution-engine.js?v=20261103_2');
     }
   }

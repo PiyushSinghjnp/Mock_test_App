@@ -1186,7 +1186,9 @@ class OliveboardTestEngine {
   }
 
   async switchSection(sectionIndex, resetSectionTimer = true, returnFromSummary = false) {
-    if (this.completedSections.has(sectionIndex)) return;
+    // On a confirmed forward transition, trust the server's current section
+    // state instead of a potentially stale client-side completion snapshot.
+    if (this.completedSections.has(sectionIndex) && !returnFromSummary) return;
     try {
       const data = await window.obDataManager.transitionAttemptSection(this.testData.id, sectionIndex, {
         currentQuestionIndex: this.currentQuestionIndex, lastQuestionNumber: this.currentQuestionIndex + 1,
@@ -1209,6 +1211,11 @@ class OliveboardTestEngine {
         this.isConfirmPaneOpen = true;
         if (this.plsWaitBox) this.plsWaitBox.style.display = 'none';
         if (this.sureBox) this.sureBox.style.display = 'block';
+        if (this.sureSectionLockNote) {
+          this.sureSectionLockNote.style.display = 'block';
+          this.sureSectionLockNote.style.color = '#b91c1c';
+          this.sureSectionLockNote.textContent = `Could not advance to the next section: ${error.message} Please try again.`;
+        }
       }
       return;
     }
