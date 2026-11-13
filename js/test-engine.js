@@ -2355,9 +2355,9 @@ class OliveboardTestEngine {
       solutionsContainer.innerHTML = '';
     }
 
-    if (this.modalOverlay) {
-      this.modalOverlay.classList.remove('active');
-    }
+    const resolvedAttemptId = (savedAttempt && (savedAttempt.attemptId || savedAttempt.id || savedAttempt.attempt_id))
+      || resultObj.attemptId || resultObj.attempt_id || resultObj.id;
+    resultObj.attemptId = resolvedAttemptId;
 
     const btnLaunchSol = document.getElementById('btn-scorecard-launch-solutions');
     if (btnLaunchSol) {
@@ -2375,30 +2375,21 @@ class OliveboardTestEngine {
       };
     }
 
-    // Refresh dashboard cards & analytics in the background
-    if (window.appController && typeof window.appController.refreshAnalytics === 'function') {
-      window.appController.refreshAnalytics();
-    }
+    // Show analysis before dismissing the exam so the dashboard never flashes.
+    if (this.scorecardOverlay) this.scorecardOverlay.classList.add('active');
+    if (this.modalOverlay) this.modalOverlay.classList.remove('active');
+    document.body.style.overflow = 'hidden';
 
-    // Launch Oliveboard Authentic Solution & Review Console immediately upon submission
-    const resolvedAttemptId = (savedAttempt && (savedAttempt.attemptId || savedAttempt.id || savedAttempt.attempt_id)) || resultObj.attemptId;
     if (window.appController && window.appController.replaceNavState) {
       window.appController.replaceNavState(
-        { view: 'solutions', testId: this.testData.id, attemptId: resolvedAttemptId },
-        '#solutions/' + this.testData.id
+        { view: window.appController.currentViewTab || 'tests', modal: 'scorecard', testId: this.testData.id, attemptId: resolvedAttemptId },
+        '#scorecard/' + resolvedAttemptId
       );
     }
-    if (!window.openOliveboardSolutions && window.appController && typeof window.appController.ensureTestEngineLoaded === 'function') {
-      try {
-        await window.appController.ensureTestEngineLoaded(true);
-      } catch (loadErr) {
-        console.warn('Could not lazy-load solution engine on submit:', loadErr);
-      }
-    }
-    if (window.openOliveboardSolutions) {
-      window.openOliveboardSolutions(resultObj, this.testData);
-    } else if (this.scorecardOverlay) {
-      this.scorecardOverlay.classList.add('active');
+
+    // Refresh dashboard cards & analytics behind the analysis overlay.
+    if (window.appController && typeof window.appController.refreshAnalytics === 'function') {
+      window.appController.refreshAnalytics();
     }
   }
 
@@ -2422,11 +2413,12 @@ class OliveboardTestEngine {
   }
 
   async _openScorecardSolutions(attemptId, testId) {
-    this.scorecardOverlay?.classList.remove('active');
-
     // Analytics can be opened on top of the solution console. Dismissing that
     // scorecard should reveal the current review instead of navigating away.
-    if (window.obSolutionEngine?.isOpen) return true;
+    if (window.obSolutionEngine?.isOpen) {
+      this.scorecardOverlay?.classList.remove('active');
+      return true;
+    }
     if (!attemptId || !window.appController?.viewSolutions) return false;
     await window.appController.viewSolutions(attemptId, testId);
     return Boolean(window.obSolutionEngine?.isOpen);

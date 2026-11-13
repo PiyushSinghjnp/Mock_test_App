@@ -52,5 +52,5 @@ test('scorecard launch solutions button calls _openScorecardSolutions', () => {
   // Test scorecard solution button handler
   assert.match(testEngineSource, /btnLaunchSol\.onclick = async \(\) => \{[\s\S]*?await this\._openScorecardSolutions\(attemptId, testData\.id\);/);
   // Should check if solution engine is already open
-  assert.match(testEngineSource, /async _openScorecardSolutions\(attemptId, testId\) \{[\s\S]*?if \(window\.obSolutionEngine\?\.isOpen\) return true;/);
+  assert.match(testEngineSource, /async _openScorecardSolutions\(attemptId, testId\) \{[\s\S]*?if \(window\.obSolutionEngine\?\.isOpen\) \{\s*this\.scorecardOverlay\?\.classList\.remove\('active'\);\s*return true;/);
 });
