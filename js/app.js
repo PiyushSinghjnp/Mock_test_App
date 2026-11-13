@@ -43,10 +43,6 @@ class OliveboardAppController {
     // Bind static shell interactions before slow API calls complete.
     this.bindEvents();
     await this.loadAndRenderMockCards();
-    await Promise.all([
-      this.renderLeaderboard(),
-      this.renderAnalytics()
-    ]);
     this.renderBackendStatus();
 
     // Initialize History & Deep-Linking Router (prevents about:blank back-button exit)
@@ -60,7 +56,7 @@ class OliveboardAppController {
     if (!toast) {
       toast = document.createElement('div');
       toast.id = 'ob-global-toast';
-      toast.style.cssText = 'position: fixed; bottom: 68px; right: 20px; z-index: 99999; padding: 11px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.22); transition: opacity 0.25s ease; pointer-events: none;';
+      toast.style.cssText = 'position: fixed; bottom: 68px; right: 16px; max-width: calc(100vw - 32px); box-sizing: border-box; z-index: 99999; padding: 11px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.22); transition: opacity 0.25s ease; pointer-events: none;';
       document.body.appendChild(toast);
     }
     toast.style.background = type === 'error' ? '#dc2626' : (type === 'success' ? '#15803d' : '#0f172a');
@@ -685,6 +681,19 @@ class OliveboardAppController {
       if (heroCoins) heroCoins.textContent = '—';
     }
 
+    if (!activeUser) {
+      container.innerHTML = `
+        <div class="empty-state-card">
+          <div class="empty-state-icon" aria-hidden="true">🔐</div>
+          <h4>Sign in to access daily quizzes</h4>
+          <p>Sign in to see available subjects and keep your quiz progress with your candidate profile.</p>
+          <button type="button" class="btn-secondary-action" data-app-action="quiz-sign-in">Sign In</button>
+        </div>
+      `;
+      this.renderBackendStatus();
+      return;
+    }
+
     try {
       const url = userId ? `/api/quizzes/subjects?userId=${encodeURIComponent(userId)}` : '/api/quizzes/subjects';
       const requestJson = window.obDataManager?.requestJson
@@ -1304,12 +1313,13 @@ class OliveboardAppController {
     }
 
     if (displayPacks.length === 0) {
+      const isPypView = this.currentFilterTab === 'pyp';
       cardsContainer.innerHTML = `
-        <div style="grid-column: span 2; text-align: center; padding: 48px; background: #ffffff; border-radius: 12px; border: 1px solid var(--ob-app-border);">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 32px 20px; background: #ffffff; border-radius: 12px; border: 1px solid var(--ob-app-border);">
           <div class="empty-state-icon" aria-hidden="true">⌕</div>
-          <h4 style="font-size: 16px; font-weight: 700; color: #1e293b;">No matching tests</h4>
-          <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Try a different search, test type, or attempt status.</p>
-          <button type="button" class="btn-secondary-action" data-app-action="reset-test-filters">Clear search and filters</button>
+          <h4 style="font-size: 16px; font-weight: 700; color: #1e293b;">${isPypView ? 'No previous year papers available' : 'No matching tests'}</h4>
+          <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">${isPypView ? 'There are no previous year papers for this exam in the catalog yet. You can browse the available mock tests instead.' : 'Try a different search, test type, or attempt status.'}</p>
+          <button type="button" class="btn-secondary-action" data-app-action="reset-test-filters">${isPypView ? 'Browse all mock tests' : 'Clear search and filters'}</button>
         </div>
       `;
       return;
@@ -1424,7 +1434,7 @@ class OliveboardAppController {
             <!-- Variant 4: Oliveboard Completed Attempted Banner with 3-Color Progress Bar & Legend Dots (course.js renderCompletedTest) -->
             ${isAttempted ? `
               <div class="card-attempt-banner" style="display: block;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <div>
                     <span style="font-weight: 800; color: #15803d; font-size: 13px;">${Number(att.score).toFixed(2)}/${pack.marks} <span style="font-weight: 600; color: #475569; font-size: 11px;">Score</span></span>
                     <span style="margin-left: 10px; font-weight: 700; color: #0f172a; font-size: 12px;">${att.accuracy ?? 0}% <span style="font-weight: 600; color: #475569; font-size: 11px;">Accuracy</span></span>
@@ -1651,14 +1661,27 @@ class OliveboardAppController {
     const addedUserIds = new Set();
     if (Array.isArray(dbEntries) && dbEntries.length > 0) {
       dbEntries.forEach(entry => {
-        const isCurrent = activeUserId && entry.userId === activeUserId;
-        addedUserIds.add(entry.userId);
+        const userId = entry.userId ?? entry.user_id;
+        const userName = entry.userName ?? entry.user_name ?? entry.name ?? 'Candidate';
+        const testTitle = entry.testTitle ?? entry.test_title ?? 'Mock test';
+        const rawScore = Number(entry.rawScore ?? entry.raw_score ?? entry.best_score ?? entry.score);
+        const maxScore = Number(entry.maxScore ?? entry.max_score);
+        const normalizedScore = Number(entry.normScore ?? entry.norm_score);
+        const score = Number.isFinite(normalizedScore)
+          ? normalizedScore
+          : (Number.isFinite(rawScore) && maxScore > 0 ? (rawScore / maxScore) * 100 : (Number.isFinite(rawScore) ? rawScore : 0));
+        const isCurrent = activeUserId && userId === activeUserId;
+        if (userId) addedUserIds.add(userId);
         combined.push({
-          name: `${entry.userName} (${isCurrent ? 'You • ' : 'Candidate • '}${entry.testTitle})`,
-          score: entry.normScore,
-          rawScoreDisplay: `${Number(entry.rawScore).toFixed(2)} / ${entry.maxScore}`,
-          accuracy: entry.accuracy,
-          time: entry.time,
+          name: `${userName} (${isCurrent ? 'You • ' : 'Candidate • '}${testTitle})`,
+          score,
+          rawScoreDisplay: Number.isFinite(rawScore)
+            ? `${rawScore.toFixed(2)}${Number.isFinite(maxScore) && maxScore > 0 ? ` / ${maxScore}` : ''}`
+            : '—',
+          accuracy: entry.accuracy ?? (Number.isFinite(Number(entry.percentile)) ? `Percentile: ${Number(entry.percentile)}%` : '—'),
+          time: entry.time ?? (Number.isFinite(Number(entry.time_spent_seconds))
+            ? `${Math.floor(Number(entry.time_spent_seconds) / 60)}m ${String(Number(entry.time_spent_seconds) % 60).padStart(2, '0')}s`
+            : '—'),
           isCurrentUser: Boolean(isCurrent),
           isRegisteredCandidate: true
         });
@@ -2532,6 +2555,8 @@ class OliveboardAppController {
           this.enrollCourse(actionButton.dataset.courseId, actionButton.dataset.courseTitle || 'course');
         } else if (action === 'start-daily-quiz') {
           this.startDailyQuiz(actionButton.dataset.subject || 'General Awareness');
+        } else if (action === 'quiz-sign-in') {
+          this.openLoginModal();
         } else if (action === 'switch-candidate') {
           this.switchCandidate(actionButton.dataset.userId);
         } else if (action === 'start-test') {
@@ -2559,10 +2584,12 @@ class OliveboardAppController {
         } else if (action === 'subscription-upgrade') {
           this.showToast('Purchases are unavailable in this demo. No plan was changed.', 'info');
         } else if (action === 'reset-test-filters') {
+          const wasPypView = this.currentFilterTab === 'pyp';
           this.currentFilterTab = 'all';
           this.currentStatusFilter = 'all';
           this.currentSort = 'recommended';
           this.currentSearchQuery = '';
+          if (wasPypView) this.switchAppView('tests', false, true);
           const search = document.getElementById('app-search-input');
           const sort = document.getElementById('test-sort');
           if (search) search.value = '';
@@ -2661,13 +2688,16 @@ class OliveboardAppController {
     // App search box
     const searchInput = document.getElementById('app-search-input');
     if (searchInput) {
-      searchInput.addEventListener('input', async (e) => {
+      searchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
         this.currentSearchQuery = query;
-        if (query && this.currentViewTab !== 'tests') {
-          this.switchAppView('tests', false, true);
-        }
-        await this.loadAndRenderMockCards();
+        clearTimeout(this._searchDebounceTimer);
+        this._searchDebounceTimer = setTimeout(async () => {
+          if (query && this.currentViewTab !== 'tests') {
+            this.switchAppView('tests', false, true);
+          }
+          await this.loadAndRenderMockCards();
+        }, 150);
       });
     }
 
@@ -2784,10 +2814,13 @@ class OliveboardAppController {
           this.renderHeader();
           this.renderExamHero();
 
-          // Refresh mocks & statistics
+          // Refresh mocks & active view statistics
           this.loadAndRenderMockCards().catch(console.error);
-          this.renderAnalytics().catch(console.error);
-          this.renderLeaderboard().catch(console.error);
+          if (this.currentViewTab === 'analytics') {
+            this.renderAnalytics().catch(console.error);
+          } else if (this.currentViewTab === 'leaderboard') {
+            this.renderLeaderboard().catch(console.error);
+          }
         } catch (err) {
           if (alertBox) {
             alertBox.textContent = err.message || 'Authentication failed. Please check credentials.';
@@ -3021,7 +3054,9 @@ class OliveboardAppController {
     this.renderHeader();
     this.renderExamHero();
     await this.loadAndRenderMockCards();
-    await this.renderLeaderboard();
+    if (this.currentViewTab === 'leaderboard') {
+      await this.renderLeaderboard();
+    }
   }
 
   // ==========================================
@@ -3042,7 +3077,18 @@ class OliveboardAppController {
       await window.obDataManager.clearPausedAttempt(testId);
     }
 
-    let testData = await window.obDataManager.getTestById(testId);
+    let testData = null;
+    try {
+      const [fetchedTest] = await Promise.all([
+        window.obDataManager.getTestById(testId),
+        this.ensureTestEngineLoaded()
+      ]);
+      testData = fetchedTest;
+    } catch (error) {
+      this.showToast(error.message, 'error');
+      return;
+    }
+
     if (!testData) {
       if (window.OB_TEST_APP.mockQuestions && window.OB_TEST_APP.mockQuestions[testId]) {
         testData = window.OB_TEST_APP.mockQuestions[testId];
@@ -3054,13 +3100,6 @@ class OliveboardAppController {
 
     if (pushHistory) {
       this.pushNavState({ view: 'test-engine', testId }, '#test/' + testId);
-    }
-
-    try {
-      await this.ensureTestEngineLoaded();
-    } catch (error) {
-      this.showToast(error.message, 'error');
-      return;
     }
 
     if (window.initTestEngine) {
@@ -3079,7 +3118,21 @@ class OliveboardAppController {
     this.lastActiveTestId = testId;
     this.savedTestsScrollY = window.scrollY;
 
-    let testData = await window.obDataManager.getTestById(testId);
+    let testData = null;
+    let pausedState = null;
+    try {
+      const [fetchedTest, fetchedPaused] = await Promise.all([
+        window.obDataManager.getTestById(testId),
+        window.obDataManager ? window.obDataManager.getPausedAttempt(testId) : Promise.resolve(null),
+        this.ensureTestEngineLoaded()
+      ]);
+      testData = fetchedTest;
+      pausedState = fetchedPaused;
+    } catch (error) {
+      this.showToast(error.message, 'error');
+      return;
+    }
+
     if (!testData && window.OB_TEST_APP.mockQuestions && window.OB_TEST_APP.mockQuestions[testId]) {
       testData = window.OB_TEST_APP.mockQuestions[testId];
     }
@@ -3087,14 +3140,6 @@ class OliveboardAppController {
 
     if (pushHistory) {
       this.pushNavState({ view: 'test-engine', testId }, '#test/' + testId);
-    }
-
-    const pausedState = window.obDataManager ? await window.obDataManager.getPausedAttempt(testId) : null;
-    try {
-      await this.ensureTestEngineLoaded();
-    } catch (error) {
-      this.showToast(error.message, 'error');
-      return;
     }
 
     if (window.initTestEngine) {
@@ -3142,8 +3187,10 @@ class OliveboardAppController {
     this.savedTestsScrollY = window.scrollY;
 
     try {
-      const { attempt, testData } = await this._resolveAttemptAndTest(attemptId, testId);
-      await this.ensureTestEngineLoaded(true);
+      const [{ attempt, testData }] = await Promise.all([
+        this._resolveAttemptAndTest(attemptId, testId),
+        this.ensureTestEngineLoaded(true)
+      ]);
 
       if (pushHistory) {
         this.pushNavState({ view: 'solutions', testId, attemptId }, '#solutions/' + testId);
@@ -3163,8 +3210,10 @@ class OliveboardAppController {
     this.savedTestsScrollY = window.scrollY;
 
     try {
-      const { attempt, testData } = await this._resolveAttemptAndTest(attemptId, testId);
-      await this.ensureTestEngineLoaded();
+      const [{ attempt, testData }] = await Promise.all([
+        this._resolveAttemptAndTest(attemptId, testId),
+        this.ensureTestEngineLoaded()
+      ]);
 
       if (pushHistory) {
         this.pushNavState({ modal: 'scorecard', testId, attemptId, view: this.currentViewTab }, '#scorecard/' + attemptId);
@@ -3184,8 +3233,11 @@ class OliveboardAppController {
     const targetId = focusTestId || this.lastActiveTestId || null;
     this.testsCache = [];
     await this.loadAndRenderMockCards(targetId);
-    await this.renderAnalytics();
-    await this.renderLeaderboard();
+    if (this.currentViewTab === 'analytics') {
+      await this.renderAnalytics();
+    } else if (this.currentViewTab === 'leaderboard') {
+      await this.renderLeaderboard();
+    }
   }
 }
 

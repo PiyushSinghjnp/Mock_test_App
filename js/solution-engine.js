@@ -136,11 +136,19 @@ class OliveboardSolutionEngine {
     if (this.btnFullscreen) {
       this.btnFullscreen.onclick = (e) => {
         e.preventDefault();
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch(() => {});
+        const docEl = document.documentElement;
+        const reqFs = docEl.requestFullscreen || docEl.webkitRequestFullscreen;
+        const exitFs = document.exitFullscreen || document.webkitExitFullscreen;
+        const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+        if (!fsEl) {
+          if (typeof reqFs === 'function') {
+            Promise.resolve(reqFs.call(docEl)).catch(() => {});
+          }
           this.btnFullscreen.textContent = 'Exit Full Screen';
         } else {
-          if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+          if (typeof exitFs === 'function') {
+            Promise.resolve(exitFs.call(document)).catch(() => {});
+          }
           this.btnFullscreen.textContent = 'Enter Full Screen';
         }
       };

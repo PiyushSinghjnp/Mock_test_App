@@ -653,6 +653,16 @@ class OliveboardTestEngine {
         this.isExamActive = true;
         this.startTime = Date.now();
         await this.submitTest(); // Server accepts only the last snapshot saved before the trusted deadline.
+      } else {
+        const msg = error?.status === 401
+          ? 'Please sign in to start a timed mock test.'
+          : (error?.message || 'Unable to start test timer. Please check your connection and try again.');
+        if (window.appController && typeof window.appController.showToast === 'function') {
+          window.appController.showToast(msg, 'error');
+        }
+        if (error?.status === 401 && window.appController && typeof window.appController.openLoginModal === 'function') {
+          window.appController.openLoginModal();
+        }
       }
       return;
     }
@@ -986,6 +996,7 @@ class OliveboardTestEngine {
    * Pause Test (#calert & #dummy-black - Spec 4.1 & oliveboard_live_player.html lines 1231-1288)
    */
   async pauseTest() {
+    this.closeMobilePalette?.();
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = null;
     this.isPaused = true;
@@ -1070,11 +1081,19 @@ class OliveboardTestEngine {
   }
 
   toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
+    const docEl = document.documentElement;
+    const reqFs = docEl.requestFullscreen || docEl.webkitRequestFullscreen;
+    const exitFs = document.exitFullscreen || document.webkitExitFullscreen;
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    if (!fsEl) {
+      if (typeof reqFs === 'function') {
+        Promise.resolve(reqFs.call(docEl)).catch(() => {});
+      }
       if (this.btnScreenToggle) this.btnScreenToggle.textContent = 'Exit Full Screen';
     } else {
-      if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      if (typeof exitFs === 'function') {
+        Promise.resolve(exitFs.call(document)).catch(() => {});
+      }
       if (this.btnScreenToggle) this.btnScreenToggle.textContent = 'Enter Full Screen';
     }
   }
@@ -1656,6 +1675,7 @@ class OliveboardTestEngine {
    * In-Pane Utility View #b1: getQuestionPaper() (oliveboard_live_player.html lines 281-320 & 900-917)
    */
   getQuestionPaper() {
+    this.closeMobilePalette?.();
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = null;
     this.isUtilityViewOpen = true;
@@ -1714,6 +1734,7 @@ class OliveboardTestEngine {
    * In-Pane Utility View #b2: getInstructions() (oliveboard_live_player.html lines 881-898)
    */
   getInstructions() {
+    this.closeMobilePalette?.();
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = null;
     this.isUtilityViewOpen = true;
@@ -1741,6 +1762,7 @@ class OliveboardTestEngine {
    * In-Pane Utility View #b3: getCandProfile() (oliveboard_live_player.html lines 919-936)
    */
   getCandProfile() {
+    this.closeMobilePalette?.();
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = null;
     this.isUtilityViewOpen = true;
@@ -1955,6 +1977,7 @@ class OliveboardTestEngine {
    * Hides #left-container-post & #right-container-post, shows #left-container (with #submit-pane & #sure) + #right-container
    */
   finalSubmit(forceSectionAdvance = false) {
+    this.closeMobilePalette?.();
     this._recordCurrentQuestionTime();
     this.currentQuestionEntryTime = null;
     this.isConfirmPaneOpen = true;
@@ -2318,8 +2341,8 @@ class OliveboardTestEngine {
     const breakdownEl = document.getElementById('scorecard-section-breakdown');
     if (breakdownEl) {
       breakdownEl.innerHTML = sectionBreakdownArr.map(sec => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
-          <div style="font-weight: bold; width: 140px;">${sec.sectionName}</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
+          <div style="font-weight: bold; min-width: 120px; flex: 1 1 120px;">${sec.sectionName}</div>
           <div>✅ ${sec.correct} | ❌ ${sec.wrong} | ⬜ ${sec.unanswered}</div>
           <div style="font-weight: bold; color: #1c4b79;">Score: ${sec.score.toFixed(2)}</div>
           <div style="font-weight: bold; color: #2e7d32;">Acc: ${sec.accuracy}%</div>
@@ -2364,6 +2387,13 @@ class OliveboardTestEngine {
         { view: 'solutions', testId: this.testData.id, attemptId: resolvedAttemptId },
         '#solutions/' + this.testData.id
       );
+    }
+    if (!window.openOliveboardSolutions && window.appController && typeof window.appController.ensureTestEngineLoaded === 'function') {
+      try {
+        await window.appController.ensureTestEngineLoaded(true);
+      } catch (loadErr) {
+        console.warn('Could not lazy-load solution engine on submit:', loadErr);
+      }
     }
     if (window.openOliveboardSolutions) {
       window.openOliveboardSolutions(resultObj, this.testData);
@@ -2488,8 +2518,8 @@ class OliveboardTestEngine {
     const breakdownEl = document.getElementById('scorecard-section-breakdown');
     if (breakdownEl) {
       breakdownEl.innerHTML = breakdown.map(sec => `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
-          <div style="font-weight: bold; width: 140px;">${sec.sectionName}</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">
+          <div style="font-weight: bold; min-width: 120px; flex: 1 1 120px;">${sec.sectionName}</div>
           <div>✅ ${sec.correct} | ❌ ${sec.wrong} | ⬜ ${sec.unanswered}</div>
           <div style="font-weight: bold; color: #1c4b79;">Score: ${(sec.score || 0).toFixed(2)}</div>
           <div style="font-weight: bold; color: #2e7d32;">Acc: ${sec.accuracy}%</div>
@@ -2813,6 +2843,7 @@ class OliveboardTestEngine {
   }
 
   _doExitTest(skipRefresh = false) {
+    this.closeMobilePalette?.();
     this.stopTimer();
     clearInterval(this.autosaveInterval);
     this.isExamActive = false;

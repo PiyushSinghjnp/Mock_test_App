@@ -12,6 +12,12 @@ test('PostgreSQL test catalog marks completed attempts for candidate cards', () 
   assert.match(server, /isAttempted:\s*Boolean\(row\.attempt_id\)/);
 });
 
+test('PostgreSQL test catalog includes attempt answer counts used by candidate cards', () => {
+  const server = read('server-postgres.js');
+  assert.match(server, /SELECT id,score,max_score,correct_count,wrong_count,unanswered_count,accuracy/);
+  assert.match(server, /correct_count:\s*row\.correct_count,\s*wrong_count:\s*row\.wrong_count,\s*unanswered_count:\s*row\.unanswered_count/);
+});
+
 test('solution loading fetches the completed attempt paper and scorecard buttons lazy-load solutions', () => {
   const app = read('js/app.js');
   const engine = read('js/test-engine.js');

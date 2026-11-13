@@ -2563,7 +2563,24 @@ cursor:pointer;
   }
 
   #solution-console-overlay #btn-exit-soln-console {
-    display: none !important;
+    display: inline-flex !important;
+  }
+
+  #solution-console-overlay #sec-solheader .sol-subheader-metrics,
+  #solution-console-overlay #sec-solheader .sol-subheader-right {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    border-left: none !important;
+    padding-left: 0 !important;
+  }
+
+  #solution-console-overlay #questionssols-block table {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   #solution-console-overlay #sec-reviewtable .reviewtable .review-row .reviewcol-group {

@@ -41,9 +41,12 @@ async function createSession(client, userId) {
 }
 
 function sessionCookieOptions(production = process.env.NODE_ENV === 'production') {
+  const secure = process.env.COOKIE_SECURE !== undefined
+    ? process.env.COOKIE_SECURE === 'true'
+    : production;
   return {
     httpOnly: true,
-    secure: production,
+    secure,
     sameSite: 'Lax',
     path: '/',
     maxAge: SESSION_TTL_SECONDS * 1000
@@ -82,8 +85,11 @@ function setSessionCookie(res, token, production = process.env.NODE_ENV === 'pro
 }
 
 function clearSessionCookie(res, production = process.env.NODE_ENV === 'production') {
+  const secure = process.env.COOKIE_SECURE !== undefined
+    ? process.env.COOKIE_SECURE === 'true'
+    : production;
   const attributes = [`${SESSION_COOKIE}=`, 'Path=/', 'Max-Age=0', 'HttpOnly', 'SameSite=Lax'];
-  if (production) attributes.push('Secure');
+  if (secure) attributes.push('Secure');
   res.append('Set-Cookie', attributes.join('; '));
 }
 

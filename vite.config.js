@@ -17,12 +17,14 @@ module.exports = defineConfig({
     }
   },
   server: {
+    host: true,
     port: 3000,
     strictPort: true,
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
+        xfwd: true,
       }
     }
   },
@@ -30,15 +32,10 @@ module.exports = defineConfig({
     viteStaticCopy({
       targets: [
         { src: 'css', dest: '' },
-        { src: 'js/test-engine.js', dest: '' },
-        { src: 'js/solution-engine.js', dest: '' },
+        { src: 'js', dest: '' },
         { src: 'img', dest: '' },
         { src: 'images', dest: '' },
-        { src: 'lib', dest: '' },
         { src: 'data', dest: '' },
-        { src: 'scraped', dest: '' },
-        { src: 'scraped_specs', dest: '' },
-        { src: 'papers', dest: '' },
         { src: 'oliveimg', dest: '' },
       ]
     })

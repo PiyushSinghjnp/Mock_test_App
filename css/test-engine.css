@@ -19,6 +19,7 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   background: #ffffff;
   z-index: 2000;
   display: none;
@@ -422,6 +423,7 @@
   border-collapse: collapse;
   font-size: 14px;
   line-height: 22px;
+  overflow-x: auto;
 }
 
 #pane-direction-box table td,
@@ -959,6 +961,7 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   background: #ffffff;
   z-index: 2200;
   display: none;
@@ -1469,6 +1472,45 @@
   border-top: 1px solid #e2e8f0;
   display: flex;
   justify-content: flex-end;
+}
+
+@media screen and (max-width: 640px) {
+  .scorecard-modal-overlay {
+    padding: 8px !important;
+  }
+
+  .scorecard-dialog {
+    width: 100% !important;
+    max-height: 92vh !important;
+    max-height: 92dvh !important;
+  }
+
+  .scorecard-header {
+    padding: 12px 16px !important;
+  }
+
+  .scorecard-body {
+    padding: 14px 16px !important;
+  }
+
+  .metrics-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .metric-card .number {
+    font-size: 17px !important;
+  }
+
+  .scorecard-footer {
+    padding: 12px 16px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .scorecard-footer button {
+    flex: 1 1 100% !important;
+    justify-content: center !important;
+  }
 }
 
 /* ========================================================
@@ -3007,6 +3049,7 @@
     flex: 1 0 auto !important;
     display: flex;
     flex-direction: column !important;
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   #section-name-container,
@@ -3029,6 +3072,25 @@
     display: flex !important;
     flex-direction: column !important;
     margin: 0 10px 8px 10px !important;
+    overflow: visible !important;
+  }
+
+  #in-tab,
+  #f-table,
+  #pane-direction-box table,
+  #pane-question-box table,
+  #exam-question-text table {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #giant-candidate {
+    min-width: 0 !important;
+    width: 100% !important;
   }
 
   #question-no-bar,
@@ -3205,6 +3267,7 @@
   #soln-left-container-post {
     width: 100% !important;
     min-height: calc(100vh - 52px) !important;
+    min-height: calc(100dvh - 52px) !important;
   }
 
   #section-name-container,
@@ -3253,6 +3316,10 @@
     gap: 6px !important;
     padding: 7px 8px !important;
     box-shadow: 0 -4px 14px rgba(15, 23, 42, 0.12);
+  }
+
+  #button-holder[style*="display: none"] {
+    display: none !important;
   }
 
   #button-holder .action-left-buttons {

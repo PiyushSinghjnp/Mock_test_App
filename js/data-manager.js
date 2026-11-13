@@ -19,6 +19,19 @@ class OBTestDataManager {
     this.lastBackendError = null;
     this.csrfToken = '';
     this.pauseRevisions = new Map();
+    this._memorySubmissionKeys = new Map();
+  }
+
+  _safeStorageGet(storage, key) {
+    try { return storage.getItem(key); } catch { return null; }
+  }
+
+  _safeStorageSet(storage, key, value) {
+    try { storage.setItem(key, value); return true; } catch { return false; }
+  }
+
+  _safeStorageRemove(storage, key) {
+    try { storage.removeItem(key); return true; } catch { return false; }
   }
 
   apiFetch(path, options = {}) {
@@ -37,9 +50,15 @@ class OBTestDataManager {
     delete requestOptions.timeoutMs;
     if (!requestOptions.signal) requestOptions.signal = controller.signal;
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    let responseReceived = false;
 
     try {
       const response = await this.apiFetch(path, requestOptions);
+      responseReceived = true;
+      // An HTTP response means the backend is reachable. Auth and validation
+      // failures must not be presented as an outage to the signed-out user.
+      this.backendAvailable = response.status < 500;
+      this.lastBackendError = null;
       const raw = await response.text();
       let data = null;
 
@@ -52,18 +71,24 @@ class OBTestDataManager {
       }
 
       if (!response.ok) {
-        throw new Error(data?.error || `Request failed (${response.status}).`);
+        const error = new Error(data?.error || `Request failed (${response.status}).`);
+        error.status = response.status;
+        if (response.status >= 500) this.lastBackendError = error;
+        throw error;
       }
 
       this.backendAvailable = true;
       this.lastBackendError = null;
       return data || {};
     } catch (error) {
-      this.backendAvailable = false;
-      this.lastBackendError = error?.name === 'AbortError'
-        ? new Error('The server took too long to respond.')
-        : (error instanceof Error ? error : new Error('Unable to reach the server.'));
-      throw this.lastBackendError;
+      if (!responseReceived) {
+        this.backendAvailable = false;
+        this.lastBackendError = error?.name === 'AbortError'
+          ? new Error('The server took too long to respond.')
+          : (error instanceof Error ? error : new Error('Unable to reach the server.'));
+        throw this.lastBackendError;
+      }
+      throw error instanceof Error ? error : new Error('The server returned an invalid response.');
     } finally {
       clearTimeout(timeoutId);
     }
@@ -75,9 +100,9 @@ class OBTestDataManager {
       this.csrfToken = session.csrfToken || '';
       this.activeUser = session.authenticated ? session.user : null;
       this.users = this.activeUser ? [this.activeUser] : [];
-      if (this.activeUser) localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, this.activeUser.id);
-      else localStorage.removeItem(this.STORAGE_KEY_ACTIVE_USER);
-      localStorage.removeItem('ob_auth_token');
+      if (this.activeUser) this._safeStorageSet(localStorage, this.STORAGE_KEY_ACTIVE_USER, this.activeUser.id);
+      else this._safeStorageRemove(localStorage, this.STORAGE_KEY_ACTIVE_USER);
+      this._safeStorageRemove(localStorage, 'ob_auth_token');
     } catch {
       this.activeUser = null;
       this.users = [];
@@ -98,7 +123,7 @@ class OBTestDataManager {
     const user = this.users.find(u => u.id === userId);
     if (user) {
       this.activeUser = user;
-      localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, user.id);
+      this._safeStorageSet(localStorage, this.STORAGE_KEY_ACTIVE_USER, user.id);
       return user;
     }
     return null;
@@ -114,10 +139,10 @@ class OBTestDataManager {
       throw new Error(data.error || 'Login failed');
     }
     this.activeUser = data.user;
-    localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, data.user.id);
-    localStorage.removeItem('ob_explicit_logout');
+    this.users = this.activeUser ? [this.activeUser] : [];
+    this._safeStorageSet(localStorage, this.STORAGE_KEY_ACTIVE_USER, data.user.id);
+    this._safeStorageRemove(localStorage, 'ob_explicit_logout');
     this.csrfToken = data.csrfToken || '';
-    await this.loadUsers();
     return data.user;
   }
 
@@ -131,10 +156,10 @@ class OBTestDataManager {
       throw new Error(data.error || 'Registration failed');
     }
     this.activeUser = data.user;
-    localStorage.setItem(this.STORAGE_KEY_ACTIVE_USER, data.user.id);
-    localStorage.removeItem('ob_explicit_logout');
+    this.users = this.activeUser ? [this.activeUser] : [];
+    this._safeStorageSet(localStorage, this.STORAGE_KEY_ACTIVE_USER, data.user.id);
+    this._safeStorageRemove(localStorage, 'ob_explicit_logout');
     this.csrfToken = data.csrfToken || '';
-    await this.loadUsers();
     return data.user;
   }
 
@@ -143,9 +168,9 @@ class OBTestDataManager {
     this.activeUser = null;
     this.users = [];
     this.csrfToken = '';
-    localStorage.removeItem(this.STORAGE_KEY_ACTIVE_USER);
-    localStorage.removeItem('ob_auth_token');
-    localStorage.setItem('ob_explicit_logout', 'true');
+    this._safeStorageRemove(localStorage, this.STORAGE_KEY_ACTIVE_USER);
+    this._safeStorageRemove(localStorage, 'ob_auth_token');
+    this._safeStorageSet(localStorage, 'ob_explicit_logout', 'true');
   }
 
   // ===============================================
@@ -252,10 +277,11 @@ class OBTestDataManager {
 
   _submissionKey(testId) {
     const key = `ob_submission_${testId}`;
-    let value = sessionStorage.getItem(key);
+    let value = this._safeStorageGet(sessionStorage, key) || this._memorySubmissionKeys.get(key);
     if (!value) {
       value = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
-      sessionStorage.setItem(key, value);
+      this._safeStorageSet(sessionStorage, key, value);
+      this._memorySubmissionKeys.set(key, value);
     }
     return value;
   }
@@ -344,22 +370,28 @@ class OBTestDataManager {
           result.sectionBreakdown = data.sectionBreakdown || result.sectionBreakdown;
           const official = await this.getTestById(result.testId, result.attemptId);
           if (official) result.testData = official;
-          sessionStorage.removeItem(`ob_submission_${result.testId}`);
+          this._safeStorageRemove(sessionStorage, `ob_submission_${result.testId}`);
+          this._memorySubmissionKeys.delete(`ob_submission_${result.testId}`);
         }
-        await this.loadUsers();
+        if (this.activeUser && data.streakReward) {
+          this.activeUser.coins = data.streakReward.totalCoins ?? this.activeUser.coins;
+          this.activeUser.streak_days = data.streakReward.streakDays ?? this.activeUser.streak_days;
+        }
+        this.loadUsers().catch(() => {});
       } else throw new Error(data.error || `Request failed (${res.status}).`);
     } catch (e) {
       console.error('Failed to save result to backend DB, saving to localStorage as fallback:', e);
       const key = `ob_attempts_${activeUserId}`;
-      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      let existing = [];
+      try { existing = JSON.parse(this._safeStorageGet(localStorage, key) || '[]'); } catch { existing = []; }
       payload.id = payload.id || `local-att-${Date.now()}`;
       existing.push(payload);
-      localStorage.setItem(key, JSON.stringify(existing));
+      this._safeStorageSet(localStorage, key, JSON.stringify(existing));
       result.attemptId = payload.id;
     }
 
     // Clear local paused state
-    localStorage.removeItem(`ob_paused_${activeUserId}_${result.testId}`);
+    this._safeStorageRemove(localStorage, `ob_paused_${activeUserId}_${result.testId}`);
 
     return result;
   }
@@ -386,7 +418,7 @@ class OBTestDataManager {
     const current = Math.max(this.pauseRevisions.get(pausedState.testId) || 0, Number(pausedState.revision) || 0);
     payload.revision = current + 1;
     this.pauseRevisions.set(pausedState.testId, payload.revision);
-    localStorage.setItem(`ob_paused_${activeUserId}_${pausedState.testId}`, JSON.stringify(payload));
+    this._safeStorageSet(localStorage, `ob_paused_${activeUserId}_${pausedState.testId}`, JSON.stringify(payload));
     this.lastPausedSaveSucceeded = false;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
@@ -420,8 +452,9 @@ class OBTestDataManager {
       const res = await this.apiFetch(`${this.API_BASE}/api/paused-attempts?testId=${encodeURIComponent(testId)}`);
       const data = await res.json();
       if (data.success && data.pausedAttempt) {
-        const localRaw = localStorage.getItem(`ob_paused_${activeUserId}_${testId}`);
-        const local = localRaw ? JSON.parse(localRaw) : null;
+        const localRaw = this._safeStorageGet(localStorage, `ob_paused_${activeUserId}_${testId}`);
+        let local = null;
+        try { local = localRaw ? JSON.parse(localRaw) : null; } catch { local = null; }
         const saved = Number(data.pausedAttempt.revision) || 0;
         const localRevision = Number(local?.revision) || 0;
         this.pauseRevisions.set(testId, Math.max(saved, localRevision));
@@ -437,13 +470,13 @@ class OBTestDataManager {
     } catch (e) {
       // fallback to localStorage
     }
-    const local = localStorage.getItem(`ob_paused_${activeUserId}_${testId}`);
-    return local ? JSON.parse(local) : null;
+    const local = this._safeStorageGet(localStorage, `ob_paused_${activeUserId}_${testId}`);
+    try { return local ? JSON.parse(local) : null; } catch { return null; }
   }
 
   async clearPausedAttempt(testId) {
     const activeUserId = this.getActiveUserId();
-    localStorage.removeItem(`ob_paused_${activeUserId}_${testId}`);
+    this._safeStorageRemove(localStorage, `ob_paused_${activeUserId}_${testId}`);
     try {
       await this.apiFetch(`${this.API_BASE}/api/paused-attempts?testId=${encodeURIComponent(testId)}`, {
         method: 'DELETE'
@@ -474,11 +507,11 @@ class OBTestDataManager {
     if (!activeUserId || !pausedState?.testId) return null;
     const storageKey = `ob_paused_${activeUserId}_${pausedState.testId}`;
     let previous = {};
-    try { previous = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch {}
+    try { previous = JSON.parse(this._safeStorageGet(localStorage, storageKey) || '{}'); } catch {}
     const current = Math.max(this.pauseRevisions.get(pausedState.testId) || 0, Number(previous.revision) || 0, Number(pausedState.revision) || 0);
     const payload = { ...pausedState, revision: current + 1 };
     this.pauseRevisions.set(pausedState.testId, payload.revision);
-    localStorage.setItem(storageKey, JSON.stringify(payload));
+    this._safeStorageSet(localStorage, storageKey, JSON.stringify(payload));
     return payload;
   }
 
